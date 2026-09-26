@@ -148,67 +148,9 @@ class HomeViewModel @Inject constructor(
     
     val localSongs = database.localSongs().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    val speedDialItems: StateFlow<List<YTItem>> =
-        combine(
-            database.speedDialDao.getAll(),
-            keepListening,
-            quickPicks
-        ) { pinned, keepListening, quick ->
-            val pinnedItems = pinned.map { it.toYTItem() }
-            val filled = pinnedItems.toMutableList()
-            val targetSize = 27
-
-            if (filled.size < targetSize) {
-                
-                keepListening?.let { k ->
-                    val needed = targetSize - filled.size
-                    val available = k.filter { item ->
-                        filled.none { p -> p.id == item.id }
-                    }.mapNotNull { item ->
-                        when (item) {
-                            is Song -> SongItem(
-                                id = item.id,
-                                title = item.title,
-                                artists = item.artists.map { Artist(name = it.name, id = it.id) },
-                                thumbnail = item.thumbnailUrl ?: "",
-                                explicit = false
-                            )
-                            is Album -> AlbumItem(
-                                browseId = item.id,
-                                playlistId = item.album.playlistId ?: "",
-                                title = item.title,
-                                artists = item.artists.map { Artist(name = it.name, id = it.id) },
-                                year = item.album.year,
-                                thumbnail = item.thumbnailUrl ?: ""
-                            )
-                            else -> null
-                        }
-                    }
-                    filled.addAll(available.take(needed))
-                }
-            }
-
-            if (filled.size < targetSize) {
-                
-                quick?.let { q ->
-                    val needed = targetSize - filled.size
-                    val available = q.filter { song ->
-                        filled.none { p -> p.id == song.id }
-                    }.map { song ->
-                        SongItem(
-                            id = song.id,
-                            title = song.title,
-                            artists = song.artists.map { Artist(name = it.name, id = it.id) },
-                            thumbnail = song.thumbnailUrl ?: "",
-                            explicit = false
-                        )
-                    }
-                    filled.addAll(available.take(needed))
-                }
-            }
-
-            filled.take(targetSize)
-        }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    val speedDialItems: StateFlow<List<YTItem>> = database.speedDialDao.getAll().map { items ->
+        items.map { it.toYTItem() }
+    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     suspend fun getRandomItem(): YTItem? {
         try {
@@ -336,48 +278,23 @@ class HomeViewModel @Inject constructor(
         dailyDiscover.value = items.toList().distinctBy { it.recommendation.id }.shuffled()
     }
 
-    private suspend fun getQuickPicks() {
+    private suspend fun getQuickPicks(usedIds: MutableSet<String> = mutableSetOf()) {
         val hideVideoSongs = context.dataStore.get(HideVideoSongsKey, false)
-        when (quickPicksEnum.first()) {
-            QuickPicks.QUICK_PICKS -> {
-                val relatedSongs = database.quickPicks().first().filterVideoSongs(hideVideoSongs)
-                val forgotten = database.forgottenFavorites().first().filterVideoSongs(hideVideoSongs).take(8)
+        
+        val fromTimeStampCurrent = System.currentTimeMillis() - 86400000L * 7 * 4 
+        val allTime = database.mostPlayedSongs(0, limit = 50, offset = 0).first()
+        val current = database.mostPlayedSongs(fromTimeStampCurrent, limit = 50, offset = 0).first()
+        
+        val bestForYou = (allTime + current)
+            .distinctBy { it.id }
+            .filterVideoSongs(hideVideoSongs)
+            .filter { it.id !in usedIds }
+            .shuffled()
+            .take(20)
+            .map { it.copy(song = it.song.copy(thumbnailUrl = it.song.thumbnailUrl?.replace(Regex("=w\\d+-h\\d+"), "=w544-h544"))) }
 
-                
-                val recentSong = database.events().first().firstOrNull()?.song
-                val ytSimilarSongs = mutableListOf<Song>()
-
-                if (recentSong != null) {
-                    val endpoint = YouTube.next(WatchEndpoint(videoId = recentSong.id)).getOrNull()?.relatedEndpoint
-                    if (endpoint != null) {
-                        YouTube.related(endpoint).onSuccess { page ->
-                            
-                            page.songs.take(10).forEach { ytSong ->
-                                database.song(ytSong.id).first()?.let { localSong ->
-                                    if (!hideVideoSongs || !localSong.song.isVideo) {
-                                        ytSimilarSongs.add(localSong)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                
-                val combined = (relatedSongs + forgotten + ytSimilarSongs)
-                    .distinctBy { it.id }
-                    .shuffled()
-                    .take(20)
-
-                quickPicks.value = combined.ifEmpty { relatedSongs.shuffled().take(20) }
-            }
-            QuickPicks.LAST_LISTEN -> {
-                val song = database.events().first().firstOrNull()?.song
-                if (song != null && database.hasRelatedSongs(song.id)) {
-                    quickPicks.value = database.getRelatedSongs(song.id).first().filterVideoSongs(hideVideoSongs).shuffled().take(20)
-                }
-            }
-        }
+        quickPicks.value = bestForYou
+        usedIds.addAll(bestForYou.map { it.id })
     }
 
     private suspend fun getCommunityPlaylists() {
@@ -455,22 +372,73 @@ class HomeViewModel @Inject constructor(
         communityPlaylists.value = playlists.shuffled()
     }
 
-    
     private suspend fun loadLocalDataPhase() {
         val hideVideoSongs = context.dataStore.get(HideVideoSongsKey, false)
+        val usedIds = mutableSetOf<String>()
 
-        getQuickPicks()
+        val fromTimeStampKL = System.currentTimeMillis() - 86400000L * 7 * 2
+        val klSongs = database.mostPlayedSongs(fromTimeStampKL, limit = 20, offset = 0).first()
+            .filterVideoSongs(hideVideoSongs)
+            .take(10)
+            
+        val recentSong = database.events().first().firstOrNull()?.song
+        val youWillLikeIt = mutableListOf<Song>()
+        if (recentSong != null) {
+            val endpoint = YouTube.next(WatchEndpoint(videoId = recentSong.id)).getOrNull()?.relatedEndpoint
+            if (endpoint != null) {
+                YouTube.related(endpoint).onSuccess { page ->
+                    page.songs.take(15).forEach { ytSong ->
+                        database.song(ytSong.id).first()?.let { localSong ->
+                            if ((!hideVideoSongs || !localSong.song.isVideo) && klSongs.none { it.id == localSong.id }) {
+                                youWillLikeIt.add(localSong)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        val speedDialExtraItems = (klSongs + youWillLikeIt).distinctBy { it.id }.take(27)
+        usedIds.addAll(speedDialExtraItems.map { it.id })
+        
+        database.speedDialDao.clearAll()
+        speedDialExtraItems.forEach {
+            val item = SongItem(
+                id = it.id,
+                title = it.title,
+                artists = it.artists.map { Artist(name = it.name, id = it.id) },
+                thumbnail = it.thumbnailUrl ?: "",
+                explicit = false
+            )
+            database.speedDialDao.insert(SpeedDialItem.fromYTItem(item))
+        }
 
-        forgottenFavorites.value = database.forgottenFavorites().first()
-            .filterVideoSongs(hideVideoSongs).shuffled().take(20)
+        getQuickPicks(usedIds)
+
+        val forgotten = database.forgottenFavorites().first()
+            .filterVideoSongs(hideVideoSongs)
+            .filter { it.id !in usedIds }
+            .shuffled().take(20)
+        forgottenFavorites.value = forgotten
+        usedIds.addAll(forgotten.map { it.id })
 
         val fromTimeStamp = System.currentTimeMillis() - 86400000L * 7 * 2
-        val keepListeningSongs = database.mostPlayedSongs(fromTimeStamp, limit = 15, offset = 5).first()
-            .filterVideoSongs(hideVideoSongs).shuffled().take(10)
-        val keepListeningAlbums = database.mostPlayedAlbums(fromTimeStamp, limit = 8, offset = 2).first()
-            .filter { it.album.thumbnailUrl != null }.shuffled().take(5)
+        val keepListeningSongs = database.mostPlayedSongs(fromTimeStamp, limit = 50, offset = 0).first()
+            .filterVideoSongs(hideVideoSongs)
+            .filter { it.id !in usedIds }
+            .shuffled().take(10)
+        usedIds.addAll(keepListeningSongs.map { it.id })
+
+        val keepListeningAlbums = database.mostPlayedAlbums(fromTimeStamp, limit = 20, offset = 0).first()
+            .filter { it.album.thumbnailUrl != null && it.id !in usedIds }
+            .shuffled().take(5)
+        usedIds.addAll(keepListeningAlbums.map { it.id })
+
         val keepListeningArtists = database.mostPlayedArtists(fromTimeStamp).first()
-            .filter { it.artist.isYouTubeArtist && it.artist.thumbnailUrl != null }.shuffled().take(5)
+            .filter { it.artist.isYouTubeArtist && it.artist.thumbnailUrl != null && it.id !in usedIds }
+            .shuffled().take(5)
+        usedIds.addAll(keepListeningArtists.map { it.id })
+
         keepListening.value = (keepListeningSongs + keepListeningAlbums + keepListeningArtists).shuffled()
 
         allLocalItems.value = (quickPicks.value.orEmpty() + forgottenFavorites.value.orEmpty() + keepListening.value.orEmpty())

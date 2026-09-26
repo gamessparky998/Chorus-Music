@@ -20,4 +20,7 @@ interface SpeedDialDao {
 
     @Query("SELECT EXISTS(SELECT * FROM speed_dial_item WHERE id = :id)")
     fun isPinned(id: String): Flow<Boolean>
+
+    @Query("DELETE FROM speed_dial_item")
+    suspend fun clearAll()
 }

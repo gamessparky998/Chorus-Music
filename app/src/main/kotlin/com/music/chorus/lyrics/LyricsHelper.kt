@@ -90,7 +90,7 @@ constructor(
                             mediaMetadata.album?.title,
                         )
                         result.onSuccess { lyrics ->
-                            if (lyrics != LYRICS_NOT_FOUND && lyrics.isNotBlank()) {
+                            if (lyrics != LYRICS_NOT_FOUND && lyrics.isNotBlank() && pushkar.chorus.music.lyrics.LyricsUtils.isValidLyrics(lyrics, cleanTitle)) {
                                 channel.send(LyricsWithProvider(lyrics, provider.name))
                             } else {
                                 channel.send(null)
@@ -163,9 +163,11 @@ constructor(
                     launch {
                         try {
                             provider.getAllLyrics(mediaId, songTitle, songArtists, duration, album) { lyrics ->
-                                val result = LyricsResult(provider.name, lyrics)
-                                allResult += result
-                                callback(result)
+                                if (lyrics != LYRICS_NOT_FOUND && lyrics.isNotBlank() && pushkar.chorus.music.lyrics.LyricsUtils.isValidLyrics(lyrics, cleanTitle)) {
+                                    val result = LyricsResult(provider.name, lyrics)
+                                    allResult += result
+                                    callback(result)
+                                }
                             }
                         } catch (e: Exception) {
                             reportException(e)

@@ -173,6 +173,7 @@ fun Queue(
     iconButtonColor: Color,
     pureBlack: Boolean,
     showInlineLyrics: Boolean,
+    hasLyrics: Boolean,
     playerBackground: PlayerBackgroundStyle = PlayerBackgroundStyle.DEFAULT,
     onToggleLyrics: () -> Unit = {},
 ) {
@@ -370,18 +371,20 @@ fun Queue(
                         playerBackground = playerBackground
                     )
 
-                    PlayerQueueButton(
-                        icon = R.drawable.lyrics,
-                        onClick = { onToggleLyrics() },
-                        isActive = showInlineLyrics,
-                        shape = middleShape,
-                        modifier = Modifier.size(buttonSize),
-                        textButtonColor = textButtonColor,
-                        iconButtonColor = iconButtonColor,
-                        iconSize = iconSize,
-                        textBackgroundColor = TextBackgroundColor,
-                        playerBackground = playerBackground
-                    )
+                    if (hasLyrics) {
+                        PlayerQueueButton(
+                            icon = R.drawable.lyrics,
+                            onClick = { onToggleLyrics() },
+                            isActive = showInlineLyrics,
+                            shape = middleShape,
+                            modifier = Modifier.size(buttonSize),
+                            textButtonColor = textButtonColor,
+                            iconButtonColor = iconButtonColor,
+                            iconSize = iconSize,
+                            textBackgroundColor = TextBackgroundColor,
+                            playerBackground = playerBackground
+                        )
+                    }
 
                     if (showCommentButton) {
                         PlayerQueueButton(

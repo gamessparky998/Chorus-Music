@@ -317,29 +317,18 @@ interface DatabaseDao {
               GROUP BY relatedSongId) map
                  JOIN song ON song.id = map.relatedSongId
         WHERE songId IN (SELECT songId
-                         FROM (SELECT songId
-                               FROM event
-                               ORDER BY ROWID DESC
-                               LIMIT 5)
-                         UNION
-                         SELECT songId
-                         FROM (SELECT songId
-                               FROM event
-                               WHERE timestamp > :now - 86400000 * 7
-                               GROUP BY songId
-                               ORDER BY SUM(playTime) DESC
-                               LIMIT 5)
-                         UNION
-                         SELECT id
-                         FROM (SELECT id
-                               FROM song
-                               ORDER BY totalPlayTime DESC
-                               LIMIT 10))
+                         FROM event
+                         GROUP BY songId
+                         ORDER BY SUM(playTime * 1.0 / (1.0 + MAX(0, :now - timestamp) / 86400000.0)) DESC
+                         LIMIT :recentLimit)
         ORDER BY referredCount DESC
         LIMIT 100
     """,
     )
-    fun quickPicks(now: Long = System.currentTimeMillis()): Flow<List<Song>>
+    fun quickPicks(
+        now: Long = System.currentTimeMillis(),
+        recentLimit: Int = 30,
+    ): Flow<List<Song>>
 
     @Transaction
     @Query(

@@ -405,6 +405,9 @@ fun BottomSheetPlayer(
     val canSkipNext by playerConnection.canSkipNext.collectAsState()
     val isMuted by playerConnection.isMuted.collectAsState()
     val playerVolume by playerConnection.service.playerVolume.collectAsState()
+    val currentLyricsTopLevel by playerConnection.currentLyrics.collectAsState(initial = null)
+    val hasLyrics = currentLyricsTopLevel?.lyrics != null && currentLyricsTopLevel?.lyrics != LyricsEntity.LYRICS_NOT_FOUND && pushkar.chorus.music.lyrics.LyricsUtils.isValidLyrics(currentLyricsTopLevel?.lyrics!!, currentSong?.title ?: "")
+
 
     val (audioQuality) = rememberEnumPreference(
         AudioQualityKey,
@@ -845,6 +848,12 @@ fun BottomSheetPlayer(
 
     var showInlineLyrics by rememberSaveable {
         mutableStateOf(false)
+    }
+
+    LaunchedEffect(hasLyrics) {
+        if (!hasLyrics) {
+            showInlineLyrics = false
+        }
     }
 
     var isFullScreen by rememberSaveable {
@@ -2534,6 +2543,7 @@ fun BottomSheetPlayer(
             iconButtonColor = iconButtonColor,
             pureBlack = pureBlack,
             showInlineLyrics = showInlineLyrics,
+            hasLyrics = hasLyrics,
             playerBackground = playerBackground,
             onToggleLyrics = {
                 showInlineLyrics = !showInlineLyrics

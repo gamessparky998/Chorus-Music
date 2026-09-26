@@ -1115,4 +1115,25 @@ object LyricsUtils {
     private fun isCyrillicVowel(char: Char): Boolean {
         return "АаЕеЄєИиІіЇїОоУуЮюЯяЫыЭэ".contains(char)
     }
+
+    fun isValidLyrics(lyrics: String, expectedTitle: String): Boolean {
+        val lower = lyrics.lowercase()
+        if (lower.contains("lyrics not available") || 
+            lower.contains("instrumental") || 
+            lower.contains("no lyrics")) {
+            return false
+        }
+        
+        val tiRegex = "\\[ti:(.+?)\\]".toRegex(RegexOption.IGNORE_CASE)
+        val match = tiRegex.find(lyrics)
+        if (match != null) {
+            val tiTitle = match.groupValues[1].lowercase().replace(Regex("[^a-z0-9]"), " ")
+            val requestedTitle = expectedTitle.lowercase().replace(Regex("[^a-z0-9]"), " ")
+            val words = tiTitle.split("\\s+".toRegex()).filter { it.length >= 3 }
+            if (words.isNotEmpty() && words.none { requestedTitle.contains(it) }) {
+                return false
+            }
+        }
+        return true
+    }
 }
