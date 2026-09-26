@@ -1026,9 +1026,9 @@ fun HomeScreen(
                                             .combinedClickable(
                                                 onClick = {
                                                     if (song.id == mediaMetadata?.id) {
-                                                        playerConnection?.togglePlayPause()
+                                                        playerConnection.togglePlayPause()
                                                     } else {
-                                                        playerConnection?.playQueue(
+                                                        playerConnection.playQueue(
                                                             pushkar.chorus.music.playback.queues.ListQueue(
                                                                 title = "Cached Songs",
                                                                 items = cachedSongs.map { it.toMediaItem() },
