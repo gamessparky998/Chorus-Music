@@ -11,9 +11,7 @@
     {
       "title": "Bug Fixes",
       "items": [
-        "Home Algorithm: Fixed a duplication bug in the home screen recommendation algorithm",
-        "Build System: Fixed gradle Java toolchain path and regenerated missing wrapper files",
-        "Code Quality: General repository cleanup and .gitignore improvements"
+        "Home Algorithm: Fixed a duplication bug in the home screen recommendation algorithm"
       ]
     }
   ]
