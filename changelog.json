@@ -11,6 +11,7 @@
     {
       "title": "Bug Fixes",
       "items": [
+        "Player: Repeat mode is now automatically disabled when playing from a new place (e.g. albums, playlists)",
         "Home Algorithm: Fixed a duplication bug in the home screen recommendation algorithm"
       ]
     }
