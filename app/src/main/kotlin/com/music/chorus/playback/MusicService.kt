@@ -1433,6 +1433,7 @@ class MusicService :
         if (!persistShuffleAcrossQueues) {
             player.shuffleModeEnabled = false
         }
+        player.repeatMode = Player.REPEAT_MODE_OFF
 
         originalQueueSize = 0
         if (queue.preloadItem != null) {
