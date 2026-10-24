@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.component
 
 import androidx.annotation.DrawableRes
@@ -114,7 +112,6 @@ fun LazyGridScope.GridMenuItem(
         }
     }
 }
-
 
 fun LazyGridScope.DownloadGridMenu(
     @Download.State state: Int?,

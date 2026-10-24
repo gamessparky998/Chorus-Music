@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.menu
 
 import androidx.compose.foundation.Image
@@ -12,6 +10,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import pushkar.chorus.music.utils.listItemShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -66,7 +66,7 @@ fun AddToPlaylistDialog(
     isVisible: Boolean,
     allowSyncing: Boolean = true,
     initialTextFieldValue: String? = null,
-    onGetSong: suspend (Playlist) -> List<String>, 
+    onGetSong: suspend (Playlist) -> List<String>,
     onDismiss: () -> Unit,
     viewModel: PlaylistsViewModel = hiltViewModel()
 ) {
@@ -97,7 +97,7 @@ fun AddToPlaylistDialog(
         mutableStateOf<Playlist?>(null)
     }
     var songIds by remember {
-        mutableStateOf<List<String>?>(null) 
+        mutableStateOf<List<String>?>(null)
     }
     var duplicates by remember {
         mutableStateOf(emptyList<String>())
@@ -141,12 +141,12 @@ fun AddToPlaylistDialog(
                     OutlinedTextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
-                        placeholder = { 
+                        placeholder = {
                             Text(
                                 text = stringResource(R.string.search),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                            ) 
+                            )
                         },
                         leadingIcon = {
                             Icon(
@@ -155,8 +155,8 @@ fun AddToPlaylistDialog(
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         },
-                        trailingIcon = {
-                            if (searchQuery.isNotEmpty()) {
+                        trailingIcon = if (searchQuery.isNotEmpty()) {
+                            {
                                 IconButton(onClick = { searchQuery = "" }) {
                                     Icon(
                                         painter = painterResource(R.drawable.close),
@@ -165,9 +165,9 @@ fun AddToPlaylistDialog(
                                     )
                                 }
                             }
-                        },
+                        } else null,
                         singleLine = true,
-                        shape = RoundedCornerShape(24.dp),
+                        shape = if (isFluidTheme()) ContinuousRoundedRectangle(24.dp) else RoundedCornerShape(24.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
                             unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
@@ -244,7 +244,11 @@ fun AddToPlaylistDialog(
                                     }
                                 }
                                 withContext(Dispatchers.Main) {
-                                    Toast.makeText(context, context.getString(R.string.added_to_playlist, playlist.playlist.name), Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(
+                                        context,
+                                        context.getString(R.string.added_to_playlist, playlist.playlist.name),
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }
                             }
                         }
@@ -262,63 +266,70 @@ fun AddToPlaylistDialog(
         )
     }
 
-    
-        if (showDuplicateDialog) {
-            DefaultDialog(
-                title = { Text(stringResource(R.string.duplicates)) },
-                buttons = {
-                    TextButton(
-                        onClick = {
-                            showDuplicateDialog = false
-                            onDismiss()
-                            database.transaction {
-                                addSongToPlaylist(
-                                    selectedPlaylist!!,
-                                    songIds!!.filter {
-                                        !duplicates.contains(it)
-                                    }
-                                )
-                            }
-                            Toast.makeText(context, context.getString(R.string.added_to_playlist, selectedPlaylist!!.playlist.name), Toast.LENGTH_SHORT).show()
+    if (showDuplicateDialog) {
+        DefaultDialog(
+            title = { Text(stringResource(R.string.duplicates)) },
+            buttons = {
+                TextButton(
+                    onClick = {
+                        showDuplicateDialog = false
+                        onDismiss()
+                        database.transaction {
+                            addSongToPlaylist(
+                                selectedPlaylist!!,
+                                songIds!!.filter {
+                                    !duplicates.contains(it)
+                                }
+                            )
                         }
-                    ) {
-                        Text(stringResource(R.string.skip_duplicates))
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.added_to_playlist, selectedPlaylist!!.playlist.name),
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
-
-                    TextButton(
-                        onClick = {
-                            showDuplicateDialog = false
-                            onDismiss()
-                            database.transaction {
-                                addSongToPlaylist(selectedPlaylist!!, songIds!!)
-                            }
-                            Toast.makeText(context, context.getString(R.string.added_to_playlist, selectedPlaylist!!.playlist.name), Toast.LENGTH_SHORT).show()
-                        }
-                    ) {
-                        Text(stringResource(R.string.add_anyway))
-                    }
-
-                    TextButton(
-                        onClick = {
-                            showDuplicateDialog = false
-                        }
-                    ) {
-                        Text(stringResource(android.R.string.cancel))
-                    }
-                },
-                onDismiss = {
-                    showDuplicateDialog = false
+                ) {
+                    Text(stringResource(R.string.skip_duplicates))
                 }
-            ) {
-                Text(
-                    text = if (duplicates.size == 1) {
-                        stringResource(R.string.duplicates_description_single)
-                    } else {
-                        stringResource(R.string.duplicates_description_multiple, duplicates.size)
-                    },
-                    textAlign = TextAlign.Start,
-                    modifier = Modifier.align(Alignment.Start)
-                )
+
+                TextButton(
+                    onClick = {
+                        showDuplicateDialog = false
+                        onDismiss()
+                        database.transaction {
+                            addSongToPlaylist(selectedPlaylist!!, songIds!!)
+                        }
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.added_to_playlist, selectedPlaylist!!.playlist.name),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                ) {
+                    Text(stringResource(R.string.add_anyway))
+                }
+
+                TextButton(
+                    onClick = {
+                        showDuplicateDialog = false
+                    }
+                ) {
+                    Text(stringResource(android.R.string.cancel))
+                }
+            },
+            onDismiss = {
+                showDuplicateDialog = false
             }
+        ) {
+            Text(
+                text = if (duplicates.size == 1) {
+                    stringResource(R.string.duplicates_description_single)
+                } else {
+                    stringResource(R.string.duplicates_description_multiple, duplicates.size)
+                },
+                textAlign = TextAlign.Start,
+                modifier = Modifier.align(Alignment.Start)
+            )
         }
+    }
 }

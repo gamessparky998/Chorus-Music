@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.component
 
 import androidx.compose.foundation.layout.Box
@@ -18,7 +16,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialogDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -50,8 +48,13 @@ import pushkar.chorus.music.R
 
 import kotlinx.coroutines.delay
 
-
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.fluid.foundation.GlassIntensity
+import pushkar.chorus.music.ui.fluid.foundation.fluidGlass
+import pushkar.chorus.music.ui.theme.isFluidTheme
 
 @Composable
 fun DefaultDialog(
@@ -65,15 +68,28 @@ fun DefaultDialog(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val isDark = isSystemInDarkTheme()
+    val isFluid = isFluidTheme()
+
+    val dialogShape = if (isFluid) ContinuousRoundedRectangle(26.dp) else AlertDialogDefaults.shape
+    val dialogColor = if (isFluid) {
+        if (isDark) Color(0xEB252528) else Color(0xEBFCFCFD)
+    } else {
+        AlertDialogDefaults.containerColor
+    }
+
     Dialog(
         onDismissRequest = onDismiss,
         properties = properties
     ) {
         Surface(
-            modifier = Modifier.padding(24.dp),
-            shape = AlertDialogDefaults.shape,
-            color = AlertDialogDefaults.containerColor,
-            tonalElevation = AlertDialogDefaults.TonalElevation
+            modifier = Modifier
+                .padding(24.dp)
+                .let { mod ->
+                    if (isFluid) mod.clip(dialogShape).fluidGlass(intensity = GlassIntensity.Standard) else mod
+                },
+            shape = dialogShape,
+            color = dialogColor,
+            tonalElevation = if (isFluid) 0.dp else AlertDialogDefaults.TonalElevation
         ) {
             Column(
                 horizontalAlignment = horizontalAlignment,
@@ -95,7 +111,7 @@ fun DefaultDialog(
                     CompositionLocalProvider(LocalContentColor provides AlertDialogDefaults.titleContentColor) {
                         ProvideTextStyle(MaterialTheme.typography.headlineSmall) {
                             Box(
-                                
+
                                 Modifier.align(if (icon == null) Alignment.Start else Alignment.CenterHorizontally)
                             ) {
                                 title()
@@ -128,9 +144,6 @@ fun DefaultDialog(
     }
 }
 
-
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ActionPromptDialog(
     title: String? = null,
@@ -160,6 +173,7 @@ fun ActionPromptDialog(
                 Row(modifier = Modifier.weight(1f)) {
                     TextButton(
                         onClick = { onReset() },
+                        shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else ButtonDefaults.textShape,
                     ) {
                         Text(stringResource(R.string.reset))
                     }
@@ -168,14 +182,16 @@ fun ActionPromptDialog(
 
             if (onCancel != null) {
                 TextButton(
-                    onClick = { onCancel() }
+                    onClick = { onCancel() },
+                    shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else ButtonDefaults.textShape,
                 ) {
                     Text(stringResource(android.R.string.cancel))
                 }
             }
 
             TextButton(
-                onClick = { onConfirm() }
+                onClick = { onConfirm() },
+                shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else ButtonDefaults.textShape,
             ) {
                 Text(stringResource(android.R.string.ok))
             }
@@ -192,15 +208,27 @@ fun ListDialog(
     content: LazyListScope.() -> Unit,
 ) {
     val isDark = isSystemInDarkTheme()
+    val isFluid = isFluidTheme()
+    val dialogShape = if (isFluid) ContinuousRoundedRectangle(26.dp) else AlertDialogDefaults.shape
+    val dialogColor = if (isFluid) {
+        if (isDark) Color(0xEB252528) else Color(0xEBFCFCFD)
+    } else {
+        AlertDialogDefaults.containerColor
+    }
+
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
         Surface(
-            modifier = Modifier.padding(24.dp),
-            shape = AlertDialogDefaults.shape,
-            color = AlertDialogDefaults.containerColor,
-            tonalElevation = AlertDialogDefaults.TonalElevation,
+            modifier = Modifier
+                .padding(24.dp)
+                .let { mod ->
+                    if (isFluid) mod.clip(dialogShape).fluidGlass(intensity = GlassIntensity.Standard) else mod
+                },
+            shape = dialogShape,
+            color = dialogColor,
+            tonalElevation = if (isFluid) 0.dp else AlertDialogDefaults.TonalElevation,
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -248,7 +276,6 @@ fun TextFieldDialog(
     keyboardType: KeyboardType = KeyboardType.Text,
     onDone: (String) -> Unit = {},
 
-    
     textFields: List<Pair<String, TextFieldValue>>? = null,
     onTextFieldsChange: ((Int, TextFieldValue) -> Unit)? = null,
     onDoneMultiple: ((List<String>) -> Unit)? = null,
@@ -274,7 +301,10 @@ fun TextFieldDialog(
         icon = icon,
         title = title,
         buttons = {
-            TextButton(onClick = onDismiss) {
+            TextButton(
+                onClick = onDismiss,
+                shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else ButtonDefaults.textShape,
+            ) {
                 Text(text = stringResource(android.R.string.cancel))
             }
 
@@ -290,7 +320,8 @@ fun TextFieldDialog(
                     } else {
                         onDone(legacyFieldState.value.text)
                     }
-                }
+                },
+                shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else ButtonDefaults.textShape,
             ) {
                 Text(text = stringResource(android.R.string.ok))
             }
@@ -301,25 +332,27 @@ fun TextFieldDialog(
         ) {
             if (textFields != null) {
                 textFields.forEachIndexed { index, (label, value) ->
+                    val fieldShape = if (isFluidTheme()) ContinuousRoundedRectangle(12.dp) else OutlinedTextFieldDefaults.shape
                     TextField(
                         value = value,
                         onValueChange = { onTextFieldsChange?.invoke(index, it) },
                         placeholder = { Text(label) },
                         singleLine = singleLine,
                         maxLines = maxLines,
+                        shape = fieldShape,
                         colors = OutlinedTextFieldDefaults.colors(),
                         keyboardOptions = KeyboardOptions(
                             imeAction = if (singleLine) ImeAction.Done else ImeAction.None,
                             keyboardType = keyboardType
                         ),
-                    keyboardActions = KeyboardActions(
-                        onDone = {
-                            if (onDoneMultiple != null) {
-                                onDoneMultiple(textFields.map { it.second.text })
-                                if (autoDismiss) onDismiss()
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                if (onDoneMultiple != null) {
+                                    onDoneMultiple(textFields.map { it.second.text })
+                                    if (autoDismiss) onDismiss()
+                                }
                             }
-                        }
-                    ),
+                        ),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = if (index < textFields.size - 1) 12.dp else 0.dp)
@@ -327,12 +360,14 @@ fun TextFieldDialog(
                     )
                 }
             } else {
+                val fieldShape = if (isFluidTheme()) ContinuousRoundedRectangle(12.dp) else OutlinedTextFieldDefaults.shape
                 TextField(
                     value = legacyFieldState.value,
                     onValueChange = { legacyFieldState.value = it },
                     placeholder = placeholder,
                     singleLine = singleLine,
                     maxLines = maxLines,
+                    shape = fieldShape,
                     colors = OutlinedTextFieldDefaults.colors(),
                     keyboardOptions = KeyboardOptions(
                         imeAction = if (singleLine) ImeAction.Done else ImeAction.None,

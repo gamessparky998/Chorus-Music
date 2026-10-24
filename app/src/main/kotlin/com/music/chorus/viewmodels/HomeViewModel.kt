@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.viewmodels
 
 import android.content.Context
@@ -98,12 +96,11 @@ class HomeViewModel @Inject constructor(
     val selectedChip = MutableStateFlow<HomePage.Chip?>(null)
     private val previousHomePage = MutableStateFlow<HomePage?>(null)
 
-    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     val aiRecommendedPlaylist = database.playlistsByNameAsc()
         .map { playlists -> playlists.find { it.playlist.name == "Recommended by AI" } }
-        .flatMapLatest { playlist -> 
+        .flatMapLatest { playlist ->
             if (playlist != null && playlist.songCount > 0) {
-                database.playlistSongs(playlist.playlist.id).map { playlistSongs -> 
+                database.playlistSongs(playlist.playlist.id).map { playlistSongs ->
                     playlist to playlistSongs.map { it.song }
                 }
             } else {
@@ -114,11 +111,11 @@ class HomeViewModel @Inject constructor(
 
     val allLocalItems = MutableStateFlow<List<LocalItem>>(emptyList())
     val allYtItems = MutableStateFlow<List<YTItem>>(emptyList())
-    
+
     val downloadedSongs = database.downloadedSongs(pushkar.chorus.music.constants.SongSortType.CREATE_DATE, true).stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     private val _cachedSongs = MutableStateFlow<List<Song>>(emptyList())
     val cachedSongs: StateFlow<List<Song>> = _cachedSongs
-    
+
     init {
         viewModelScope.launch(Dispatchers.IO) {
             while (true) {
@@ -136,7 +133,7 @@ class HomeViewModel @Inject constructor(
                     val contentLength = it.format?.contentLength
                     contentLength != null && playerCache.isCached(it.song.id, 0, contentLength)
                 }
-                
+
                 _cachedSongs.value = completeSongs
                     .filter { it.song.dateDownload != null }
                     .sortedByDescending { it.song.dateDownload }
@@ -145,7 +142,7 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
-    
+
     val localSongs = database.localSongs().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     val speedDialItems: StateFlow<List<YTItem>> = database.speedDialDao.getAll().map { items ->
@@ -155,7 +152,7 @@ class HomeViewModel @Inject constructor(
     suspend fun getRandomItem(): YTItem? {
         try {
             isRandomizing.value = true
-            
+
             kotlinx.coroutines.delay(1000)
 
             val userSongs = mutableListOf<YTItem>()
@@ -198,7 +195,6 @@ class HomeViewModel @Inject constructor(
 
             otherSources.addAll(allYtItems.value)
 
-            
             val item = if (userSongs.isNotEmpty() && (otherSources.isEmpty() || Random.nextFloat() < 0.8f)) {
                 userSongs.distinctBy { it.id }.shuffled().firstOrNull()
             } else {
@@ -225,9 +221,9 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
-    
+
     private var lastProcessedCookie: String? = null
-    
+
     private var isProcessingAccountData = false
 
     private suspend fun getDailyDiscover() {
@@ -237,7 +233,6 @@ class HomeViewModel @Inject constructor(
 
         val seeds = likedSongs.shuffled().distinctBy { it.id }.take(5)
 
-        
         val items = java.util.Collections.synchronizedList(mutableListOf<DailyDiscoverItem>())
 
         kotlinx.coroutines.coroutineScope {
@@ -254,7 +249,6 @@ class HomeViewModel @Inject constructor(
                                 }
                                 .shuffled()
 
-                            
                             val recommendation = recommendations.firstOrNull { rec ->
                                 rec.id != seed.id
                             }
@@ -274,17 +268,16 @@ class HomeViewModel @Inject constructor(
             }.forEach { it.join() }
         }
 
-        
         dailyDiscover.value = items.toList().distinctBy { it.recommendation.id }.shuffled()
     }
 
     private suspend fun getQuickPicks(usedIds: MutableSet<String> = mutableSetOf()) {
         val hideVideoSongs = context.dataStore.get(HideVideoSongsKey, false)
-        
-        val fromTimeStampCurrent = System.currentTimeMillis() - 86400000L * 7 * 4 
+
+        val fromTimeStampCurrent = System.currentTimeMillis() - 86400000L * 7 * 4
         val allTime = database.mostPlayedSongs(0, limit = 50, offset = 0).first()
         val current = database.mostPlayedSongs(fromTimeStampCurrent, limit = 50, offset = 0).first()
-        
+
         val bestForYou = (allTime + current)
             .distinctBy { it.id }
             .filterVideoSongs(hideVideoSongs)
@@ -359,7 +352,7 @@ class HomeViewModel @Inject constructor(
                     YouTube.playlist(playlist.id).onSuccess { page ->
                         val songs = page.songs.take(10)
                         if (songs.isNotEmpty()) {
-                            
+
                             val songCountText = page.playlist.songCountText ?: playlist.songCountText
                             val updatedPlaylist = playlist.copy(songCountText = songCountText)
                             playlists.add(CommunityPlaylistItem(updatedPlaylist, songs))
@@ -380,7 +373,7 @@ class HomeViewModel @Inject constructor(
         val klSongs = database.mostPlayedSongs(fromTimeStampKL, limit = 20, offset = 0).first()
             .filterVideoSongs(hideVideoSongs)
             .take(10)
-            
+
         val recentSong = database.events().first().firstOrNull()?.song
         val youWillLikeIt = mutableListOf<Song>()
         if (recentSong != null) {
@@ -397,10 +390,10 @@ class HomeViewModel @Inject constructor(
                 }
             }
         }
-        
+
         val speedDialExtraItems = (klSongs + youWillLikeIt).distinctBy { it.id }.take(27)
         usedIds.addAll(speedDialExtraItems.map { it.id })
-        
+
         database.speedDialDao.clearAll()
         speedDialExtraItems.forEach {
             val item = SongItem(
@@ -445,7 +438,6 @@ class HomeViewModel @Inject constructor(
             .filter { it is Song || it is Album }
     }
 
-    
     private suspend fun loadSimilarRecommendations() {
         val hideExplicit = context.dataStore.get(HideExplicitKey, false)
         val hideVideoSongs = context.dataStore.get(HideVideoSongsKey, false)
@@ -529,7 +521,6 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    
     private suspend fun loadNetworkDataPhase() {
         val hideExplicit = context.dataStore.get(HideExplicitKey, false)
         val hideVideoSongs = context.dataStore.get(HideVideoSongsKey, false)
@@ -564,7 +555,6 @@ class HomeViewModel @Inject constructor(
             }
         }
 
-        
         allYtItems.value = similarRecommendations.value?.flatMap { it.items }.orEmpty() +
                 homePage.value?.sections?.flatMap { it.items }.orEmpty()
     }
@@ -572,11 +562,9 @@ class HomeViewModel @Inject constructor(
     private suspend fun load() {
         isLoading.value = true
 
-        
         loadLocalDataPhase()
         isLoading.value = false
 
-        
         loadNetworkDataPhase()
     }
 
@@ -664,7 +652,7 @@ class HomeViewModel @Inject constructor(
                 isRefreshing.value = false
             }
         }
-        
+
         viewModelScope.launch(Dispatchers.IO) {
             syncUtils.tryAutoSync()
         }
@@ -672,7 +660,6 @@ class HomeViewModel @Inject constructor(
 
     init {
 
-        
         viewModelScope.launch(Dispatchers.IO) {
             context.dataStore.data
                 .map { it[InnerTubeCookieKey] }
@@ -682,30 +669,25 @@ class HomeViewModel @Inject constructor(
             load()
         }
 
-        
         viewModelScope.launch(Dispatchers.IO) {
             syncUtils.tryAutoSync()
         }
 
-        
         viewModelScope.launch(Dispatchers.IO) {
             context.dataStore.data
                 .map { it[InnerTubeCookieKey] }
                 .collect { cookie ->
-                    
+
                     if (isProcessingAccountData) return@collect
 
-                    
                     lastProcessedCookie = cookie
                     isProcessingAccountData = true
 
                     try {
                         if (cookie != null && cookie.isNotEmpty()) {
 
-                            
                             YouTube.cookie = cookie
 
-                            
                             YouTube.accountInfo().onSuccess { info ->
                                 accountName.value = info.name
                                 accountImageUrl.value = info.thumbnailUrl
@@ -723,7 +705,6 @@ class HomeViewModel @Inject constructor(
                 }
         }
 
-        
         viewModelScope.launch(Dispatchers.IO) {
             context.dataStore.data
                 .map { it[HideYoutubeShortsKey] ?: false }

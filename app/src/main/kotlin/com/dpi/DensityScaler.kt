@@ -3,7 +3,6 @@ package com.dpi
 import android.content.Context
 import timber.log.Timber
 
-
 class DensityScaler : BaseLifecycleContentProvider() {
 
     override fun onCreate(): Boolean {
@@ -18,7 +17,6 @@ class DensityScaler : BaseLifecycleContentProvider() {
         private const val KEY_DENSITY_SCALE = "density_scale_factor"
         private const val DEFAULT_SCALE_FACTOR = 1.0f
 
-        
         private fun getScaleFactorFromPreferences(context: Context): Float {
             return try {
                 val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)

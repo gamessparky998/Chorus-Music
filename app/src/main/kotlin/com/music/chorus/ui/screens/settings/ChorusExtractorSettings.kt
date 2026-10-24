@@ -16,11 +16,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
@@ -66,7 +67,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChorusExtractorSettings(
     navController: NavController,
@@ -84,7 +84,6 @@ fun ChorusExtractorSettings(
         }
     }
 
-    
     val (updateTime1, onUpdateTime1Change) = rememberPreference(
         CipherManualUpdate1Key,
         defaultValue = 0L
@@ -98,7 +97,6 @@ fun ChorusExtractorSettings(
         defaultValue = 0L
     )
 
-    
     var timeRemaining by remember { mutableStateOf(0L) }
     var currentTimeMillis by remember { mutableStateOf(System.currentTimeMillis()) }
 
@@ -117,9 +115,8 @@ fun ChorusExtractorSettings(
         }
     }
 
-    val limitWindow = 24 * 60 * 60 * 1000L 
+    val limitWindow = 24 * 60 * 60 * 1000L
 
-    
     val isRateLimited = updateTime1 > 0L && updateTime2 > 0L && updateTime3 > 0L &&
         (currentTimeMillis - updateTime1 < limitWindow) &&
         (currentTimeMillis - updateTime2 < limitWindow) &&
@@ -160,7 +157,6 @@ fun ChorusExtractorSettings(
     ) {
         Spacer(modifier = Modifier.height(16.dp))
 
-        
         Material3SettingsGroup(
             scrollState = null,
             title = null,
@@ -194,7 +190,7 @@ fun ChorusExtractorSettings(
                                     color = MaterialTheme.colorScheme.primary
                                 )
                             }
-                            
+
                             val statusContainerColor = if (attemptsLeft == 0) {
                                 MaterialTheme.colorScheme.errorContainer
                             } else {
@@ -212,7 +208,7 @@ fun ChorusExtractorSettings(
                                     .size(30.dp)
                                     .background(
                                         color = statusContainerColor,
-                                        shape = RoundedCornerShape(50)
+                                        shape = if (isFluidTheme()) ContinuousRoundedRectangle(15.dp) else RoundedCornerShape(50)
                                     )
                             ) {
                                 Text(
@@ -237,7 +233,7 @@ fun ChorusExtractorSettings(
                                         lastUpdated = newTime
                                     }
                                     if (success) {
-                                        
+
                                         onUpdateTime1Change(updateTime2)
                                         onUpdateTime2Change(updateTime3)
                                         onUpdateTime3Change(System.currentTimeMillis())

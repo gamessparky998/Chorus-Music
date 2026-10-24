@@ -30,7 +30,7 @@ internal object AppleMusicTokenProvider {
 
                 val tokenRegex = Regex("""eyJ[A-Za-z0-9\-_=]+\.[A-Za-z0-9\-_=]+\.[A-Za-z0-9\-_=]+""")
                 val tokenMatch = tokenRegex.find(indexJsBody) ?: throw Exception("Could not find token")
-                
+
                 val token = tokenMatch.value
                 cachedToken = token
                 token

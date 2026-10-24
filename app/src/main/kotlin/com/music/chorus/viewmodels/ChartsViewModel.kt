@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.viewmodels
 
 import androidx.lifecycle.ViewModel
@@ -27,7 +25,7 @@ class ChartsViewModel @Inject constructor() : ViewModel() {
         viewModelScope.launch {
             _isLoading.value = true
             _error.value = null
-            
+
             YouTube.getChartsPage()
                 .onSuccess { page ->
                     _chartsPage.value = page
@@ -35,7 +33,7 @@ class ChartsViewModel @Inject constructor() : ViewModel() {
                 .onFailure { e ->
                     _error.value = "Failed to load charts: ${e.message}"
                 }
-            
+
             _isLoading.value = false
         }
     }

@@ -10,7 +10,6 @@ import kotlinx.serialization.json.long
 import okio.ByteString.Companion.decodeBase64
 import okio.ByteString.Companion.toByteString
 
-
 fun parseChallengeData(rawChallengeData: String): String {
     val scrambled = Json.parseToJsonElement(rawChallengeData).jsonArray
 
@@ -57,17 +56,14 @@ fun parseChallengeData(rawChallengeData: String): String {
     )
 }
 
-
 fun parseIntegrityTokenData(rawIntegrityTokenData: String): Pair<String, Long> {
     val integrityTokenData = Json.parseToJsonElement(rawIntegrityTokenData).jsonArray
     return base64ToU8(integrityTokenData[0].jsonPrimitive.content) to integrityTokenData[1].jsonPrimitive.long
 }
 
-
 fun stringToU8(identifier: String): String {
     return newUint8Array(identifier.toByteArray())
 }
-
 
 fun u8ToBase64(poToken: String): String {
     return poToken.split(",")
@@ -79,14 +75,12 @@ fun u8ToBase64(poToken: String): String {
         .replace("/", "_")
 }
 
-
 private fun descramble(scrambledChallenge: String): String {
     return base64ToByteString(scrambledChallenge)
         .map { (it + 97).toByte() }
         .toByteArray()
         .decodeToString()
 }
-
 
 private fun base64ToU8(base64: String): String {
     return newUint8Array(base64ToByteString(base64))
@@ -95,7 +89,6 @@ private fun base64ToU8(base64: String): String {
 private fun newUint8Array(contents: ByteArray): String {
     return "new Uint8Array([" + contents.joinToString(separator = ",") { it.toUByte().toString() } + "])"
 }
-
 
 private fun base64ToByteString(base64: String): ByteArray {
     val base64Mod = base64

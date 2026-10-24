@@ -1,7 +1,7 @@
-
 package pushkar.chorus.music.ui.component.backdrop
 
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.RenderEffect
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -19,7 +19,17 @@ sealed interface BackdropEffectScope : Density, RuntimeShaderCache {
     var padding: Float
 
     var renderEffect: RenderEffect?
+
+    var compositeColorFilter: ColorFilter?
+
+    var poolLens: PoolLens?
 }
+
+data class PoolLens(
+    val refractionHeight: Float,
+    val refractionAmount: Float,
+    val depthEffect: Boolean,
+)
 
 internal abstract class BackdropEffectScopeImpl : BackdropEffectScope, RuntimeShaderCache {
 
@@ -29,6 +39,8 @@ internal abstract class BackdropEffectScopeImpl : BackdropEffectScope, RuntimeSh
     override var layoutDirection: LayoutDirection = LayoutDirection.Ltr
     override var padding: Float = 0f
     override var renderEffect: RenderEffect? = null
+    override var compositeColorFilter: ColorFilter? = null
+    override var poolLens: PoolLens? = null
 
     private val runtimeShaderCache = RuntimeShaderCacheImpl()
 
@@ -36,9 +48,6 @@ internal abstract class BackdropEffectScopeImpl : BackdropEffectScope, RuntimeSh
         return runtimeShaderCache.obtainRuntimeShader(key, string)
     }
 
-    
-    
-    
     fun update(scope: DrawScope, contentScale: Float = 1f): Boolean {
         val newDensity = scope.density
         val newFontScale = scope.fontScale
@@ -63,6 +72,8 @@ internal abstract class BackdropEffectScopeImpl : BackdropEffectScope, RuntimeSh
     fun apply(effects: BackdropEffectScope.() -> Unit) {
         padding = 0f
         renderEffect = null
+        compositeColorFilter = null
+        poolLens = null
         effects()
     }
 
@@ -73,6 +84,8 @@ internal abstract class BackdropEffectScopeImpl : BackdropEffectScope, RuntimeSh
         layoutDirection = LayoutDirection.Ltr
         padding = 0f
         renderEffect = null
+        compositeColorFilter = null
+        poolLens = null
         runtimeShaderCache.clear()
     }
 }

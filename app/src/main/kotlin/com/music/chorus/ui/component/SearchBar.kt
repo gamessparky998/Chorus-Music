@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.component
 
 import androidx.activity.compose.BackHandler
@@ -22,11 +20,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
+import pushkar.chorus.music.ui.fluid.foundation.FluidTheme
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextFieldColors
@@ -61,7 +61,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import pushkar.chorus.music.constants.AppBarHeight
 
-@ExperimentalMaterial3Api
 @Composable
 fun TopSearch(
     query: TextFieldValue,
@@ -84,6 +83,16 @@ fun TopSearch(
     focusRequester: FocusRequester = remember { FocusRequester() },
     content: @Composable ColumnScope.() -> Unit = {},
 ) {
+    val isFluid = isFluidTheme()
+    val isDark = isSystemInDarkTheme()
+    val effectiveColors = if (isFluid) {
+        val glassBg = if (isDark) Color(0xCC1C1C1E) else Color(0xCCF2F2F7)
+        TopAppBarDefaults.topAppBarColors(
+            containerColor = glassBg,
+            scrolledContainerColor = glassBg
+        )
+    } else colors
+
     Box(modifier = modifier) {
         TopAppBar(
             title = {
@@ -95,16 +104,16 @@ fun TopSearch(
                     onActiveChange = onActiveChange,
                     enabled = enabled,
                     placeholder = placeholder,
-                    
+
                     leadingIcon = null,
                     trailingIcon = null,
                     colors = TextFieldDefaults.colors(
-                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                        unfocusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        focusedTextColor = if (isFluid) FluidTheme.colors.label else MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = if (isFluid) FluidTheme.colors.secondaryLabel else MaterialTheme.colorScheme.onSurfaceVariant,
                         focusedContainerColor = Color.Transparent,
                         unfocusedContainerColor = Color.Transparent,
                         disabledContainerColor = Color.Transparent,
-                        cursorColor = MaterialTheme.colorScheme.primary,
+                        cursorColor = if (isFluid) FluidTheme.tint else MaterialTheme.colorScheme.primary,
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent
                     ),
@@ -122,23 +131,24 @@ fun TopSearch(
                     trailingIcon()
                 }
             },
-            colors = colors,
+            colors = effectiveColors,
             scrollBehavior = scrollBehavior,
             windowInsets = windowInsets
         )
-        
+
         if (active) {
+            val activeBg = if (isFluid) (if (isDark) Color(0xFF000000) else Color(0xFFF2F2F7)) else MaterialTheme.colorScheme.surface
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = AppBarHeight + windowInsets.asPaddingValues().calculateTopPadding())
-                    .background(MaterialTheme.colorScheme.surface)
+                    .background(activeBg)
             ) {
-                 Column {
+                Column {
                     content()
-                 }
+                }
             }
-            
+
             BackHandler(enabled = active) {
                 onActiveChange(false)
             }
@@ -146,7 +156,6 @@ fun TopSearch(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SearchBarInputField(
     query: TextFieldValue,
@@ -237,7 +246,6 @@ private fun SearchBarInputField(
         }
     }
 }
-
 
 val InputFieldHeight = 48.dp
 internal val TopAppBarVerticalPadding: Dp = 8.dp

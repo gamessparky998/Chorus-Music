@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.component
 
 import androidx.compose.foundation.background
@@ -33,8 +31,7 @@ fun OnlineBlur(
                     .fadingEdge(bottom = 200.dp)
             )
         }
-        
-        
+
         Box(
             modifier = Modifier
                 .fillMaxSize()

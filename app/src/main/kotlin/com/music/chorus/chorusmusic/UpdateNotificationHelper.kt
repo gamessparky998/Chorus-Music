@@ -30,7 +30,6 @@ object UpdateNotificationHelper {
             nm.createNotificationChannel(channel)
         }
 
-        
         val intent = Intent(context, Class.forName("pushkar.chorus.music.MainActivity")).apply {
             action = "pushkar.chorus.music.action.OPEN_UPDATE"
         }

@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.screens.library
 
 import androidx.compose.foundation.layout.Box
@@ -49,6 +47,8 @@ import pushkar.chorus.music.constants.MiniPlayerBottomSpacing
 import pushkar.chorus.music.constants.MiniPlayerHeight
 import pushkar.chorus.music.constants.NavigationBarHeight
 import pushkar.chorus.music.ui.component.TextFieldDialog
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 
 @Composable
 fun LibraryScreen(navController: NavController) {
@@ -149,21 +149,21 @@ fun LibraryScreen(navController: NavController) {
                     text = { Text(stringResource(R.string.create_playlist)) },
                     icon = { Icon(painter = painterResource(R.drawable.add), contentDescription = "Create playlist") },
                     onClick = { showCreatePlaylistOptionsDialog = true },
-                    shape = androidx.compose.foundation.shape.CircleShape,
-                    containerColor = androidx.compose.ui.graphics.Color(0xFFE91E63), // Vibrant Pink
+                    shape = if (isFluidTheme()) ContinuousRoundedRectangle(24.dp) else androidx.compose.foundation.shape.CircleShape,
+                    containerColor = androidx.compose.ui.graphics.Color(0xFFE91E63),
                     contentColor = androidx.compose.ui.graphics.Color.White
                 )
-                
+
                 Box {
                     ExtendedFloatingActionButton(
                         text = { Text(stringResource(R.string.action_import)) },
                         icon = { Icon(painter = painterResource(R.drawable.download), contentDescription = "Import playlist") },
                         onClick = { showImportMenu = true },
-                        shape = androidx.compose.foundation.shape.CircleShape,
-                        containerColor = androidx.compose.ui.graphics.Color(0xFF2196F3), // Vibrant Blue
+                        shape = if (isFluidTheme()) ContinuousRoundedRectangle(24.dp) else androidx.compose.foundation.shape.CircleShape,
+                        containerColor = androidx.compose.ui.graphics.Color(0xFF2196F3),
                         contentColor = androidx.compose.ui.graphics.Color.White
                     )
-                    
+
                     DropdownMenu(
                         expanded = showImportMenu,
                         onDismissRequest = { showImportMenu = false }

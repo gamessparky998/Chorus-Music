@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.component
 
 import androidx.compose.animation.AnimatedVisibility
@@ -67,9 +65,9 @@ fun PlayingIndicator(
         animatables.forEach { animatable ->
             Canvas(
                 modifier =
-                Modifier
-                    .fillMaxHeight()
-                    .width(barWidth),
+                    Modifier
+                        .fillMaxHeight()
+                        .width(barWidth),
             ) {
                 drawRoundRect(
                     color = color,

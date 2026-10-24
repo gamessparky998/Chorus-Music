@@ -1,4 +1,4 @@
-
+@file:Suppress("OPT_IN_USAGE_ERROR", "OPT_IN_USAGE")
 
 package pushkar.chorus.music.ui.screens.settings
 
@@ -27,7 +27,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Surface
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
@@ -116,7 +115,6 @@ import pushkar.chorus.music.ui.component.PlaybackLogsDialog
 import androidx.compose.runtime.collectAsState
 import java.net.Proxy
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContentSettings(
     navController: NavController,
@@ -127,7 +125,6 @@ highlightKey: String? = null) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    
     val (appLanguage, onAppLanguageChange) = rememberPreference(key = AppLanguageKey, defaultValue = SYSTEM_DEFAULT)
 
     val (contentLanguage, onContentLanguageChange) = rememberPreference(key = ContentLanguageKey, defaultValue = "system")
@@ -363,7 +360,7 @@ highlightKey: String? = null) {
 
     if (showProviderPriorityDialog) {
         val defaultOrder = LyricsProviderRegistry.getDefaultProviderOrder()
-        
+
         val userToggleable = setOf("YouLyPlus", "Paxsenix", "BetterLyrics", "SimpMusic", "LrcLib", "Kugou")
         val enabledProviders = setOfNotNull(
             "LrcLib".takeIf { enableLrclib },
@@ -374,7 +371,6 @@ highlightKey: String? = null) {
             "Paxsenix".takeIf { enablePaxsenix },
         )
 
-        
         val savedOrder = LyricsProviderRegistry.deserializeProviderOrder(lyricsProviderOrder)
         val normalizedOrder = savedOrder + defaultOrder.filter { it !in savedOrder }
 
@@ -413,7 +409,7 @@ highlightKey: String? = null) {
                         .padding(horizontal = 18.dp, vertical = 18.dp),
                     verticalArrangement = Arrangement.spacedBy(14.dp),
                 ) {
-                    
+
                     Surface(
                         shape = blockShape,
                         color = MaterialTheme.colorScheme.surfaceContainer,
@@ -460,7 +456,6 @@ highlightKey: String? = null) {
                         }
                     }
 
-                    
                     Surface(
                         shape = blockShape,
                         color = MaterialTheme.colorScheme.surfaceContainerLow,
@@ -472,7 +467,7 @@ highlightKey: String? = null) {
                             items = draggableItems,
                             onItemsReordered = { reordered ->
                                 val enabledOrder = reordered.map { it.id }
-                                
+
                                 val rest = normalizedOrder.filter { it !in enabledProviders }
                                 onLyricsProviderOrderChange(
                                     LyricsProviderRegistry.serializeProviderOrder(enabledOrder + rest)
@@ -484,7 +479,6 @@ highlightKey: String? = null) {
                         )
                     }
 
-                    
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
@@ -610,7 +604,7 @@ highlightKey: String? = null) {
             .padding(horizontal = 16.dp),
     ) {
         Spacer(Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top)))
-        Material3SettingsGroup(scrollState = scrollState, 
+        Material3SettingsGroup(scrollState = scrollState,
             title = stringResource(R.string.general),
             items = listOf(
                 Material3SettingsItem(
@@ -737,7 +731,7 @@ highlightKey: String? = null) {
 
         Spacer(modifier = Modifier.height(27.dp))
 
-        Material3SettingsGroup(scrollState = scrollState, 
+        Material3SettingsGroup(scrollState = scrollState,
             title = stringResource(R.string.artist_page_settings),
             items = listOf(
                 Material3SettingsItem(
@@ -850,7 +844,7 @@ highlightKey: String? = null) {
             )
         )
 
-        Material3SettingsGroup(scrollState = scrollState, 
+        Material3SettingsGroup(scrollState = scrollState,
             title = stringResource(R.string.album_text),
             items = listOf(
                 Material3SettingsItem(
@@ -880,7 +874,7 @@ highlightKey: String? = null) {
 
         Spacer(modifier = Modifier.height(27.dp))
 
-        Material3SettingsGroup(scrollState = scrollState, 
+        Material3SettingsGroup(scrollState = scrollState,
             title = stringResource(R.string.app_language),
             items = listOf(
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -915,7 +909,7 @@ highlightKey: String? = null) {
 
         Spacer(modifier = Modifier.height(27.dp))
 
-        Material3SettingsGroup(scrollState = scrollState, 
+        Material3SettingsGroup(scrollState = scrollState,
             title = stringResource(R.string.proxy),
             items = buildList {
                 add(Material3SettingsItem(
@@ -971,7 +965,7 @@ highlightKey: String? = null) {
 
         Spacer(modifier = Modifier.height(27.dp))
 
-        Material3SettingsGroup(scrollState = scrollState, 
+        Material3SettingsGroup(scrollState = scrollState,
             title = stringResource(R.string.lyrics),
             items = listOf(
                 Material3SettingsItem(
@@ -1120,36 +1114,9 @@ highlightKey: String? = null) {
             )
         )
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         Spacer(modifier = Modifier.height(27.dp))
 
-        Material3SettingsGroup(scrollState = scrollState, 
+        Material3SettingsGroup(scrollState = scrollState,
             title = stringResource(R.string.misc),
             items = listOf(
                 Material3SettingsItem(
@@ -1217,7 +1184,7 @@ highlightKey: String? = null) {
 
         Spacer(modifier = Modifier.height(27.dp))
 
-        Material3SettingsGroup(scrollState = scrollState, 
+        Material3SettingsGroup(scrollState = scrollState,
             title = stringResource(R.string.logs_heading),
             items = listOf(
                 Material3SettingsItem(
@@ -1237,7 +1204,7 @@ highlightKey: String? = null) {
             )
         )
         Spacer(modifier = Modifier.height(16.dp))
-    
+
         Spacer(Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Bottom)))
     }
 

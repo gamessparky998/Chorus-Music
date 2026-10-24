@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.widget
 
 import android.app.PendingIntent
@@ -41,7 +39,6 @@ class ChorusMusicWidgetManager @Inject constructor(
             .build()
     }
 
-    
     private var cachedArtworkUri: String? = null
     private var cachedAlbumArt: Bitmap? = null
 
@@ -56,7 +53,6 @@ class ChorusMusicWidgetManager @Inject constructor(
     ) {
         val appWidgetManager = AppWidgetManager.getInstance(context)
 
-        
         val albumArt: Bitmap?
 
         if (artworkUri != null && artworkUri == cachedArtworkUri && cachedAlbumArt != null) {
@@ -64,12 +60,11 @@ class ChorusMusicWidgetManager @Inject constructor(
         } else {
             val rawAlbumArt = artworkUri?.let { loadAlbumArt(it, 300) }
             albumArt = rawAlbumArt?.let { getRoundedBitmap(it) }
-            
+
             cachedArtworkUri = artworkUri
             cachedAlbumArt = albumArt
         }
 
-        
         val componentName = ComponentName(context, MusicWidgetReceiver::class.java)
         val widgetIds = appWidgetManager.getAppWidgetIds(componentName)
         if (widgetIds.isNotEmpty()) {
@@ -89,7 +84,6 @@ class ChorusMusicWidgetManager @Inject constructor(
             }
         }
 
-        
         val compactComponentName = ComponentName(context, CompactWidgetReceiver::class.java)
         val compactWidgetIds = appWidgetManager.getAppWidgetIds(compactComponentName)
         if (compactWidgetIds.isNotEmpty()) {
@@ -99,7 +93,6 @@ class ChorusMusicWidgetManager @Inject constructor(
             }
         }
 
-        
         val turntableComponentName = ComponentName(context, TurntableWidgetReceiver::class.java)
         val turntableWidgetIds = appWidgetManager.getAppWidgetIds(turntableComponentName)
         if (turntableWidgetIds.isNotEmpty()) {
@@ -163,11 +156,9 @@ class ChorusMusicWidgetManager @Inject constructor(
     ): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.widget_music_player)
 
-        
         views.setTextViewText(R.id.widget_song_title, title)
         views.setTextViewText(R.id.widget_artist_name, artist)
 
-        
         if (albumArt != null) {
             val roundedAlbumArt = getRoundedCornerBitmap(albumArt, 48f)
             views.setImageViewBitmap(R.id.widget_album_art, roundedAlbumArt)
@@ -175,15 +166,12 @@ class ChorusMusicWidgetManager @Inject constructor(
             views.setImageViewBitmap(R.id.widget_album_art, getRoundedDefaultIcon(48f))
         }
 
-        
         val playPauseIcon = if (isPlaying) R.drawable.ic_widget_pause else R.drawable.ic_widget_play
         views.setImageViewResource(R.id.widget_play_pause, playPauseIcon)
 
-        
         val likeIcon = if (isLiked) R.drawable.ic_widget_heart_nav else R.drawable.ic_widget_heart_outline_nav
         views.setImageViewResource(R.id.widget_like_button, likeIcon)
 
-        
         if (duration > 0) {
             val level = ((currentPosition.toDouble() / duration.toDouble()) * 10000).toInt()
             views.setInt(R.id.widget_progress_fill, "setImageLevel", level)
@@ -191,7 +179,6 @@ class ChorusMusicWidgetManager @Inject constructor(
             views.setInt(R.id.widget_progress_fill, "setImageLevel", 0)
         }
 
-        
         views.setOnClickPendingIntent(R.id.widget_album_art, getOpenAppIntent())
         views.setOnClickPendingIntent(R.id.widget_play_pause, getPlayPauseIntent())
         views.setOnClickPendingIntent(R.id.widget_like_button, getLikeIntent())
@@ -219,7 +206,7 @@ class ChorusMusicWidgetManager @Inject constructor(
     }
 
     private fun getRoundedCornerBitmap(bitmap: Bitmap, cornerRadius: Float): Bitmap {
-        
+
         val size = minOf(bitmap.width, bitmap.height)
         val xOffset = (bitmap.width - size) / 2
         val yOffset = (bitmap.height - size) / 2
@@ -245,7 +232,6 @@ class ChorusMusicWidgetManager @Inject constructor(
     private fun getRoundedBitmap(bitmap: Bitmap): Bitmap {
         val size = minOf(bitmap.width, bitmap.height)
 
-        
         val xOffset = (bitmap.width - size) / 2
         val yOffset = (bitmap.height - size) / 2
         val squareBitmap = Bitmap.createBitmap(bitmap, xOffset, yOffset, size, size)
@@ -273,18 +259,15 @@ class ChorusMusicWidgetManager @Inject constructor(
     ): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.widget_compact_square)
 
-        
         if (albumArt != null) {
             views.setImageViewBitmap(R.id.widget_compact_album_art, albumArt)
         } else {
             views.setImageViewBitmap(R.id.widget_compact_album_art, getRoundedDefaultIcon(48f))
         }
 
-        
         val playPauseIcon = if (isPlaying) R.drawable.ic_widget_pause_low else R.drawable.ic_widget_play_low
         views.setImageViewResource(R.id.widget_compact_play_pause, playPauseIcon)
 
-        
         views.setOnClickPendingIntent(R.id.widget_compact_album_art, getOpenAppIntent())
         views.setOnClickPendingIntent(R.id.widget_compact_play_pause, getPlayPauseIntent())
 
@@ -300,22 +283,18 @@ class ChorusMusicWidgetManager @Inject constructor(
     ): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.widget_compact_wide)
 
-        
         views.setTextViewText(R.id.widget_wide_song_title, title)
         views.setTextViewText(R.id.widget_wide_artist_name, artist)
 
-        
         if (albumArt != null) {
             views.setImageViewBitmap(R.id.widget_wide_album_art, albumArt)
         } else {
             views.setImageViewBitmap(R.id.widget_wide_album_art, getRoundedDefaultIcon(48f))
         }
 
-        
         val playPauseIcon = if (isPlaying) R.drawable.ic_widget_pause_low else R.drawable.ic_widget_play_low
         views.setImageViewResource(R.id.widget_wide_play_pause, playPauseIcon)
 
-        
         views.setOnClickPendingIntent(R.id.widget_wide_album_art, getOpenAppIntent())
         views.setOnClickPendingIntent(R.id.widget_wide_play_pause, getPlayPauseIntent())
 
@@ -335,11 +314,9 @@ class ChorusMusicWidgetManager @Inject constructor(
             views.setImageViewBitmap(R.id.widget_turntable_album_art, getRoundedDefaultIcon(48f))
         }
 
-        
         val playPauseIcon = if (isPlaying) R.drawable.ic_widget_pause_secondary else R.drawable.ic_widget_play_secondary
         views.setImageViewResource(R.id.widget_turntable_play_pause, playPauseIcon)
 
-        
         views.setOnClickPendingIntent(R.id.widget_turntable_album_art, getOpenAppIntent())
         views.setOnClickPendingIntent(R.id.widget_turntable_play_pause, getTurntablePlayPauseIntent())
         views.setOnClickPendingIntent(R.id.widget_turntable_prev_button, getTurntablePreviousIntent())

@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.utils
 
 import androidx.compose.ui.Modifier

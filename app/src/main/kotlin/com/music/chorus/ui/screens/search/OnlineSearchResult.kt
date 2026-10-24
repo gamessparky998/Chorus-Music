@@ -1,9 +1,6 @@
-
-
 package pushkar.chorus.music.ui.screens.search
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
@@ -24,9 +21,10 @@ import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -101,7 +99,6 @@ import kotlinx.coroutines.launch
 import java.net.URLDecoder
 import java.net.URLEncoder
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun OnlineSearchResult(
     navController: NavController,
@@ -129,7 +126,6 @@ fun OnlineSearchResult(
         focusManager.clearFocus()
     }
 
-    
     val encodedQuery = navController.currentBackStackEntry?.arguments?.getString("query") ?: ""
     val decodedQuery = remember(encodedQuery) {
         try {
@@ -142,7 +138,7 @@ fun OnlineSearchResult(
     var query by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue(decodedQuery, TextRange(decodedQuery.length)))
     }
- 
+
     val onSearch: (String) -> Unit = remember {
         { searchQuery ->
             if (searchQuery.isNotEmpty()) {
@@ -166,7 +162,6 @@ fun OnlineSearchResult(
         }
     }
 
-    
     LaunchedEffect(decodedQuery) {
         query = TextFieldValue(decodedQuery, TextRange(decodedQuery.length))
     }
@@ -180,9 +175,6 @@ fun OnlineSearchResult(
             }
         }
     }
-    
-    
-
 
     LaunchedEffect(lazyListState) {
         snapshotFlow {
@@ -282,7 +274,7 @@ fun OnlineSearchResult(
             .background(if (pureBlack) Color.Black else MaterialTheme.colorScheme.background)
             .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top))
     ) {
-        
+
         OutlinedTextField(
             value = query,
             onValueChange = { newQuery ->
@@ -306,8 +298,8 @@ fun OnlineSearchResult(
                     )
                 }
             },
-            trailingIcon = {
-                if (query.text.isNotEmpty()) {
+            trailingIcon = if (query.text.isNotEmpty()) {
+                {
                     IconButton(
                         onClick = {
                             query = TextFieldValue("")
@@ -320,25 +312,25 @@ fun OnlineSearchResult(
                         )
                     }
                 }
-            },
+            } else null,
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Search
             ),
             keyboardActions = KeyboardActions(
-                onSearch = { 
+                onSearch = {
                     onSearch(query.text)
                 }
             ),
             singleLine = true,
-            shape = RoundedCornerShape(28.dp),
+            shape = if (isFluidTheme()) ContinuousRoundedRectangle(28.dp) else RoundedCornerShape(28.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = if (pureBlack) 
-                    MaterialTheme.colorScheme.surface 
-                else 
+                focusedContainerColor = if (pureBlack)
+                    MaterialTheme.colorScheme.surface
+                else
                     MaterialTheme.colorScheme.surfaceContainerHigh,
-                unfocusedContainerColor = if (pureBlack) 
-                    MaterialTheme.colorScheme.surface 
-                else 
+                unfocusedContainerColor = if (pureBlack)
+                    MaterialTheme.colorScheme.surface
+                else
                     MaterialTheme.colorScheme.surfaceContainerHigh,
                 focusedBorderColor = Color.Transparent,
                 unfocusedBorderColor = Color.Transparent
@@ -354,7 +346,6 @@ fun OnlineSearchResult(
                 }
         )
 
-        
         Box(modifier = Modifier.weight(1f)) {
             Column(
                 modifier = Modifier.fillMaxWidth()

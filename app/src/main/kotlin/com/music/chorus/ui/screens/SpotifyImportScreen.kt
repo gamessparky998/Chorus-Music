@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:Suppress("OPT_IN_USAGE_ERROR", "OPT_IN_USAGE")
 
 package pushkar.chorus.music.ui.screens
 
@@ -13,6 +13,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -354,8 +356,6 @@ private fun SpotifyLoginSheet(
     var captured by remember { mutableStateOf(false) }
     var isPageLoading by remember { mutableStateOf(true) }
 
-
-
     DisposableEffect(Unit) {
         onDispose {
             webView?.stopLoading()
@@ -369,7 +369,7 @@ private fun SpotifyLoginSheet(
         modifier = Modifier.fillMaxHeight(),
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+        shape = if (isFluidTheme()) ContinuousRoundedRectangle(topStart = 28.dp, topEnd = 28.dp) else RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         containerColor = MaterialTheme.colorScheme.surface,
     ) {
         Column(
@@ -390,8 +390,7 @@ private fun SpotifyLoginSheet(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            
-            
+
             if (isPageLoading) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             }
@@ -414,8 +413,7 @@ private fun SpotifyLoginSheet(
                         settings.setSupportZoom(true)
                         settings.builtInZoomControls = true
                         settings.displayZoomControls = false
-                        
-                        
+
                         settings.userAgentString = settings.userAgentString
                             .replace("; wv", "")
                             .replace("Version/4.0 ", "")
@@ -447,9 +445,7 @@ private fun SpotifyLoginSheet(
 
                             override fun onPageFinished(view: WebView, url: String?) {
                                 isPageLoading = false
-                                
-                                
-                                
+
                                 captureCookies(url)
                             }
                         }
@@ -474,9 +470,7 @@ private fun readSpotifyCookies(
     val urls = linkedSetOf(
         "https://open.spotify.com",
         "https://accounts.spotify.com",
-        
-        
-        
+
         "https://challenge.spotify.com",
         "https://spotify.com",
     )
@@ -566,7 +560,7 @@ private fun SpotifySourcePickerSheet(
         modifier = Modifier.fillMaxHeight(),
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+        shape = if (isFluidTheme()) ContinuousRoundedRectangle(topStart = 28.dp, topEnd = 28.dp) else RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         containerColor = MaterialTheme.colorScheme.surface,
     ) {
         Column(
@@ -630,7 +624,7 @@ private fun SpotifySourcePickerSheet(
                 onClick = onImport,
                 modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
                 enabled = state.canImport,
-                shape = RoundedCornerShape(16.dp),
+                shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else RoundedCornerShape(16.dp),
             ) {
                 Text(stringResource(R.string.spotify_import_selected))
             }
@@ -701,7 +695,7 @@ private fun SpotifySourceThumbnail(source: SpotifyImportSourceUi) {
     Box(
         modifier = Modifier
             .size(48.dp)
-            .clip(MaterialTheme.shapes.medium)
+            .clip(if (isFluidTheme()) ContinuousRoundedRectangle(12.dp) else MaterialTheme.shapes.medium)
             .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
         contentAlignment = Alignment.Center,
     ) {

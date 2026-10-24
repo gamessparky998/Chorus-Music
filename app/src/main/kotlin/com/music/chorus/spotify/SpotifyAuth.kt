@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.spotify
 
 import pushkar.chorus.music.spotify.models.SpotifyInternalToken
@@ -12,7 +10,6 @@ import java.net.URL
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import kotlin.math.floor
-
 
 object SpotifyAuth {
     private const val TOKEN_URL = "https://open.spotify.com/api/token"
@@ -35,7 +32,6 @@ object SpotifyAuth {
     @Serializable
     private data class ServerTimeResponse(val serverTime: Long)
 
-    
     suspend fun fetchAccessToken(
         spDc: String,
         spKey: String = "",
@@ -95,7 +91,7 @@ object SpotifyAuth {
         }
 
         val token = json.decodeFromString<SpotifyInternalToken>(body)
-        
+
         if (token.accessToken.isBlank()) {
             throw Spotify.SpotifyException(
                 401,
@@ -105,7 +101,6 @@ object SpotifyAuth {
 
         token
     }
-
 
     private suspend fun fetchNuance(): Nuance = withContext(Dispatchers.IO) {
         val body = try {
@@ -134,7 +129,6 @@ object SpotifyAuth {
         response.serverTime
     }
 
-    
     private fun generateTotp(secret: String, serverTimeSec: Long): String {
         val key = base32Decode(secret)
         val interval = 30L
@@ -211,6 +205,5 @@ object SpotifyAuth {
             connection.disconnect()
         }
     }
-
 
 }

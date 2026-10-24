@@ -8,9 +8,9 @@ data class Authentication(
 ) {
     @Serializable
     data class Session(
-        val name: String,       
-        val key: String,        
-        val subscriber: Int,    
+        val name: String,
+        val key: String,
+        val subscriber: Int,
     )
 }
 

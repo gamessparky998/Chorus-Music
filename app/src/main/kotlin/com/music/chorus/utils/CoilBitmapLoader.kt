@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.utils
 
 import android.content.Context
@@ -24,7 +22,7 @@ class CoilBitmapLoader(
     private val context: Context,
     private val scope: CoroutineScope,
 ) : BitmapLoader {
-    
+
     override fun supportsMimeType(mimeType: String): Boolean = mimeType.startsWith("image/")
 
     private fun createFallbackBitmap(): Bitmap =
@@ -74,6 +72,7 @@ class CoilBitmapLoader(
                 is ErrorResult -> {
                     createFallbackBitmap()
                 }
+
                 is SuccessResult -> {
                     try {
                         val bitmap = result.image.toBitmap()

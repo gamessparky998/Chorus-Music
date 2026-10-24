@@ -2,7 +2,6 @@ package pushkar.chorus.music.utils.potoken
 
 class PoTokenException(message: String) : Exception(message)
 
-
 class BadWebViewException(message: String) : Exception(message)
 
 fun buildExceptionForJsError(error: String): Exception {

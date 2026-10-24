@@ -5,7 +5,6 @@ import com.music.innertube.models.Thumbnails
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-
 @Serializable
 data class PlayerResponse(
     val responseContext: ResponseContext,

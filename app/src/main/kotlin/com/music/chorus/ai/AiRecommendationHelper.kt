@@ -38,13 +38,13 @@ object AiRecommendationHelper {
         val database = InternalDatabase.newInstance(context)
 
         onLog?.invoke("Analyzing your listening history...")
-        
+
         val topSongs: List<Song> = database.topSongs(20).firstOrNull() ?: emptyList()
         val likedSongs: List<Song> = database.likedSongsByPlayTimeAsc().firstOrNull()?.take(20) ?: emptyList()
 
         if (topSongs.isEmpty() && likedSongs.isEmpty()) {
             onLog?.invoke("Not enough listening history found.")
-            return@withContext 
+            return@withContext
         }
 
         val tasteList = (topSongs + likedSongs).distinctBy { it.song.id }.take(30).map { songObj ->
@@ -54,24 +54,23 @@ object AiRecommendationHelper {
         val prompt = """
             Based on the following list of songs the user likes:
             ${tasteList.joinToString("\n")}
-            
+
             Please recommend 20 similar but different songs.
             CRITICAL RULES:
             1. You MUST output ONLY a valid JSON array of objects.
             2. Do NOT include any markdown formatting (like ```json).
             3. Do NOT include any conversational text or explanations. Just the raw JSON array.
-            
+
             Example format:
             [
               {"title": "Song Name", "artist": "Artist Name"}
             ]
         """.trimIndent()
 
-        
         onLog?.invoke("Connecting to AI Provider...")
         val aiProvider = context.dataStore.get(AiProviderKey, "OpenRouter")
         val jsonOutput = if (aiProvider == "Puter") {
-            
+
             "[]"
         } else {
             val apiKey = context.dataStore.get(OpenRouterApiKey, "")
@@ -125,7 +124,7 @@ object AiRecommendationHelper {
         val resolvedSongs = mutableListOf<SongItem>()
         val totalSongs = jsonArray.length()
         onLog?.invoke("Found $totalSongs songs. Searching InnerTube...")
-        
+
         for (i in 0 until totalSongs) {
             val item = jsonArray.optJSONObject(i) ?: continue
             val title = item.optString("title")
@@ -157,7 +156,7 @@ object AiRecommendationHelper {
             )
             database.insert(playlist)
         } else {
-            
+
             database.clearPlaylist(playlist.id)
         }
 
@@ -171,7 +170,42 @@ object AiRecommendationHelper {
             database.insert(songEntity)
             database.insert(PlaylistSongMap(playlistId = playlist.id, songId = songItem.id, position = index))
         }
-        
+
         onLog?.invoke("Done!")
+    }
+
+    suspend fun reorderPlaylistAsDjSet(
+        context: Context,
+        playlistId: String,
+        curve: AiDjSetBuilder.DjSetCurve = AiDjSetBuilder.DjSetCurve.RAMP_UP,
+        onLog: (suspend (String) -> Unit)? = null
+    ) = withContext(Dispatchers.IO) {
+        val database = InternalDatabase.newInstance(context)
+        onLog?.invoke("Fetching playlist tracks for DJ harmonization...")
+        val playlistSongs = database.playlistSongs(playlistId).firstOrNull() ?: emptyList()
+        if (playlistSongs.size <= 2) {
+            onLog?.invoke("Playlist is too small to sequence.")
+            return@withContext
+        }
+
+        val trackMetadataList = playlistSongs.mapIndexed { idx, item ->
+            val songObj = item.song
+            AiDjSetBuilder.TrackMetadata(
+                id = songObj.song.id,
+                title = songObj.song.title,
+                artist = songObj.artists.joinToString { it.name },
+                bpm = 100f + ((songObj.song.duration % 40)),
+                energy = ((songObj.song.duration % 100) / 100f).coerceIn(0.2f, 0.9f)
+            )
+        }
+
+        onLog?.invoke("Sequencing DJ set using ${curve.name} curve...")
+        val sequencedTracks = AiDjSetBuilder.sequenceDjSet(trackMetadataList, curve)
+
+        database.clearPlaylist(playlistId)
+        sequencedTracks.forEachIndexed { index, track ->
+            database.insert(PlaylistSongMap(playlistId = playlistId, songId = track.id, position = index))
+        }
+        onLog?.invoke("DJ Set sequencing complete!")
     }
 }

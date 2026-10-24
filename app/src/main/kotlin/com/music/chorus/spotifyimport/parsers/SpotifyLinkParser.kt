@@ -28,7 +28,7 @@ class SpotifyLinkParser : UniversalLinkParser {
         var offset = 0
         while (true) {
             val page = Spotify.playlistTracks(playlistId, limit = limit, offset = offset, tokenOverride = token).getOrThrow()
-            
+
             page.items.forEach { item ->
                 val track = item.track
                 if (track != null) {

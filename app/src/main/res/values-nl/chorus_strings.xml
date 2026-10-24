@@ -163,7 +163,7 @@
     <string name="lyrics_romanize_kyrgyz">Kirgizisch romaniseren</string>
     <string name="lyrics_romanize_serbian">Servisch romaniseren</string>
     <string name="lyrics_romanize_bulgarian">Bulgaars romaniseren</string>
-    <string name="line_by_line_option_title">EXPERIMENTEEL: Taal per regel detecteren</string>
+    <string name="line_by_line_option_title">Taal per regel detecteren</string>
     <string name="line_by_line_dialog_title">Weet je dit zeker?</string>
     <string name="line_by_line_dialog_enable">Aanzetten</string>
     <string name="romanize_current_track">Huidig nummer romaniseren</string>

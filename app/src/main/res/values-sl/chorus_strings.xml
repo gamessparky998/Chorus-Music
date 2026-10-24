@@ -247,7 +247,7 @@
     <string name="lyrics_romanize_kyrgyz">Romaniziraj kirgiška besedila</string>
     <string name="lyrics_romanize_serbian">Romaniziraj srbska besedila</string>
     <string name="lyrics_romanize_bulgarian">Romaniziraj bolgarska besedila</string>
-    <string name="line_by_line_option_title">EKSPERIMENTALNO: Zaznaj jezik po vrsticah</string>
+    <string name="line_by_line_option_title">Zaznaj jezik po vrsticah</string>
     <string name="line_by_line_option_desc">Jezik v cirilici bo zaznan po vrsticah namesto na podlagi celotne pesmi.</string>
     <string name="line_by_line_dialog_title">Ali ste prepričani?</string>
     <string name="line_by_line_dialog_desc">To je eksperimentalna funkcija.\n\nPrivzeto se jezik določi na podlagi celotne pesmi, z vklopom te možnosti pa se bo določil po vrsticah. To bo omogočilo delovanje večjezičnih pesmi, VENDAR jezik morda ne bo vedno pravilen (na primer: če ukrajinsko besedilo ne vsebuje črk, značilnih za ukrajinščino, se lahko romanizira kot ruščina).\n\nČe nimate težav, priporočamo, da to možnost pustite izklopljeno.</string>

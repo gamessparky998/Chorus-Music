@@ -1,4 +1,3 @@
-
 package pushkar.chorus.music.ui.component.backdrop.effects
 
 import androidx.annotation.FloatRange

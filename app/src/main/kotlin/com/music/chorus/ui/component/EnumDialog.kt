@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.component
 
 import androidx.compose.foundation.clickable
@@ -33,12 +31,12 @@ fun <T> EnumDialog(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .clickable {
-                        onSelect(value)
-                    }
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                    Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            onSelect(value)
+                        }
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
             ) {
                 RadioButton(
                     selected = value == current,

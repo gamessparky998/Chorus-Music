@@ -1,11 +1,8 @@
-
-
 package pushkar.chorus.music.ui.component
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SliderColors
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.SliderState
@@ -18,9 +15,11 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.unit.dp
+import pushkar.chorus.music.ui.fluid.foundation.FluidTheme
+import pushkar.chorus.music.ui.theme.isFluidTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlayerSliderTrack(
     sliderState: SliderState,
@@ -28,8 +27,12 @@ fun PlayerSliderTrack(
     colors: SliderColors = SliderDefaults.colors(),
     trackHeight: Dp = 10.dp
 ) {
-    val inactiveTrackColor = colors.inactiveTrackColor
-    val activeTrackColor = colors.activeTrackColor
+    val isFluid = isFluidTheme()
+    val isDark = isSystemInDarkTheme()
+    val inactiveTrackColor = if (isFluid) {
+        if (isDark) Color(0x33FFFFFF) else Color(0x1F000000)
+    } else colors.inactiveTrackColor
+    val activeTrackColor = if (isFluid) FluidTheme.tint else colors.activeTrackColor
     val inactiveTickColor = colors.inactiveTickColor
     val activeTickColor = colors.activeTickColor
     val valueRange = sliderState.valueRange

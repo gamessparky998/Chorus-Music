@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.component
 
 import android.widget.Toast
@@ -44,13 +42,13 @@ fun PlaybackLogsDialog(
     onDismiss: () -> Unit
 ) {
     val listState = rememberLazyListState()
-    
+
     LaunchedEffect(logs.size) {
         if (logs.isNotEmpty()) {
             listState.animateScrollToItem(logs.size - 1)
         }
     }
-    
+
     val context = LocalContext.current
 
     DefaultDialog(
@@ -70,7 +68,8 @@ fun PlaybackLogsDialog(
                             log.details?.let { d -> append(" -- $d") }
                         }
                     }
-                    val cm = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                    val cm =
+                        context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
                     val clip = android.content.ClipData.newPlainText("PlaybackLogs", textToCopy)
                     cm.setPrimaryClip(clip)
                     Toast.makeText(context, R.string.copied_to_clipboard, Toast.LENGTH_SHORT).show()

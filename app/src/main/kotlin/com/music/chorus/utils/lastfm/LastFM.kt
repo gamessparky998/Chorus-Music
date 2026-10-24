@@ -66,7 +66,6 @@ object LastFM {
         }))
     }
 
-    
     suspend fun getToken() = runCatching {
         client.post {
             lastfmParams(
@@ -92,7 +91,6 @@ object LastFM {
         return "https://www.last.fm/api/auth/?api_key=$API_KEY&token=$token"
     }
 
-    
     suspend fun getMobileSession(username: String, password: String) = runCatching {
         val response = client.post {
             lastfmParams(
@@ -161,7 +159,6 @@ object LastFM {
         }
     }
 
-
     suspend fun setLoveStatus(
         artist: String, track: String, love: Boolean
     ) = runCatching {
@@ -181,11 +178,9 @@ object LastFM {
         }
     }
 
-    
     private var API_KEY = ""
     private var SECRET = ""
 
-    
     fun initialize(apiKey: String, secret: String) {
         API_KEY = apiKey
         SECRET = secret

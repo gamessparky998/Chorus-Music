@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.player
 
 import androidx.compose.foundation.layout.Arrangement
@@ -34,14 +32,12 @@ fun PlaybackError(
     error: PlaybackException,
     retry: () -> Unit,
 ) {
-    
-    val rawErrorMessage = error.cause?.cause?.message 
-        ?: error.cause?.message 
-        ?: error.message 
+
+    val rawErrorMessage = error.cause?.cause?.message
+        ?: error.cause?.message
+        ?: error.message
         ?: stringResource(R.string.error_unknown)
-    
-    
-    
+
     val isAgeRestricted = rawErrorMessage.contains("age", ignoreCase = true) ||
             rawErrorMessage.contains("Sign in to confirm your age", ignoreCase = true) ||
             rawErrorMessage.contains("LOGIN_REQUIRED", ignoreCase = true) ||
@@ -49,13 +45,13 @@ fun PlaybackError(
             rawErrorMessage.contains("403", ignoreCase = true) ||
             rawErrorMessage.contains("Response code: 403", ignoreCase = true) ||
             error.errorCode == PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS
-    
+
     val errorMessage = if (isAgeRestricted) {
         "This track is unplayable or age-restricted on YouTube Music. We are working on fixing this issue."
     } else {
         rawErrorMessage
     }
-    
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -63,27 +59,25 @@ fun PlaybackError(
             .fillMaxWidth()
             .padding(16.dp)
     ) {
-        
+
         Icon(
             painter = painterResource(R.drawable.error),
             contentDescription = null,
             tint = MaterialTheme.colorScheme.error,
             modifier = Modifier.size(48.dp)
         )
-        
+
         Spacer(modifier = Modifier.height(12.dp))
-        
-        
+
         Text(
             text = stringResource(R.string.error_playback_failed),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.error,
             textAlign = TextAlign.Center
         )
-        
+
         Spacer(modifier = Modifier.height(8.dp))
-        
-        
+
         Text(
             text = errorMessage,
             style = MaterialTheme.typography.bodyMedium,
@@ -92,10 +86,9 @@ fun PlaybackError(
             maxLines = 3,
             overflow = TextOverflow.Ellipsis
         )
-        
+
         Spacer(modifier = Modifier.height(4.dp))
-        
-        
+
         Text(
             text = "Code: ${getErrorCodeName(error.errorCode)} (${error.errorCode})",
             style = MaterialTheme.typography.bodySmall.copy(
@@ -105,10 +98,9 @@ fun PlaybackError(
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
             textAlign = TextAlign.Center
         )
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
-        
+
         Button(
             onClick = retry,
             shape = RoundedCornerShape(20.dp),
@@ -126,7 +118,6 @@ fun PlaybackError(
         }
     }
 }
-
 
 private fun getErrorCodeName(errorCode: Int): String {
     return when (errorCode) {

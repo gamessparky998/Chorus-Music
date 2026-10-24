@@ -1,5 +1,3 @@
-
-
 package com.music.chorus.ui.screens.settings
 
 import androidx.compose.foundation.layout.Arrangement
@@ -17,12 +15,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AlertDialogDefaults
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -31,6 +31,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -71,7 +73,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LastFMSettingsScreen(
     navController: NavController
@@ -123,8 +124,10 @@ fun LastFMSettingsScreen(
     if (showLoginDialog) {
         var tempUsername by rememberSaveable { mutableStateOf("") }
         var tempPassword by rememberSaveable { mutableStateOf("") }
+        val isFluid = isFluidTheme()
 
         AlertDialog(
+            shape = if (isFluid) ContinuousRoundedRectangle(26.dp) else AlertDialogDefaults.shape,
             properties = DialogProperties(usePlatformDefaultWidth = false),
             onDismissRequest = {
                 if (!isLoggingIn) {
@@ -148,6 +151,7 @@ fun LastFMSettingsScreen(
                         label = { Text(stringResource(R.string.username)) },
                         singleLine = true,
                         enabled = !isLoggingIn,
+                        shape = if (isFluid) ContinuousRoundedRectangle(12.dp) else OutlinedTextFieldDefaults.shape,
                     )
                     OutlinedTextField(
                         value = tempPassword,
@@ -160,9 +164,9 @@ fun LastFMSettingsScreen(
                         visualTransformation = PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         enabled = !isLoggingIn,
+                        shape = if (isFluid) ContinuousRoundedRectangle(12.dp) else OutlinedTextFieldDefaults.shape,
                     )
 
-                    
                     loginError?.let { error ->
                         Text(
                             text = error,
@@ -172,7 +176,6 @@ fun LastFMSettingsScreen(
                         )
                     }
 
-                    
                     if (isLoggingIn) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -193,6 +196,7 @@ fun LastFMSettingsScreen(
             },
             confirmButton = {
                 TextButton(
+                    shape = if (isFluid) ContinuousRoundedRectangle(16.dp) else ButtonDefaults.textShape,
                     onClick = {
                         if (tempUsername.isBlank() || tempPassword.isBlank()) {
                             loginError = "Please enter both username and password"
@@ -210,7 +214,6 @@ fun LastFMSettingsScreen(
                                         lastfmSession = auth.session.key
                                         LastFM.sessionKey = auth.session.key
 
-                                        
                                         coroutineScope.launch(Dispatchers.Main) {
                                             isLoggingIn = false
                                             showLoginDialog = false
@@ -254,6 +257,7 @@ fun LastFMSettingsScreen(
             },
             dismissButton = {
                 TextButton(
+                    shape = if (isFluid) ContinuousRoundedRectangle(16.dp) else ButtonDefaults.textShape,
                     onClick = {
                         if (!isLoggingIn) {
                             showLoginDialog = false
@@ -286,7 +290,6 @@ fun LastFMSettingsScreen(
             )
         )
 
-        
         Material3SettingsGroup(
             title = stringResource(R.string.account),
             items = listOf(
@@ -299,14 +302,20 @@ fun LastFMSettingsScreen(
                     },
                     trailingContent = {
                         if (isLoggedIn) {
-                            OutlinedButton(onClick = {
-                                lastfmSession = ""
-                                lastfmUsername = ""
-                            }) {
+                            OutlinedButton(
+                                shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else ButtonDefaults.outlinedShape,
+                                onClick = {
+                                    lastfmSession = ""
+                                    lastfmUsername = ""
+                                }
+                            ) {
                                 Text(stringResource(R.string.action_logout))
                             }
                         } else {
-                            OutlinedButton(onClick = { showLoginDialog = true }) {
+                            OutlinedButton(
+                                shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else ButtonDefaults.outlinedShape,
+                                onClick = { showLoginDialog = true }
+                            ) {
                                 Text(stringResource(R.string.action_login))
                             }
                         }

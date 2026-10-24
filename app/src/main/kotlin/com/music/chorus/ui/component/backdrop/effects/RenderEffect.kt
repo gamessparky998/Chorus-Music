@@ -1,4 +1,3 @@
-
 package pushkar.chorus.music.ui.component.backdrop.effects
 
 import androidx.compose.ui.graphics.RenderEffect
@@ -9,15 +8,12 @@ import pushkar.chorus.music.ui.component.backdrop.internal.chain
 import pushkar.chorus.music.ui.component.backdrop.isRenderEffectSupported
 import pushkar.chorus.music.ui.component.backdrop.isRuntimeShaderSupported
 import org.intellij.lang.annotations.Language
-import kotlin.contracts.ExperimentalContracts
-
 fun BackdropEffectScope.effect(effect: RenderEffect) {
     if (!isRenderEffectSupported()) return
 
     renderEffect = renderEffect.chain(effect)
 }
 
-@OptIn(ExperimentalContracts::class)
 fun BackdropEffectScope.runtimeShaderEffect(
     key: String,
     @Language("AGSL") shaderString: String,

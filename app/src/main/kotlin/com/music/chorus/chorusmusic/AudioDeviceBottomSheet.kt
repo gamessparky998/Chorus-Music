@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@file:Suppress("OPT_IN_USAGE_ERROR", "OPT_IN_USAGE")
 
 package pushkar.chorus.music.chorusmusic
 
@@ -85,8 +85,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -151,7 +149,6 @@ enum class AudioDeviceType {
     HDMI,
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AudioDeviceBottomSheet(onDismiss: () -> Unit, modifier: Modifier = Modifier) {
     val context = LocalContext.current
@@ -371,7 +368,7 @@ fun AudioDeviceBottomSheet(onDismiss: () -> Unit, modifier: Modifier = Modifier)
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         activeDevice?.let { device ->
-                            
+
                             Surface(
                                 shape = MaterialTheme.shapes.large,
                                 color = androidx.compose.ui.graphics.Color.Transparent,
@@ -391,7 +388,7 @@ fun AudioDeviceBottomSheet(onDismiss: () -> Unit, modifier: Modifier = Modifier)
                                         maxVolume = maxVolume,
                                         modifier = Modifier.weight(1f)
                                     )
-                                    
+
                                     androidx.compose.animation.AnimatedVisibility(
                                         visible = hasBluetooth,
                                         enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.expandHorizontally(),
@@ -431,7 +428,6 @@ fun AudioDeviceBottomSheet(onDismiss: () -> Unit, modifier: Modifier = Modifier)
                             }
                         }
 
-                        
                         androidx.compose.animation.AnimatedVisibility(
                             visible = hasBluetooth && showDevicePopup,
                             enter = androidx.compose.animation.expandVertically(
@@ -468,7 +464,7 @@ fun AudioDeviceBottomSheet(onDismiss: () -> Unit, modifier: Modifier = Modifier)
                                                 AudioDeviceType.EXTERNAL_SPEAKER -> Icons.Filled.Speaker
                                                 AudioDeviceType.PHONE_SPEAKER -> Icons.Filled.PhoneAndroid
                                             }
-                                            
+
                                             val itemShape = remember(index, audioDevices.size) {
                                                 when {
                                                     audioDevices.size == 1 -> RoundedCornerShape(24.dp)
@@ -559,7 +555,7 @@ fun AudioDeviceBottomSheet(onDismiss: () -> Unit, modifier: Modifier = Modifier)
                     AudioQualitySelector(context)
 
                     Spacer(modifier = Modifier.height(24.dp))
-                    
+
                     DownloadQualitySelector()
 
                     Spacer(modifier = Modifier.height(24.dp))
@@ -616,7 +612,6 @@ fun AudioDeviceBottomSheet(onDismiss: () -> Unit, modifier: Modifier = Modifier)
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun VolumeControlRow(
     label: String,
@@ -669,7 +664,6 @@ fun VolumeControlRow(
 
     val interactionSource = remember { MutableInteractionSource() }
 
-    
     Surface(
         modifier = modifier
             .fillMaxWidth()
@@ -679,7 +673,7 @@ fun VolumeControlRow(
         tonalElevation = 1.dp
     ) {
         Box(contentAlignment = Alignment.CenterStart) {
-            
+
             val animatedVolumeFraction by animateFloatAsState(
                 targetValue = currentValue / maxVolume.toFloat(),
                 animationSpec = spring(
@@ -689,7 +683,6 @@ fun VolumeControlRow(
                 label = "VolumeFillAnimation"
             )
 
-            
             val widthState = remember { mutableFloatStateOf(0f) }
             Box(
                 modifier = Modifier
@@ -717,7 +710,7 @@ fun VolumeControlRow(
                         }
                     }
             ) {
-                
+
                 Box(
                     modifier = Modifier
                         .fillMaxHeight()
@@ -726,14 +719,13 @@ fun VolumeControlRow(
                 )
             }
 
-            
             Row(
                 modifier = Modifier.fillMaxSize(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row(
-                    verticalAlignment = Alignment.CenterVertically, 
+                    verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier.padding(start = 24.dp)
                 ) {
@@ -750,8 +742,7 @@ fun VolumeControlRow(
                         fontWeight = FontWeight.SemiBold
                     )
                 }
-                
-                
+
                 Box(
                     modifier = Modifier
                         .padding(end = 16.dp)
@@ -766,7 +757,6 @@ fun VolumeControlRow(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AudioQualitySelector(context: Context) {
     val (audioQuality, onAudioQualityChange) = rememberEnumPreference(
@@ -827,7 +817,6 @@ fun AudioQualitySelector(context: Context) {
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun DownloadQualitySelector() {
     val context = LocalContext.current
@@ -888,10 +877,8 @@ fun DownloadQualitySelector() {
     }
 }
 
-
-
 fun applyAudioQuality(context: Context, quality: AudioQuality) {
-    
+
 }
 
 private fun loadDevices(
@@ -1002,7 +989,6 @@ private fun loadDevices(
                 device.copy(isActive = device.deviceId == activeDevice?.id)
             }
 
-            
             val sortedDevices = updatedDevices.sortedWith(compareBy<AudioDevice> {
                 when (it.type) {
                     AudioDeviceType.PHONE_SPEAKER -> 0
@@ -1082,7 +1068,7 @@ private fun AudioDeviceRow(
     modifier: Modifier = Modifier
 ) {
     val isActiveDevice = device.isActive
-    
+
     val containerColor = if (isActiveDevice) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
     val onContainer = if (isActiveDevice) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
 
@@ -1159,7 +1145,7 @@ private fun AudioDeviceRow(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 val statusText = if (isActiveDevice) "Connected" else "Available"
-                
+
                 Row(
                     modifier = Modifier
                         .clip(RoundedCornerShape(50))
@@ -1180,7 +1166,7 @@ private fun AudioDeviceRow(
 
             if (isActiveDevice && device.type != AudioDeviceType.PHONE_SPEAKER) {
                 val value = ((currentVolume / maxVolume) * 100).toInt()
-                
+
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp),

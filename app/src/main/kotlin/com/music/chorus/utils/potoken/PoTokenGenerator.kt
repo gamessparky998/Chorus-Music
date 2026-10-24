@@ -13,7 +13,7 @@ class PoTokenGenerator {
     private val TAG = "PoTokenGenerator"
 
     private val webViewSupported by lazy { runCatching { CookieManager.getInstance() }.isSuccess }
-    private var webViewBadImpl = false 
+    private var webViewBadImpl = false
 
     private val webPoTokenGenLock = Mutex()
     private var webPoTokenSessionId: String? = null
@@ -39,12 +39,11 @@ class PoTokenGenerator {
                     webViewBadImpl = true
                     null
                 }
-                else -> throw e 
+                else -> throw e
             }
         }
     }
 
-    
     private suspend fun getWebClientPoToken(videoId: String, sessionId: String, forceRecreate: Boolean): PoTokenResult {
         Timber.tag(TAG).d("Web poToken requested: videoId=$videoId, sessionId=$sessionId")
 
@@ -62,17 +61,15 @@ class PoTokenGenerator {
                         webPoTokenGenerator?.close()
                     }
 
-                    
                     val newGenerator = PoTokenWebView.getNewPoTokenGenerator(CipherDeobfuscator.appContext)
 
-                    
                     val newStreamingPot = try {
                         newGenerator.generatePoToken(sessionId)
                     } catch (e: Exception) {
                         withContext(Dispatchers.Main) { newGenerator.close() }
                         throw e
                     }
-                    
+
                     webPoTokenSessionId = sessionId
                     webPoTokenGenerator = newGenerator
                     webPoTokenStreamingPot = newStreamingPot
@@ -86,13 +83,10 @@ class PoTokenGenerator {
             poTokenGenerator.generatePoToken(videoId)
         } catch (throwable: Throwable) {
             if (hasBeenRecreated) {
-                
-                
+
                 throw throwable
             } else {
-                
-                
-                
+
                 Timber.tag(TAG).e(throwable, "Failed to obtain poToken, retrying")
                 return getWebClientPoToken(videoId = videoId, sessionId = sessionId, forceRecreate = true)
             }

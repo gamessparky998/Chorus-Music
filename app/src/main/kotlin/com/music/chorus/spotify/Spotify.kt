@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.spotify
 
 import pushkar.chorus.music.spotify.models.SpotifyAlbum
@@ -47,7 +45,6 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.json.putJsonObject
-
 
 object Spotify {
     @Volatile
@@ -128,8 +125,6 @@ object Spotify {
         logger?.invoke(level, message)
     }
 
-    
-
     private fun JsonObject.obj(key: String): JsonObject? =
         try {
             this[key]?.takeIf { it !is JsonNull }?.jsonObject
@@ -158,9 +153,6 @@ object Spotify {
             null
         }
 
-    
-
-    
     @Volatile
     var onHashExpired: ((operationName: String) -> Unit)? = null
 
@@ -288,8 +280,6 @@ object Spotify {
         throw SpotifyException(429, "Rate limited after $maxRetries retries")
     }
 
-    
-
     private suspend inline fun <reified T> authenticatedGet(
         endpoint: String,
         failFastOn429: Boolean = false,
@@ -342,8 +332,6 @@ object Spotify {
         throw SpotifyException(429, "Rate limited after $maxRetries retries")
     }
 
-    
-
     private fun parseGqlImage(source: JsonObject): SpotifyImage? {
         val url = source.str("url") ?: return null
         return SpotifyImage(url = url, height = source.int("height"), width = source.int("width"))
@@ -361,7 +349,6 @@ object Spotify {
         )
     }
 
-    
     private fun parseGqlTrack(
         trackData: JsonObject,
         albumOverride: SpotifySimpleAlbum? = null,
@@ -401,23 +388,19 @@ object Spotify {
         )
     }
 
-    
     private fun parseGqlTrackDurationMs(trackData: JsonObject): Int {
         trackData.obj("duration")?.int("totalMilliseconds")?.let { if (it > 0) return it }
         trackData.int("durationMs")?.let { if (it > 0) return it }
         trackData.int("duration_ms")?.let { if (it > 0) return it }
-        
+
         trackData.int("duration")?.let { sec -> if (sec > 0) return sec * 1000 }
         return 0
     }
 
-    
     private fun parseGqlPlaylistImages(imagesObj: JsonObject?): List<SpotifyImage> =
         imagesObj?.arr("items")?.flatMap { imageGroup ->
             parseGqlImages(imageGroup.jsonObject.arr("sources"))
         } ?: emptyList()
-
-    
 
     suspend fun me(): Result<SpotifyUser> =
         runCatching {
@@ -443,8 +426,6 @@ object Spotify {
             }
         }
 
-    
-
     suspend fun myPlaylists(
         limit: Int = 50,
         offset: Int = 0,
@@ -463,12 +444,7 @@ object Spotify {
                     }
                     put("limit", limit)
                     put("offset", offset)
-                    
-                    
-                    
-                    
-                    
-                    
+
                     put("flatten", true)
                     putJsonArray("expandedFolders") {}
                     put("folderUri", null as String?)
@@ -503,9 +479,6 @@ object Spotify {
             )
         }
 
-    
-
-    
     suspend fun myLibraryNode(
         folderUri: String? = null,
         limit: Int = 50,
@@ -525,8 +498,7 @@ object Spotify {
                     }
                     put("limit", limit)
                     put("offset", offset)
-                    
-                    
+
                     put("flatten", false)
                     putJsonArray("expandedFolders") {}
                     if (folderUri != null) put("folderUri", folderUri) else put("folderUri", null as String?)
@@ -547,9 +519,7 @@ object Spotify {
             val pagingInfo = libraryData.obj("pagingInfo")
 
             val rawItems = libraryData.arr("items").orEmpty()
-            
-            
-            
+
             log("D", "myLibraryNode(folder=$folderUri): ${rawItems.size} raw items")
             val typeCounts = mutableMapOf<String, Int>()
             rawItems.forEach { itemElem ->
@@ -571,9 +541,7 @@ object Spotify {
                             parseFolderWrapper(wrapper)
                                 ?.let { pushkar.chorus.music.spotify.models.SpotifyLibraryItem.Folder(it) }
                                 ?: run {
-                                    
-                                    
-                                    
+
                                     log("W", "myLibraryNode: failed to parse folder wrapper, keys=${wrapper.keys}, dataKeys=${wrapper.obj("data")?.keys}")
                                     null
                                 }
@@ -625,9 +593,7 @@ object Spotify {
 
     private fun parseFolderWrapper(wrapper: JsonObject): pushkar.chorus.music.spotify.models.SpotifyLibraryFolder? {
         val uri = wrapper.str("_uri") ?: return null
-        
-        
-        
+
         val name = wrapper.obj("data")?.str("name")
             ?: wrapper.str("name")
             ?: return null
@@ -641,8 +607,6 @@ object Spotify {
             totalChildren = total,
         )
     }
-
-    
 
     suspend fun myArtists(
         limit: Int = 50,
@@ -714,8 +678,6 @@ object Spotify {
                 offset = pagingInfo?.int("offset") ?: offset,
             )
         }
-
-    
 
     suspend fun playlist(playlistId: String, tokenOverride: String? = null): Result<SpotifyPlaylist> =
         runCatching {
@@ -808,9 +770,6 @@ object Spotify {
             )
         }
 
-    
-
-    
     suspend fun addTracksToPlaylist(
         playlistId: String,
         trackUris: List<String>,
@@ -836,7 +795,6 @@ object Spotify {
             log("D", "addTracksToPlaylist: added ${trackUris.size} tracks to $playlistId")
         }
 
-    
     suspend fun removeTracksFromPlaylist(
         playlistId: String,
         items: List<PlaylistItemRef>,
@@ -855,7 +813,6 @@ object Spotify {
             log("D", "removeTracksFromPlaylist: removed ${items.size} items from $playlistId")
         }
 
-    
     suspend fun moveItemsInPlaylist(
         playlistId: String,
         uids: List<String>,
@@ -884,7 +841,6 @@ object Spotify {
             log("D", "moveItemsInPlaylist: moved ${uids.size} items (before=$beforeUid) in $playlistId")
         }
 
-    
     suspend fun editPlaylistAttributes(
         playlistId: String,
         newName: String? = null,
@@ -903,13 +859,10 @@ object Spotify {
             log("D", "editPlaylistAttributes: updated $playlistId (name=$newName)")
         }
 
-    
     data class PlaylistItemRef(
         val uri: String,
         val uid: String,
     )
-
-    
 
     suspend fun likedSongs(
         limit: Int = 50,
@@ -948,9 +901,6 @@ object Spotify {
             )
         }
 
-    
-
-    
     suspend fun addToLibrary(uris: List<String>): Result<Unit> =
         runCatching {
             val vars = buildJsonObject {
@@ -965,7 +915,6 @@ object Spotify {
             log("D", "addToLibrary: added ${uris.size} items")
         }
 
-    
     suspend fun removeFromLibrary(uris: List<String>): Result<Unit> =
         runCatching {
             val vars = buildJsonObject {
@@ -980,8 +929,6 @@ object Spotify {
             log("D", "removeFromLibrary: removed ${uris.size} items")
         }
 
-    
-
     suspend fun topTracks(
         timeRange: String = "medium_term",
         limit: Int = 50,
@@ -995,8 +942,6 @@ object Spotify {
             }
         }
 
-    
-
     suspend fun topArtists(
         timeRange: String = "medium_term",
         limit: Int = 50,
@@ -1009,8 +954,6 @@ object Spotify {
                 parameter("offset", offset)
             }
         }
-
-    
 
     suspend fun recommendations(
         seedTrackIds: List<String> = emptyList(),
@@ -1026,8 +969,6 @@ object Spotify {
                 parameter("limit", limit)
             }
         }
-
-    
 
     suspend fun search(
         query: String,
@@ -1175,8 +1116,6 @@ object Spotify {
         )
     }
 
-    
-
     suspend fun newReleases(
         limit: Int = 20,
         offset: Int = 0,
@@ -1234,12 +1173,6 @@ object Spotify {
                     ),
             )
         }
-
-    
-    
-    
-    
-    
 
     suspend fun home(
         sectionItemsLimit: Int = 10,
@@ -1396,8 +1329,6 @@ object Spotify {
         )
     }
 
-    
-
     suspend fun album(albumId: String): Result<SpotifyAlbum> =
         runCatching {
             val vars =
@@ -1455,8 +1386,6 @@ object Spotify {
                 uri = "spotify:album:$albumId",
             )
         }
-
-    
 
     suspend fun artist(artistId: String): Result<SpotifyArtist> =
         runCatching {
@@ -1518,7 +1447,6 @@ object Spotify {
             ArtistTopTracksResponse(tracks = tracks)
         }
 
-    
     suspend fun artistRelatedArtists(artistId: String): Result<List<SpotifyArtist>> =
         runCatching {
             val vars =
@@ -1553,8 +1481,6 @@ object Spotify {
                 SpotifyArtist(id = id, name = name, images = images, uri = uri)
             }
         }
-
-    
 
     suspend fun relatedArtists(artistId: String): Result<RelatedArtistsResponse> =
         runCatching {

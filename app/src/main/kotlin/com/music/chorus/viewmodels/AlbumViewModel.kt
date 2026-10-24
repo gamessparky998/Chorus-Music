@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.viewmodels
 
 import androidx.lifecycle.SavedStateHandle
@@ -79,10 +77,10 @@ constructor(
                             }
                         }
                     }
-                    
+
                     if (description.value == null && descriptionRuns.value == null) {
                         viewModelScope.launch(Dispatchers.IO) {
-                            val artistName = album?.artists?.firstOrNull()?.name 
+                            val artistName = album?.artists?.firstOrNull()?.name
                                 ?: database.albumWithSongs(albumId).first()?.artists?.firstOrNull()?.name
                             val wikiDescription = Wikipedia.fetchAlbumInfo(it.album.title, artistName)
                             if (wikiDescription != null) {
@@ -94,7 +92,8 @@ constructor(
                                     }
                                 }
                             } else {
-                                val appleDescription = AppleMusicAboutAlbum.fetchAlbumDescription(it.album.title, artistName)
+                                val appleDescription =
+                                    AppleMusicAboutAlbum.fetchAlbumDescription(it.album.title, artistName)
                                 if (appleDescription != null) {
                                     description.value = appleDescription
                                     val currentAlbum = database.album(albumId).first()

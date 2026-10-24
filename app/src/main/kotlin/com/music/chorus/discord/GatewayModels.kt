@@ -1,5 +1,3 @@
-
-
 package com.music.chorus.discord
 
 import org.json.JSONObject

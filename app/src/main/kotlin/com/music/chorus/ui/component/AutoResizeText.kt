@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.component
 
 import androidx.compose.material3.LocalTextStyle
@@ -22,7 +20,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
-
 
 @Composable
 fun AutoResizeText(
@@ -62,18 +59,18 @@ fun AutoResizeText(
         fontSize = fontSizeValue.sp,
         onTextLayout = {
             if (it.didOverflowHeight && !readyToDraw) {
-                
+
                 val nextFontSizeValue = fontSizeValue - fontSizeRange.step.value
                 if (nextFontSizeValue <= fontSizeRange.min.value) {
-                    
+
                     fontSizeValue = fontSizeRange.min.value
                     readyToDraw = true
                 } else {
-                    
+
                     fontSizeValue = nextFontSizeValue
                 }
             } else {
-                
+
                 readyToDraw = true
             }
         },

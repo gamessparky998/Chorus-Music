@@ -1,4 +1,4 @@
-
+@file:Suppress("OPT_IN_USAGE_ERROR", "OPT_IN_USAGE")
 
 package pushkar.chorus.music.chorusmusic.component
 
@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -27,7 +26,6 @@ import androidx.compose.ui.unit.dp
 import pushkar.chorus.music.R
 import racra.compose.smooth_corner_rect_library.AbsoluteSmoothCornerShape
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UpdateInfoDialog(
     onDismiss: () -> Unit

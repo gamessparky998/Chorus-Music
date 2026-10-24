@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.playback.queues
 
 import androidx.media3.common.MediaItem
@@ -48,7 +46,7 @@ class YouTubePlaylistQueue(
         return withContext(IO) {
             val currentContinuation = continuation ?: return@withContext emptyList()
             var lastException: Throwable? = null
-            
+
             for (attempt in 0..maxRetries) {
                 try {
                     val continuationPage = YouTube.playlistContinuation(currentContinuation).getOrThrow()

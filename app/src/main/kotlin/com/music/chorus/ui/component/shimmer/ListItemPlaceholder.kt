@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.component.shimmer
 
 import androidx.compose.foundation.background

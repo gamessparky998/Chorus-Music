@@ -1,9 +1,6 @@
-
-
 package pushkar.chorus.music.spotify.models
 
 import kotlinx.serialization.Serializable
-
 
 @Serializable
 sealed class SpotifyLibraryItem {
@@ -23,7 +20,6 @@ sealed class SpotifyLibraryItem {
         override val uri: String get() = folder.uri
     }
 }
-
 
 @Serializable
 data class SpotifyLibraryFolder(

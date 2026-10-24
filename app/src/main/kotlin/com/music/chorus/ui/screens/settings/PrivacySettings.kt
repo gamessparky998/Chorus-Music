@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.screens.settings
 
 import androidx.compose.foundation.layout.Column
@@ -12,7 +10,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
@@ -43,7 +40,6 @@ import pushkar.chorus.music.ui.component.Material3SettingsItem
 import pushkar.chorus.music.ui.utils.backToMain
 import pushkar.chorus.music.utils.rememberPreference
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PrivacySettings(
     navController: NavController,
@@ -153,7 +149,7 @@ highlightKey: String? = null) {
             )
         )
 
-        Material3SettingsGroup(scrollState = scrollState, 
+        Material3SettingsGroup(scrollState = scrollState,
             title = stringResource(R.string.listen_history),
             items = listOf(
                 Material3SettingsItem(
@@ -188,7 +184,7 @@ highlightKey: String? = null) {
 
         Spacer(modifier = Modifier.height(27.dp))
 
-        Material3SettingsGroup(scrollState = scrollState, 
+        Material3SettingsGroup(scrollState = scrollState,
             title = stringResource(R.string.search_history),
             items = listOf(
                 Material3SettingsItem(
@@ -223,7 +219,7 @@ highlightKey: String? = null) {
 
         Spacer(modifier = Modifier.height(27.dp))
 
-        Material3SettingsGroup(scrollState = scrollState, 
+        Material3SettingsGroup(scrollState = scrollState,
             title = stringResource(R.string.misc),
             items = listOf(
                 Material3SettingsItem(
@@ -251,7 +247,7 @@ highlightKey: String? = null) {
             )
         )
         Spacer(modifier = Modifier.height(16.dp))
-    
+
         Spacer(Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Bottom)))
     }
 

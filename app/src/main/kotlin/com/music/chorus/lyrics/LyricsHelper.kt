@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.lyrics
 
 import android.content.Context
@@ -32,7 +30,7 @@ constructor(
     @ApplicationContext private val context: Context,
     private val networkConnectivity: NetworkConnectivityObserver,
 ) {
-    
+
     private suspend fun resolveLyricsProviders(): List<LyricsProvider> {
         val preferences = context.dataStore.data.first()
         val orderString = preferences[LyricsProviderOrderKey].orEmpty()
@@ -41,7 +39,6 @@ constructor(
             return LyricsProviderRegistry.getOrderedProviders(orderString)
         }
 
-        
         val preferredEnum = preferences[PreferredLyricsProviderKey]
             .toEnum(PreferredLyricsProvider.YOULYPLUS)
         val preferredName = LyricsProviderRegistry.getProviderNameForEnum(preferredEnum)
@@ -49,8 +46,6 @@ constructor(
         val migratedOrder = listOf(preferredName) + defaultOrder.filter { it != preferredName }
         return migratedOrder.mapNotNull { LyricsProviderRegistry.getProviderByName(it) }
     }
-
-
 
     private val cache = LruCache<String, List<LyricsResult>>(MAX_CACHE_SIZE)
     private var currentLyricsJob: Job? = null
@@ -68,7 +63,7 @@ constructor(
         } catch (e: Exception) {
             true
         }
-        
+
         if (!isNetworkAvailable) {
             return LyricsWithProvider(LYRICS_NOT_FOUND, "Unknown")
         }
@@ -150,7 +145,7 @@ constructor(
         } catch (e: Exception) {
             true
         }
-        
+
         if (!isNetworkAvailable) {
             return
         }

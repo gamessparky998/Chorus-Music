@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.api
 
 import kotlinx.coroutines.Dispatchers
@@ -34,18 +32,17 @@ object OpenRouterService {
     ): Result<List<String>> = withContext(Dispatchers.IO) {
         onLog?.invoke("Starting translation...")
         var currentAttempt = 0
-        
-        
+
         if (text.isBlank()) {
             return@withContext Result.failure(Exception("Input text is empty"))
         }
-        
+
         val lines = text.lines()
         val lineCount = lines.size
-        
+
         while (currentAttempt < maxRetries) {
             try {
-                
+
                 val systemPrompt = """You are a precise lyrics translation assistant. Your output must ALWAYS be a valid JSON array of strings.
 
 CRITICAL RULES:
@@ -114,7 +111,7 @@ $text
 
 Output MUST be a JSON array with EXACTLY $lineCount strings."""
                 }
-                
+
                 val messages = JSONArray().apply {
                     put(JSONObject().apply {
                         put("role", "system")
@@ -131,8 +128,8 @@ Output MUST be a JSON array with EXACTLY $lineCount strings."""
                         put("model", model)
                     }
                     put("messages", messages)
-                    put("temperature", 0.3) 
-                    put("max_tokens", lineCount * 100) 
+                    put("temperature", 0.3)
+                    put("max_tokens", lineCount * 100)
                 }
 
                 val request = Request.Builder()
@@ -153,15 +150,15 @@ Output MUST be a JSON array with EXACTLY $lineCount strings."""
                 val responseBody = response.body.string()
 
                 if (!response.isSuccessful) {
-                    
+
                     if (response.code >= 500) {
                         currentAttempt++
                         kotlinx.coroutines.delay(1000L * currentAttempt)
                         continue
                     }
-                    
+
                     val errorMsg = try {
-                        JSONObject(responseBody).optJSONObject("error")?.optString("message") 
+                        JSONObject(responseBody).optJSONObject("error")?.optString("message")
                             ?: "HTTP ${response.code}: ${response.message}"
                     } catch (e: Exception) {
                         "HTTP ${response.code}: ${response.message}"
@@ -174,34 +171,33 @@ Output MUST be a JSON array with EXACTLY $lineCount strings."""
                 if (choices != null && choices.length() > 0) {
                     val message = choices.getJSONObject(0).optJSONObject("message")
                     var content = message?.optString("content")?.trim()
-                    
+
                     if (!content.isNullOrBlank()) {
-                        
+
                         var translatedLines: List<String>? = null
-                        
-                        
+
                         try {
                             val jsonArray = JSONArray(content)
                             translatedLines = (0 until jsonArray.length()).map { jsonArray.optString(it) }
                         } catch (e: Exception) {
-                            
+
                             content = content.replace("```json", "").replace("```", "").trim()
-                            
+
                             try {
                                 val jsonArray = JSONArray(content)
                                 translatedLines = (0 until jsonArray.length()).map { jsonArray.optString(it) }
                             } catch (e2: Exception) {
-                                
+
                                 val startIdx = content.indexOf('[')
                                 val endIdx = content.lastIndexOf(']')
-                                
+
                                 if (startIdx != -1 && endIdx != -1 && endIdx > startIdx) {
                                     val jsonString = content.substring(startIdx, endIdx + 1)
                                     try {
                                         val jsonArray = JSONArray(jsonString)
                                         translatedLines = (0 until jsonArray.length()).map { jsonArray.optString(it) }
                                     } catch (e3: Exception) {
-                                        
+
                                         translatedLines = content.lines()
                                             .filter { it.trim().isNotEmpty() }
                                             .map { it.trim().removeSurrounding("\"").removeSurrounding("'") }
@@ -209,16 +205,16 @@ Output MUST be a JSON array with EXACTLY $lineCount strings."""
                                 }
                             }
                         }
-                        
+
                         if (translatedLines != null) {
                             onLog?.invoke("Successfully parsed ${translatedLines.size} lines")
                             if (translatedLines.size == lineCount) {
                                 return@withContext Result.success(translatedLines)
                             } else if (translatedLines.size > lineCount) {
-                                
+
                                 return@withContext Result.success(translatedLines.take(lineCount))
                             } else {
-                                
+
                                 val paddedLines = translatedLines.toMutableList()
                                 while (paddedLines.size < lineCount) {
                                     paddedLines.add("")

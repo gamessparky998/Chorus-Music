@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.constants
 
 import pushkar.chorus.music.ui.screens.OptionStats

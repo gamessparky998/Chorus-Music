@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.playback
 
 import androidx.compose.runtime.getValue
@@ -60,7 +58,6 @@ class SleepTimer(
         player.volume = initialVolume
     }
 
-    
     fun notifySongTransition() {
         if (pauseWhenSongEnd) {
             pauseWhenSongEnd = false

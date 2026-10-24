@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.component
 
 import androidx.compose.animation.core.animateFloatAsState
@@ -10,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.SliderColors
@@ -32,7 +29,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun WavySlider(
     value: Float,
@@ -51,31 +47,30 @@ fun WavySlider(
     val density = LocalDensity.current
     val strokeWidthPx = with(density) { strokeWidth.toPx() }
     val thumbRadiusPx = with(density) { thumbRadius.toPx() }
-    val stroke = remember(strokeWidthPx) { 
-        Stroke(width = strokeWidthPx, cap = StrokeCap.Round) 
+    val stroke = remember(strokeWidthPx) {
+        Stroke(width = strokeWidthPx, cap = StrokeCap.Round)
     }
-    
+
     val normalizedValue = ((value - valueRange.start) / (valueRange.endInclusive - valueRange.start))
         .coerceIn(0f, 1f)
-    
+
     var isDragging by remember { mutableStateOf(false) }
     var dragValue by remember { mutableFloatStateOf(normalizedValue) }
-    
+
     val displayValue = if (isDragging) dragValue else normalizedValue
-    
+
     val animatedAmplitude by animateFloatAsState(
         targetValue = if (isPlaying) 1f else 0f,
         animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
         label = "amplitude"
     )
-    
+
     val activeColor = colors.activeTrackColor
     val inactiveColor = colors.inactiveTrackColor
     val thumbColor = colors.thumbColor
-    
-    
+
     val containerHeight = maxOf(WavyProgressIndicatorDefaults.LinearContainerHeight, thumbRadius * 2)
-    
+
     val baseModifier = modifier
         .fillMaxWidth()
         .height(containerHeight)
@@ -133,12 +128,11 @@ fun WavySlider(
             wavelength = wavelength,
             waveSpeed = waveSpeed
         )
-        
-        
+
         Canvas(modifier = Modifier.fillMaxSize()) {
             val thumbX = size.width * displayValue
             val thumbY = size.height / 2
-            
+
             drawCircle(
                 color = thumbColor,
                 radius = thumbRadiusPx,

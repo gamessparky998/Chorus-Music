@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.component
 
 import android.graphics.Bitmap
@@ -27,7 +25,6 @@ import coil3.request.allowHardware
 import coil3.toBitmap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-
 
 @Composable
 fun AlbumGradient(

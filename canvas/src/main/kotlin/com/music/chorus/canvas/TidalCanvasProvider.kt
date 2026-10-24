@@ -23,7 +23,6 @@ import kotlinx.serialization.json.jsonPrimitive
 import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
 
-
 object TidalCanvasProvider {
     private const val BASE_URL = "https://api.tidal.com/v1/"
     private const val TIDAL_TOKEN = "vNVdglQOjFJJGG2U"
@@ -58,7 +57,7 @@ object TidalCanvasProvider {
         val expiresAtMs: Long
     )
 
-    private const val CACHE_TTL_MS = 1000L * 60 * 60 * 24 
+    private const val CACHE_TTL_MS = 1000L * 60 * 60 * 24
 
     private val countryCode by lazy {
         val country = Locale.getDefault().country
@@ -125,29 +124,26 @@ object TidalCanvasProvider {
             if (response.status != HttpStatusCode.OK) return null
 
             val root = response.body<JsonObject>()
-            val key = types.lowercase(Locale.ROOT) 
+            val key = types.lowercase(Locale.ROOT)
             val section = findSearchSection(root, key) ?: return null
             val items = section.jsonObject["items"]?.jsonArray ?: return null
 
             for (item in items) {
                 val obj = item.jsonObject
 
-                
                 val resultTitle = obj["title"]?.jsonPrimitive?.contentOrNull
                 if (songValidation != null && resultTitle != null && !resultTitle.contains(songValidation, ignoreCase = true)) {
                     continue
                 }
 
-                
                 if (albumValidation != null && resultTitle != null && !resultTitle.contains(albumValidation, ignoreCase = true) && !albumValidation.contains(resultTitle, ignoreCase = true)) {
                     continue
                 }
 
-                
                 val artists = obj["artists"]?.jsonArray
                 val primaryArtist = obj["artist"]?.jsonObject?.get("name")?.jsonPrimitive?.contentOrNull
                     ?: artists?.firstOrNull()?.jsonObject?.get("name")?.jsonPrimitive?.contentOrNull
-                
+
                 if (artistValidation != null && primaryArtist != null) {
                     val splitDelimiters = Regex("(?:\\s*,\\s*|\\s*&\\s*|\\s+×\\s+|\\s+x\\s+|\\bfeat\\.?\\b|\\bft\\.?\\b|\\bfeaturing\\b|\\bwith\\b)", RegexOption.IGNORE_CASE)
                     val requestedList = artistValidation.split(splitDelimiters).map { it.replace(Regex("\\s+"), " ").trim().lowercase(Locale.ROOT) }.filter { it.isNotBlank() }
@@ -156,7 +152,6 @@ object TidalCanvasProvider {
                     if (!artistMatches) continue
                 }
 
-                
                 val albumObj = if (types == "TRACKS") obj["album"]?.jsonObject else obj
                 val videoCover = albumObj?.get("videoCover")?.jsonPrimitive?.contentOrNull
 
@@ -173,7 +168,7 @@ object TidalCanvasProvider {
                 }
             }
         } catch (e: Exception) {
-            
+
         }
         return null
     }

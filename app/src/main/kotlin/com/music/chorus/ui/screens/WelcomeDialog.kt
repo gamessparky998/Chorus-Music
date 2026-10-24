@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.material3.ripple
@@ -50,7 +52,7 @@ fun WelcomeDialog(
             modifier = Modifier
                 .padding(24.dp)
                 .fillMaxWidth(),
-            shape = RoundedCornerShape(28.dp),
+            shape = if (isFluidTheme()) ContinuousRoundedRectangle(28.dp) else RoundedCornerShape(28.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface
             ),
@@ -63,16 +65,15 @@ fun WelcomeDialog(
                     .padding(vertical = 20.dp, horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                
-                WelcomeAppCard()
 
+                WelcomeAppCard()
 
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Button(
                     onClick = onDismissRequest,
                     modifier = Modifier.fillMaxWidth().height(50.dp),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary,
                         contentColor = MaterialTheme.colorScheme.onPrimary
@@ -89,7 +90,7 @@ fun WelcomeDialog(
 private fun WelcomeAppCard() {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(28.dp),
+        shape = if (isFluidTheme()) ContinuousRoundedRectangle(28.dp) else RoundedCornerShape(28.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         ),
@@ -123,7 +124,7 @@ private fun WelcomeAppCard() {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Surface(
-                    shape = RoundedCornerShape(8.dp),
+                    shape = if (isFluidTheme()) ContinuousRoundedRectangle(8.dp) else RoundedCornerShape(8.dp),
                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f),
                 ) {
                     Text(
@@ -154,7 +155,7 @@ private fun WelcomeSectionCard(
         )
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(28.dp),
+            shape = if (isFluidTheme()) ContinuousRoundedRectangle(28.dp) else RoundedCornerShape(28.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
             ),
@@ -189,7 +190,7 @@ private fun WelcomeActionRow(
             .fillMaxWidth()
             .padding(horizontal = 6.dp, vertical = 2.dp)
             .graphicsLayer { scaleX = scale; scaleY = scale }
-            .clip(RoundedCornerShape(22.dp))
+            .clip(if (isFluidTheme()) ContinuousRoundedRectangle(22.dp) else RoundedCornerShape(22.dp))
             .clickable(
                 interactionSource = interactionSource,
                 indication = ripple(),
@@ -203,7 +204,7 @@ private fun WelcomeActionRow(
         ) {
             Surface(
                 modifier = Modifier.size(36.dp),
-                shape = RoundedCornerShape(12.dp),
+                shape = if (isFluidTheme()) ContinuousRoundedRectangle(12.dp) else RoundedCornerShape(12.dp),
                 color = tint.copy(alpha = 0.10f),
             ) {
                 Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {

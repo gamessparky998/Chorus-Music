@@ -1,6 +1,7 @@
+@file:Suppress("OPT_IN_USAGE_ERROR", "OPT_IN_USAGE")
+
 package pushkar.chorus.music.ui.screens.library
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,7 +25,6 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.ButtonGroupDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -82,11 +82,6 @@ import pushkar.chorus.music.utils.rememberEnumPreference
 import pushkar.chorus.music.utils.rememberPreference
 import pushkar.chorus.music.viewmodels.LibraryArtistsViewModel
 
-@OptIn(
-    ExperimentalFoundationApi::class,
-    ExperimentalMaterial3Api::class,
-    androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class
-)
 @Composable
 fun FollowedArtistsScreen(
     navController: NavController,

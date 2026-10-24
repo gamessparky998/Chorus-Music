@@ -1,8 +1,5 @@
-
-
 package pushkar.chorus.music.ui.screens.search
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -66,7 +63,6 @@ import pushkar.chorus.music.viewmodels.LocalFilter
 import pushkar.chorus.music.viewmodels.LocalSearchViewModel
 import kotlinx.coroutines.flow.drop
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun LocalSearchScreen(
     query: String,

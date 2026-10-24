@@ -21,7 +21,7 @@ data class CommentThreadRenderer(
             val commentKey: String? = null,
         )
     }
-    
+
     @Serializable
     data class Comment(
         val commentRenderer: CommentRenderer? = null,

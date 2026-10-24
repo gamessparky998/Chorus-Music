@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.component
 
 import androidx.activity.compose.BackHandler
@@ -46,7 +44,10 @@ import pushkar.chorus.music.constants.NavigationBarAnimationSpec
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.pow
-
+import pushkar.chorus.music.ui.theme.isFluidTheme
+import pushkar.chorus.music.ui.player.PlayerMorph
+import pushkar.chorus.music.ui.player.recordPlayerLayer
+import pushkar.chorus.music.ui.player.InstallPlayerMorphLayers
 
 @Composable
 fun BottomSheet(
@@ -56,27 +57,50 @@ fun BottomSheet(
     onDismiss: (() -> Unit)? = null,
     collapsedContent: @Composable BoxScope.() -> Unit,
     isExpandable: Boolean = true,
+    overlayContent: (@Composable BoxScope.() -> Unit)? = null,
     content: @Composable BoxScope.() -> Unit,
 ) {
     val density = LocalDensity.current
-    
+    val isFluid = isFluidTheme()
+    val morphEnabled = isFluid && PlayerMorph.enabled
+    if (morphEnabled) {
+        InstallPlayerMorphLayers()
+    }
+
     Box(
         modifier = modifier
             .graphicsLayer {
-                
-                alpha = (1.4f * (state.progress.coerceAtLeast(0.1f) - 0.1f).pow(0.5f)).coerceIn(0f, 1f)
+                alpha = if (morphEnabled && PlayerMorph.active) {
+                    1f
+                } else {
+                    (1.4f * (state.progress.coerceAtLeast(0.1f) - 0.1f).pow(0.5f)).coerceIn(0f, 1f)
+                }
             }
-            .fillMaxSize(),
+            .fillMaxSize()
+            .then(
+                if (morphEnabled) {
+                    Modifier.recordPlayerLayer(
+                        layer = { PlayerMorph.fullBackgroundLayer },
+                        drawInPlace = { !PlayerMorph.active },
+                        markReady = { PlayerMorph.fullBackgroundFrameReady = true },
+                    )
+                } else {
+                    Modifier
+                },
+            ),
         content = background
     )
     Box(
         modifier = modifier
             .fillMaxSize()
-            
             .graphicsLayer {
-                val y = (state.expandedBound - state.value)
-                    .toPx()
-                    .coerceAtLeast(0f)
+                val y = if (morphEnabled && PlayerMorph.active) {
+                    0f
+                } else {
+                    (state.expandedBound - state.value)
+                        .toPx()
+                        .coerceAtLeast(0f)
+                }
                 translationY = y
             }
             .pointerInput(state, isExpandable) {
@@ -100,7 +124,11 @@ fun BottomSheet(
                 )
             }
             .graphicsLayer {
-                val cornerRadius = if (!state.isExpanded) 16.dp.toPx() else 0f
+                val cornerRadius = if (morphEnabled && PlayerMorph.active) {
+                    0f
+                } else if (!state.isExpanded) {
+                    16.dp.toPx()
+                } else 0f
                 shape = RoundedCornerShape(topStart = cornerRadius, topEnd = cornerRadius)
                 clip = true
             }
@@ -109,13 +137,25 @@ fun BottomSheet(
             BackHandler(onBack = state::collapseSoft)
         }
 
-        
         if (!state.isCollapsed) {
             BoxWithConstraints(
                 modifier = Modifier
                     .fillMaxSize()
+                    .then(
+                        if (morphEnabled) {
+                            Modifier.recordPlayerLayer(
+                                layer = { PlayerMorph.fullContentLayer },
+                                drawInPlace = { !PlayerMorph.active },
+                                markReady = { PlayerMorph.fullContentFrameReady = true },
+                            )
+                        } else Modifier
+                    )
                     .graphicsLayer {
-                        alpha = ((state.progress - 0.15f) * 4).coerceIn(0f, 1f)
+                        alpha = if (morphEnabled && PlayerMorph.active) {
+                            1f
+                        } else {
+                            ((state.progress - 0.15f) * 4).coerceIn(0f, 1f)
+                        }
                     },
                 content = content
             )
@@ -124,18 +164,26 @@ fun BottomSheet(
         if (!state.isExpanded && (onDismiss == null || !state.isDismissed)) {
             Box(
                 modifier =
-                Modifier
-                    .graphicsLayer {
-                        alpha = 1f - (state.progress * 4).coerceAtMost(1f)
-                    }.clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = { if (isExpandable) state.expandSoft() },
-                    ).fillMaxWidth()
-                    .height(state.collapsedBound),
+                    Modifier
+                        .graphicsLayer {
+                            alpha = if (morphEnabled && PlayerMorph.active) {
+                                1f
+                            } else {
+                                1f - (state.progress * 4).coerceAtMost(1f)
+                            }
+                        }.clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = { if (isExpandable) state.expandSoft() },
+                        ).fillMaxWidth()
+                        .height(state.collapsedBound),
                 content = collapsedContent,
             )
         }
+    }
+
+    if (overlayContent != null) {
+        Box(modifier = Modifier.fillMaxSize(), content = overlayContent)
     }
 }
 
@@ -207,7 +255,7 @@ class BottomSheetState(
             animatable.animateTo(animatable.lowerBound!!)
         }
     }
-    
+
     suspend fun dismissAndWait() {
         onAnchorChanged(dismissedAnchor)
         animatable.animateTo(animatable.lowerBound!!)

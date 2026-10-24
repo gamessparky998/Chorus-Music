@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.constants
 
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -25,6 +23,18 @@ val EnableDynamicIconKey = booleanPreferencesKey("enableDynamicIcon")
 
 val EnableHighRefreshRateKey = booleanPreferencesKey("enableHighRefreshRate")
 val EnableHapticsKey = booleanPreferencesKey("enableHaptics")
+
+enum class AppThemeMode(val label: String) {
+    MaterialUI("Material UI"),
+    FluidUI("Fluid UI");
+
+    companion object {
+        fun fromString(value: String?): AppThemeMode = entries.find { it.name == value } ?: MaterialUI
+    }
+}
+
+val AppThemeModeKey = stringPreferencesKey("app_theme_mode")
+
 val DynamicThemeKey = booleanPreferencesKey("dynamicTheme")
 val SelectedThemeColorKey = intPreferencesKey("selectedThemeColor")
 val DarkModeKey = stringPreferencesKey("darkMode")
@@ -136,7 +146,6 @@ val CrossfadeGaplessKey = booleanPreferencesKey("crossfadeGapless")
 val AutomixCrossfadeKey = booleanPreferencesKey("automixCrossfade")
 val AutomixDebugOverlayKey = booleanPreferencesKey("automixDebugOverlay")
 
-
 val MaxImageCacheSizeKey = intPreferencesKey("maxImageCacheSize")
 val MaxSongCacheSizeKey = intPreferencesKey("maxSongCacheSize")
 val ExportDirectoryUriKey = stringPreferencesKey("exportDirectoryUri")
@@ -148,12 +157,7 @@ val PauseListenHistoryKey = booleanPreferencesKey("pauseListenHistory")
 val PauseSearchHistoryKey = booleanPreferencesKey("pauseSearchHistory")
 val DisableScreenshotKey = booleanPreferencesKey("disableScreenshot")
 
-
-
-
 val EnableGoogleCastKey = booleanPreferencesKey("enableGoogleCast")
-
-
 
 val LastFMSessionKey = stringPreferencesKey("lastfmSession")
 val LastFMUsernameKey = stringPreferencesKey("lastfmUsername")
@@ -229,7 +233,6 @@ val LastAlbumSyncKey = longPreferencesKey("last_album_sync")
 val LastArtistSyncKey = longPreferencesKey("last_artist_sync")
 val LastPlaylistSyncKey = longPreferencesKey("last_playlist_sync")
 val LastFullSyncKey = longPreferencesKey("last_full_sync")
-
 
 const val SYNC_COOLDOWN = 30 * 60L
 
@@ -403,7 +406,12 @@ enum class PreferredLyricsProvider {
     SIMPMUSIC,
     YOULYPLUS,
     PAXSENIX,
-    UNISON
+    UNISON,
+    MUSIXMATCH,
+    LRC_RED,
+    BINI_LYRICS,
+    GENIUS,
+    MEGALOBIZ
 }
 
 enum class PlayerButtonsStyle {
@@ -421,11 +429,23 @@ enum class PlayerBackgroundStyle {
     LIVE_MESH,
 }
 
+enum class PlayerArtworkStyle {
+    CARD,
+    VINYL,
+    CLOVER,
+}
+
+val PlayerArtworkStyleKey = stringPreferencesKey("playerArtworkStyle")
+val PlayerStaticColorKey = intPreferencesKey("playerStaticColor")
+val PlayerGradientStopsKey = stringPreferencesKey("playerGradientStops")
+val PlayerGradientAngleKey = floatPreferencesKey("playerGradientAngle")
+
 val TopSize = stringPreferencesKey("topSize")
 val HistoryDuration = floatPreferencesKey("historyDuration")
 
 val PlayerButtonsStyleKey = stringPreferencesKey("player_buttons_style")
 val PlayerBackgroundStyleKey = stringPreferencesKey("playerBackgroundStyle")
+val ReduceDynamicBlurKey = booleanPreferencesKey("reduce_dynamic_blur")
 val MiniPlayerBackgroundStyleKey = stringPreferencesKey("miniPlayerBackgroundStyle")
 val ShowLyricsKey = booleanPreferencesKey("showLyrics")
 val SwipeLyricsKey = booleanPreferencesKey("swipeLyrics")
@@ -464,6 +484,7 @@ val LyricsStandardBlurKey = booleanPreferencesKey("lyricsStandardBlur")
 val HideStatusBarOnFullscreenKey = booleanPreferencesKey("hideStatusBarOnFullscreen")
 
 val LyricsAnimationStyleKey = stringPreferencesKey("lyricsAnimationStyle")
+
 enum class LyricsAnimationStyle {
     NONE,
     FADE,

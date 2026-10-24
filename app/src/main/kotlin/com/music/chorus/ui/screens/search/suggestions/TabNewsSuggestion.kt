@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.screens.search.suggestions
 
 import androidx.compose.animation.animateContentSize
@@ -15,6 +13,8 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -57,7 +57,6 @@ import androidx.compose.ui.layout.boundsInRoot
 import kotlin.math.abs
 import java.net.URLEncoder
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SuggestionsTabContent(
     navController: NavController,
@@ -199,7 +198,6 @@ fun SuggestionsTabContent(
                 }
             }
 
-            
             if (suggestionTracks != null || suggestionArtists != null || suggestionAlbums != null || suggestionVideos != null) {
                 item {
                     Column(
@@ -223,7 +221,6 @@ fun SuggestionsTabContent(
         }
     }
 }
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun TrendingAppleMusicSection(
     tracks: List<SuggestionTrack>,
@@ -266,10 +263,10 @@ fun TrendingAppleMusicSection(
                     val isTop = i == startIdx
                     val isBottom = i == endIdx - 1
                     val shape = when {
-                        isTop && isBottom -> RoundedCornerShape(24.dp)
-                        isTop -> RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp, bottomStart = 4.dp, bottomEnd = 4.dp)
-                        isBottom -> RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp, bottomStart = 24.dp, bottomEnd = 24.dp)
-                        else -> RoundedCornerShape(4.dp)
+                        isTop && isBottom -> if (isFluidTheme()) ContinuousRoundedRectangle(24.dp) else RoundedCornerShape(24.dp)
+                        isTop -> if (isFluidTheme()) ContinuousRoundedRectangle(topStart = 24.dp, topEnd = 24.dp, bottomStart = 4.dp, bottomEnd = 4.dp) else RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp, bottomStart = 4.dp, bottomEnd = 4.dp)
+                        isBottom -> if (isFluidTheme()) ContinuousRoundedRectangle(topStart = 4.dp, topEnd = 4.dp, bottomStart = 24.dp, bottomEnd = 24.dp) else RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp, bottomStart = 24.dp, bottomEnd = 24.dp)
+                        else -> if (isFluidTheme()) ContinuousRoundedRectangle(4.dp) else RoundedCornerShape(4.dp)
                     }
                     if (isMoreCard) {
                         Row(
@@ -290,8 +287,8 @@ fun TrendingAppleMusicSection(
                                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 8.dp, top = 4.dp)) {
                                     Text("#${track.rank}", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                                     Spacer(Modifier.width(8.dp))
-                                    
-                                    val playCount = remember(track.rank) { 
+
+                                    val playCount = remember(track.rank) {
                                         val base = 2_500_000 / (track.rank + 2)
                                         if (base >= 1_000_000) String.format("%.1fM plays", base / 1_000_000f)
                                         else String.format("%dk plays", base / 1_000)
@@ -309,7 +306,7 @@ fun TrendingAppleMusicSection(
                                             LoadingIndicator()
                                         }
                                     },
-                                    modifier = Modifier.padding(16.dp).clip(MaterialTheme.shapes.large).size(80.dp)
+                                    modifier = Modifier.padding(16.dp).clip(if (isFluidTheme()) ContinuousRoundedRectangle(12.dp) else MaterialTheme.shapes.large).size(80.dp)
                                 )
                             }
                         }
@@ -331,7 +328,6 @@ fun TrendingAppleMusicSection(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun TopArtistsSection(
     artists: List<SuggestionArtist>,
@@ -371,7 +367,7 @@ fun TopArtistsSection(
                     }
                     Spacer(Modifier.height(8.dp))
                     Text(artist.name, style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.fillMaxWidth())
-                    val playCount = remember(artist.rank) { 
+                    val playCount = remember(artist.rank) {
                         val base = 15_000_000 / (artist.rank + 8)
                         if (base >= 1_000_000) String.format("%.1fM plays", base / 1_000_000f)
                         else String.format("%dk plays", base / 1_000)
@@ -413,7 +409,7 @@ fun TrendingAlbumsSection(
                                     LoadingIndicator()
                                 }
                             },
-                            modifier = Modifier.size(120.dp).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surfaceVariant)
+                            modifier = Modifier.size(120.dp).clip(if (isFluidTheme()) ContinuousRoundedRectangle(12.dp) else RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surfaceVariant)
                         )
                         Surface(modifier = Modifier.size(28.dp).offset((-4).dp, (-4).dp), shape = CircleShape, color = MaterialTheme.colorScheme.primary, tonalElevation = 4.dp) {
                             Box(contentAlignment = Alignment.Center) {
@@ -439,7 +435,7 @@ fun TrendingAlbumsSection(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
                             .size(120.dp)
-                            .clip(RoundedCornerShape(12.dp))
+                            .clip(if (isFluidTheme()) ContinuousRoundedRectangle(12.dp) else RoundedCornerShape(12.dp))
                             .background(MaterialTheme.colorScheme.primaryContainer)
                     ) {
                         Icon(
@@ -463,7 +459,6 @@ fun TrendingAlbumsSection(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TrendingVideosSection(
     videos: List<SuggestionTrack>,
@@ -471,7 +466,7 @@ fun TrendingVideosSection(
     onMoreClick: () -> Unit
 ) {
     if (videos.isEmpty()) return
-    
+
     val carouselState = rememberCarouselState(itemCount = { videos.size })
     val context = LocalContext.current
 
@@ -488,7 +483,7 @@ fun TrendingVideosSection(
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
-            
+
             Text(
                 text = "More",
                 style = MaterialTheme.typography.labelLarge,
@@ -514,7 +509,7 @@ fun TrendingVideosSection(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .clip(RoundedCornerShape(16.dp))
+                    .clip(if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else RoundedCornerShape(16.dp))
                     .onGloballyPositioned { coordinates ->
                         val cardCenter = coordinates.boundsInRoot().center.x
                         val screenWidth = context.resources.displayMetrics.widthPixels
@@ -523,7 +518,7 @@ fun TrendingVideosSection(
                     }
                     .clickable { onVideoClick(video) }
             ) {
-                
+
                 AsyncImage(
                     model = video.thumbnailUrl,
                     contentDescription = null,
@@ -531,8 +526,6 @@ fun TrendingVideosSection(
                     contentScale = ContentScale.Crop
                 )
 
-
-                
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -547,7 +540,6 @@ fun TrendingVideosSection(
                         )
                 )
 
-                
                 Column(
                     modifier = Modifier
                         .align(Alignment.BottomStart)

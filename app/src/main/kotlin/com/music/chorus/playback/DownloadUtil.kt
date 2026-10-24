@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.playback
 
 import coil3.SingletonImageLoader
@@ -153,7 +151,6 @@ constructor(
 
                 upsert(updatedSong)
 
-                
                 updatedSong.thumbnailUrl?.let { url ->
                     val request = ImageRequest.Builder(context)
                         .data(url)

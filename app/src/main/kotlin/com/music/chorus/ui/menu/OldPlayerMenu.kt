@@ -94,7 +94,6 @@ fun OldPlayerMenu(
     val coroutineScope = rememberCoroutineScope()
     val playerVolume = playerConnection.service.playerVolume.collectAsState()
 
-    
     val castHandler = remember(playerConnection) {
         try {
             playerConnection.service.castConnectionHandler
@@ -215,7 +214,6 @@ fun OldPlayerMenu(
         }
     }
 
-
     LazyColumn(
         contentPadding = PaddingValues(
             start = 0.dp,
@@ -224,7 +222,7 @@ fun OldPlayerMenu(
             bottom = 8.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
         ),
     ) {
-        
+
         item {
             val startingRadioText = stringResource(R.string.starting_radio)
             NewActionGrid(
@@ -290,7 +288,6 @@ fun OldPlayerMenu(
 
         item { Spacer(modifier = Modifier.height(8.dp)) }
 
-        
         item {
             Material3MenuGroup(
                 items = buildList {
@@ -301,7 +298,7 @@ fun OldPlayerMenu(
                             }
                         )
                     )
-                    
+
                     add(
                         Material3MenuItemData(
                             title = { Text(text = "Ambient Mode") },
@@ -340,7 +337,6 @@ fun OldPlayerMenu(
                         )
                     }
 
-                    
                     when (download?.state) {
                         Download.STATE_COMPLETED -> {
                             add(
@@ -458,7 +454,6 @@ fun OldPlayerMenu(
                         }
                     }
 
-                    
                     val isLiked = currentSong?.song?.liked == true
                     add(
                         Material3MenuItemData(
@@ -478,7 +473,6 @@ fun OldPlayerMenu(
                         )
                     )
 
-                    
                     if (!isListenTogetherGuest) {
                         add(
                             Material3MenuItemData(
@@ -549,7 +543,6 @@ fun OldPlayerMenu(
 
         item { Spacer(modifier = Modifier.height(12.dp)) }
 
-        
         item {
             Material3MenuGroup(
                 items = buildList {
@@ -584,11 +577,10 @@ fun OldPlayerMenu(
                         )
                     }
 
-                    
                     val isInLibrary = librarySong?.song?.inLibrary != null
                     add(
                         Material3MenuItemData(
-                            title = { 
+                            title = {
                                 Text(
                                     text = stringResource(
                                         if (isInLibrary) R.string.remove_from_library
@@ -650,7 +642,6 @@ fun OldPlayerMenu(
 
         item { Spacer(modifier = Modifier.height(12.dp)) }
 
-        
         item {
             Material3MenuGroup(
                 items = buildList {

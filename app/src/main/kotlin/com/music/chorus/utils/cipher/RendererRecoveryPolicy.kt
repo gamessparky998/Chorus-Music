@@ -1,6 +1,5 @@
 package pushkar.chorus.music.utils.cipher
 
-
 class RendererRecoveryPolicy(
     private val maxConsecutiveFailures: Int = DEFAULT_MAX_CONSECUTIVE_FAILURES,
     private val backoffMs: Long = DEFAULT_BACKOFF_MS,
@@ -10,11 +9,9 @@ class RendererRecoveryPolicy(
 
     private var backoffUntilMs = 0L
 
-    
     fun shouldAttempt(nowMs: Long): Boolean =
         consecutiveFailures < maxConsecutiveFailures || nowMs >= backoffUntilMs
 
-    
     fun onFailure(nowMs: Long) {
         consecutiveFailures++
         if (consecutiveFailures >= maxConsecutiveFailures) {
@@ -22,7 +19,6 @@ class RendererRecoveryPolicy(
         }
     }
 
-    
     fun onSuccess() {
         consecutiveFailures = 0
         backoffUntilMs = 0L

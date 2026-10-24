@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.menu
 
 import android.annotation.SuppressLint
@@ -20,8 +18,9 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -86,7 +85,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("MutableCollectionMutableState")
 @Composable
 fun YouTubePlaylistMenu(
@@ -308,7 +306,7 @@ fun YouTubePlaylistMenu(
                                 contentDescription = null,
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .clip(RoundedCornerShape(ThumbnailCornerRadius)),
+                                    .clip(if (isFluidTheme()) ContinuousRoundedRectangle(ThumbnailCornerRadius) else RoundedCornerShape(ThumbnailCornerRadius)),
                             )
                         }
                     },
@@ -483,10 +481,10 @@ fun YouTubePlaylistMenu(
                         }
                     ),
                     Material3MenuItemData(
-                        title = { 
+                        title = {
                             Text(
-                                text = if (isPinned) "Unpin from Speed dial" else "Pin to Speed dial" 
-                            ) 
+                                text = if (isPinned) "Unpin from Speed dial" else "Pin to Speed dial"
+                            )
                         },
                         icon = {
                             Icon(
@@ -535,6 +533,7 @@ fun YouTubePlaylistMenu(
                                         }
                                     )
                                 }
+
                                 Download.STATE_QUEUED, Download.STATE_DOWNLOADING -> {
                                     Material3MenuItemData(
                                         title = { Text(text = stringResource(R.string.downloading)) },
@@ -549,6 +548,7 @@ fun YouTubePlaylistMenu(
                                         }
                                     )
                                 }
+
                                 else -> {
                                     Material3MenuItemData(
                                         title = { Text(text = stringResource(R.string.action_download)) },

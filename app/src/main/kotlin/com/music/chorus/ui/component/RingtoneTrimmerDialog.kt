@@ -19,7 +19,6 @@ import pushkar.chorus.music.R
 import pushkar.chorus.music.utils.makeTimeString
 import kotlinx.coroutines.delay
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RingtoneTrimmerDialog(
     isVisible: Boolean,
@@ -159,7 +158,7 @@ fun RingtoneTrimmerDialog(
                     value = rangeSec,
                     onValueChange = { newRangeSec ->
                         rangeSec = newRangeSec
-                        
+
                         if (isPlaying) {
                             exoPlayer.pause()
                             isPlaying = false

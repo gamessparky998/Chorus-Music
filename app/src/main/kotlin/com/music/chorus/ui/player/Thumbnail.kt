@@ -9,7 +9,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -34,7 +33,6 @@ import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
@@ -105,7 +103,11 @@ import kotlinx.coroutines.delay
 import pushkar.chorus.music.applecanvas.AppleMusicCanvasProvider
 import pushkar.chorus.music.chorusmusiccanvas.chorusmusicCanvasProvider
 import java.util.Locale
-
+import androidx.compose.ui.platform.LocalDensity
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
+import pushkar.chorus.music.constants.PlayerArtworkStyle
+import pushkar.chorus.music.constants.PlayerArtworkStyleKey
 
 @Immutable
 data class ThumbnailDimensions(
@@ -115,13 +117,11 @@ data class ThumbnailDimensions(
     val cornerRadius: Dp
 )
 
-
 @Immutable
 data class MediaItemsData(
     val items: List<MediaItem>,
     val currentIndex: Int
 )
-
 
 @Stable
 private fun calculateThumbnailDimensions(
@@ -144,7 +144,6 @@ private fun calculateThumbnailDimensions(
         cornerRadius = cornerRadius * 2
     )
 }
-
 
 @Stable
 private fun getMediaItems(
@@ -197,7 +196,6 @@ private fun getMediaItems(
     return MediaItemsData(items, currentMediaIndex)
 }
 
-
 @Stable
 @Composable
 private fun getTextColor(playerBackground: PlayerBackgroundStyle): Color {
@@ -206,7 +204,6 @@ private fun getTextColor(playerBackground: PlayerBackgroundStyle): Color {
         PlayerBackgroundStyle.BLUR, PlayerBackgroundStyle.GRADIENT, PlayerBackgroundStyle.GLOW_ANIMATED, PlayerBackgroundStyle.APPLE_MUSIC, PlayerBackgroundStyle.LIVE_MESH -> Color.White
     }
 }
-
 
 object CanvasArtworkPlaybackCache {
     private const val defaultMaxSize = 256
@@ -259,7 +256,6 @@ object CanvasArtworkPlaybackCache {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Thumbnail(
     sliderPositionProvider: () -> Long?,
@@ -273,13 +269,11 @@ fun Thumbnail(
     val context = LocalContext.current
     val layoutDirection = LocalLayoutDirection.current
 
-
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
     val error by playerConnection.error.collectAsState()
     val queueTitle by playerConnection.queueTitle.collectAsState()
     val canSkipPrevious by playerConnection.canSkipPrevious.collectAsState()
     val canSkipNext by playerConnection.canSkipNext.collectAsState()
-
 
     val swipeThumbnailPref by rememberPreference(SwipeThumbnailKey, true)
     val swipeThumbnail = swipeThumbnailPref && !isListenTogetherGuest
@@ -291,12 +285,9 @@ fun Thumbnail(
     )
     val thumbnailCornerRadius by rememberPreference(ThumbnailCornerRadiusKey, defaultValue = 3f)
 
-
     val textBackgroundColor = getTextColor(playerBackground)
 
-
     val thumbnailLazyGridState = rememberLazyGridState()
-
 
     val mediaItemsData by remember(
         playerConnection.player.currentMediaItemIndex,
@@ -312,7 +303,6 @@ fun Thumbnail(
     val mediaItems = mediaItemsData.items
     val currentMediaIndex = mediaItemsData.currentIndex
 
-
     val thumbnailSnapLayoutInfoProvider = remember(thumbnailLazyGridState) {
         ThumbnailSnapLayoutInfoProvider(
             lazyGridState = thumbnailLazyGridState,
@@ -323,10 +313,8 @@ fun Thumbnail(
         )
     }
 
-
     val currentItem by remember { derivedStateOf { thumbnailLazyGridState.firstVisibleItemIndex } }
     val itemScrollOffset by remember { derivedStateOf { thumbnailLazyGridState.firstVisibleItemScrollOffset } }
-
 
     LaunchedEffect(itemScrollOffset) {
         if (!thumbnailLazyGridState.isScrollInProgress || !swipeThumbnail || itemScrollOffset != 0 || currentMediaIndex < 0) return@LaunchedEffect
@@ -337,7 +325,6 @@ fun Thumbnail(
             playerConnection.player.seekToPreviousMediaItem()
         }
     }
-
 
     LaunchedEffect(mediaMetadata, canSkipPrevious, canSkipNext) {
         val index = maxOf(0, currentMediaIndex)
@@ -357,7 +344,6 @@ fun Thumbnail(
         }
     }
 
-
     LaunchedEffect(mediaItems) {
         mediaItems.forEach { item ->
             val artworkUri = item.mediaMetadata.artworkUri?.toString()?.resize(1200, 1200) ?: return@forEach
@@ -369,7 +355,6 @@ fun Thumbnail(
             SingletonImageLoader.get(context).enqueue(request)
         }
     }
-
 
     var showSeekEffect by remember { mutableStateOf(false) }
     var seekDirection by remember { mutableStateOf("") }
@@ -398,7 +383,6 @@ fun Thumbnail(
             }
         }
 
-
         AnimatedVisibility(
             visible = error == null && !(playerBackground == PlayerBackgroundStyle.APPLE_MUSIC && !isLandscape),
             enter = fadeIn(),
@@ -423,7 +407,6 @@ fun Thumbnail(
                     )
                 }
 
-
                 BoxWithConstraints(
                     contentAlignment = Alignment.Center,
                     modifier = if (isLandscape) {
@@ -442,14 +425,12 @@ fun Thumbnail(
                         )
                     }
 
-
                     val onSeekCallback = remember {
                         { direction: String, showEffect: Boolean ->
                             seekDirection = direction
                             showSeekEffect = showEffect
                         }
                     }
-
 
                     val isScrollEnabled by remember(swipeThumbnail) {
                         derivedStateOf { swipeThumbnail && isPlayerExpanded() }
@@ -495,7 +476,6 @@ fun Thumbnail(
             }
         }
 
-
         LaunchedEffect(showSeekEffect) {
             if (showSeekEffect) {
                 delay(1000)
@@ -513,7 +493,6 @@ fun Thumbnail(
         }
     }
 }
-
 
 @Composable
 private fun ThumbnailHeader(
@@ -566,8 +545,6 @@ private fun ThumbnailHeader(
     }
 }
 
-
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun ThumbnailItem(
     item: MediaItem,
@@ -680,22 +657,42 @@ private fun ThumbnailItem(
             },
         contentAlignment = Alignment.Center
     ) {
+        val isFluid = isFluidTheme()
+        val fullRadiusPx = with(LocalDensity.current) { dimensions.cornerRadius.toPx() }
+        val artworkStyle by rememberEnumPreference(PlayerArtworkStyleKey, defaultValue = PlayerArtworkStyle.CARD)
+        val coverStyle = artworkStyle.coverStyle()
+        val fluidRotation by rememberCoverRotation(coverStyle, isPlaying && isCurrentItem)
+        val effectiveRotation = if (isFluid) {
+            if (coverStyle.spins) fluidRotation else 0f
+        } else {
+            rotation
+        }
+        val cardShape = if (isFluid) {
+            coverStyle.shape(dimensions.cornerRadius)
+        } else if (rotatingThumbnail) {
+            MaterialShapes.Clover8Leaf.toShape()
+        } else {
+            RoundedCornerShape(dimensions.cornerRadius)
+        }
+
         Box(
             modifier = Modifier
                 .width(dimensions.thumbnailSize)
                 .aspectRatio(1f)
                 .graphicsLayer {
-                    rotationZ = rotation
+                    rotationZ = effectiveRotation
                 }
-                .clip(
-                    if (rotatingThumbnail) {
-                        MaterialShapes.Clover8Leaf.toShape()
-                    } else {
-                        RoundedCornerShape(dimensions.cornerRadius)
-                    }
+                .then(
+                    if (isFluid && isCurrentItem) {
+                        Modifier.fullArtworkMorphTarget(
+                            cornerRadiusPx = fullRadiusPx,
+                            travels = if (isFluid) !coverStyle.spins else !rotatingThumbnail,
+                        )
+                    } else Modifier
                 )
+                .clip(cardShape)
                 .graphicsLayer {
-                    rotationZ = -rotation
+                    rotationZ = -effectiveRotation
                 }
         ) {
             if (hidePlayerThumbnail) {
@@ -711,6 +708,10 @@ private fun ThumbnailItem(
                     artworkUri = artworkUriToUse?.resize(1200, 1200),
                     cropArtwork = cropAlbumArt
                 )
+
+                if (isFluid) {
+                    coverStyle.Decoration(Modifier.matchParentSize())
+                }
             }
 
             if (canvasThumbnailAnimation && item.mediaId == currentMediaId && !rotatingThumbnail && playerBackground != PlayerBackgroundStyle.APPLE_MUSIC) {
@@ -749,7 +750,6 @@ private fun ThumbnailItem(
                         ).filter { (s, a) -> s.isNotBlank() && a.isNotBlank() }
                             .firstNotNullOfOrNull { (s, a) ->
 
-
                                 if (!albumName.isNullOrBlank()) {
                                     AppleMusicCanvasProvider.getByAlbumArtist(
                                         album = albumName,
@@ -777,14 +777,12 @@ private fun ThumbnailItem(
                             }
                     }
 
-
                     val requestedArtist = item.mediaMetadata.artist?.toString() ?: ""
                     val requestedTitle = item.mediaMetadata.title?.toString() ?: ""
 
                     val validated = fetched?.let { artwork ->
                         val resultArtist = artwork.artist
                         val resultName = artwork.name
-
 
                         val artistMatches = if (resultArtist != null && requestedArtist.isNotBlank()) {
                             val normalizedResult = normalizeCanvasArtistName(resultArtist)
@@ -794,7 +792,6 @@ private fun ThumbnailItem(
                                     normalizedResult.contains(normalizedRequested, ignoreCase = true) ||
                                     normalizedRequested.contains(normalizedResult, ignoreCase = true)
                         } else true
-
 
                         val requestedAlbum = item.mediaMetadata.albumTitle?.toString() ?: ""
                         val canvasAlbumName = artwork.albumName
@@ -866,7 +863,6 @@ private fun ThumbnailItem(
     }
 }
 
-
 @Composable
 private fun HiddenThumbnailPlaceholder(
     textBackgroundColor: Color,
@@ -886,7 +882,6 @@ private fun HiddenThumbnailPlaceholder(
         )
     }
 }
-
 
 @Composable
 private fun ThumbnailImage(
@@ -923,7 +918,6 @@ private fun ThumbnailImage(
         )
     }
 }
-
 
 @Composable
 private fun SeekEffectOverlay(

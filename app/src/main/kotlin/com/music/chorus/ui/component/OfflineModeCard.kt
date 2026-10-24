@@ -58,7 +58,7 @@ fun OfflineModeCard(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // Circular icon background
+
                 Box(
                     modifier = Modifier
                         .size(48.dp)
@@ -80,9 +80,9 @@ fun OfflineModeCard(
                         modifier = Modifier.size(24.dp)
                     )
                 }
-                
+
                 Spacer(modifier = Modifier.width(16.dp))
-                
+
                 Column {
                     Text(
                         text = "Welcome to Chorus!",

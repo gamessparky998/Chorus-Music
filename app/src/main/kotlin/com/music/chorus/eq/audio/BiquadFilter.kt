@@ -7,7 +7,6 @@ import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-
 class BiquadFilter(
     private val sampleRate: Int,
     private val frequency: Double,
@@ -15,7 +14,7 @@ class BiquadFilter(
     private val q: Double = 1.41,
     private val filterType: FilterType = FilterType.PK
 ) {
-    
+
     private var a0 = 0.0
     private var a1 = 0.0
     private var a2 = 0.0
@@ -23,7 +22,6 @@ class BiquadFilter(
     private var b1 = 0.0
     private var b2 = 0.0
 
-    
     private var x1L = 0.0
     private var x2L = 0.0
     private var y1L = 0.0
@@ -38,28 +36,25 @@ class BiquadFilter(
         calculateCoefficients()
     }
 
-    
     private fun calculateCoefficients() {
         when (filterType) {
             FilterType.PK -> calculatePeakingCoefficients()
             FilterType.LSC -> calculateLowShelfCoefficients()
             FilterType.HSC -> calculateHighShelfCoefficients()
             else -> {
-                
+
                 calculatePeakingCoefficients()
             }
         }
     }
 
-    
     private fun calculatePeakingCoefficients() {
-        val A = 10.0.pow(gain / 40.0) 
+        val A = 10.0.pow(gain / 40.0)
         val omega = 2.0 * PI * frequency / sampleRate
         val sinOmega = sin(omega)
         val cosOmega = cos(omega)
         val alpha = sinOmega / (2.0 * q)
 
-        
         b0 = 1.0 + alpha * A
         b1 = -2.0 * cosOmega
         b2 = 1.0 - alpha * A
@@ -67,7 +62,6 @@ class BiquadFilter(
         a1 = -2.0 * cosOmega
         a2 = 1.0 - alpha / A
 
-        
         b0 /= a0
         b1 /= a0
         b2 /= a0
@@ -76,17 +70,15 @@ class BiquadFilter(
         a0 = 1.0
     }
 
-    
     private fun calculateLowShelfCoefficients() {
-        val A = sqrt(10.0.pow(gain / 20.0)) 
+        val A = sqrt(10.0.pow(gain / 20.0))
         val omega = 2.0 * PI * frequency / sampleRate
         val sinOmega = sin(omega)
         val cosOmega = cos(omega)
-        val S = 1.0 
+        val S = 1.0
         val alpha = sinOmega / 2.0 * sqrt((A + 1.0 / A) * (1.0 / S - 1.0) + 2.0)
         val sqrtA = sqrt(A)
 
-        
         val aPlusOne = A + 1.0
         val aMinusOne = A - 1.0
         val twoSqrtAAlpha = 2.0 * sqrtA * alpha
@@ -98,7 +90,6 @@ class BiquadFilter(
         a1 = -2.0 * (aMinusOne + aPlusOne * cosOmega)
         a2 = aPlusOne + aMinusOne * cosOmega - twoSqrtAAlpha
 
-        
         b0 /= a0
         b1 /= a0
         b2 /= a0
@@ -107,17 +98,15 @@ class BiquadFilter(
         a0 = 1.0
     }
 
-    
     private fun calculateHighShelfCoefficients() {
-        val A = sqrt(10.0.pow(gain / 20.0)) 
+        val A = sqrt(10.0.pow(gain / 20.0))
         val omega = 2.0 * PI * frequency / sampleRate
         val sinOmega = sin(omega)
         val cosOmega = cos(omega)
-        val S = 1.0 
+        val S = 1.0
         val alpha = sinOmega / 2.0 * sqrt((A + 1.0 / A) * (1.0 / S - 1.0) + 2.0)
         val sqrtA = sqrt(A)
 
-        
         val aPlusOne = A + 1.0
         val aMinusOne = A - 1.0
         val twoSqrtAAlpha = 2.0 * sqrtA * alpha
@@ -129,7 +118,6 @@ class BiquadFilter(
         a1 = 2.0 * (aMinusOne - aPlusOne * cosOmega)
         a2 = aPlusOne - aMinusOne * cosOmega - twoSqrtAAlpha
 
-        
         b0 /= a0
         b1 /= a0
         b2 /= a0
@@ -138,11 +126,9 @@ class BiquadFilter(
         a0 = 1.0
     }
 
-    
     fun processSample(input: Double): Double {
         val output = b0 * input + b1 * x1L + b2 * x2L - a1 * y1L - a2 * y2L
 
-        
         x2L = x1L
         x1L = input
         y2L = y1L
@@ -151,16 +137,14 @@ class BiquadFilter(
         return output
     }
 
-    
     fun processStereo(inputLeft: Double, inputRight: Double): Pair<Double, Double> {
-        
+
         val outputLeft = b0 * inputLeft + b1 * x1L + b2 * x2L - a1 * y1L - a2 * y2L
         x2L = x1L
         x1L = inputLeft
         y2L = y1L
         y1L = outputLeft
 
-        
         val outputRight = b0 * inputRight + b1 * x1R + b2 * x2R - a1 * y1R - a2 * y2R
         x2R = x1R
         x1R = inputRight
@@ -170,7 +154,6 @@ class BiquadFilter(
         return Pair(outputLeft, outputRight)
     }
 
-    
     fun reset() {
         x1L = 0.0
         x2L = 0.0

@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.menu
 
 import android.app.SearchManager
@@ -26,7 +24,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularWavyProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -34,6 +31,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.foundation.shape.RoundedCornerShape
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -82,7 +81,6 @@ import pushkar.chorus.music.lyrics.LyricsTranslationHelper
 import pushkar.chorus.music.utils.rememberPreference
 import androidx.compose.runtime.collectAsState
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LyricsMenu(
     lyricsProvider: () -> LyricsEntity?,
@@ -94,7 +92,7 @@ fun LyricsMenu(
 ) {
     val context = LocalContext.current
     val database = LocalDatabase.current
-    
+
     val openRouterApiKey by rememberPreference(OpenRouterApiKey, "")
     val deeplApiKey by rememberPreference(DeeplApiKey, "")
     val aiProvider by rememberPreference(AiProviderKey, "OpenRouter")
@@ -107,8 +105,6 @@ fun LyricsMenu(
 
     val hasApiKey = if (aiProvider == "DeepL") deeplApiKey.isNotBlank() else openRouterApiKey.isNotBlank()
 
-    
-    
     val hasTranslations by LyricsTranslationHelper.hasActiveTranslations.collectAsState()
 
     var showEditDialog by rememberSaveable {
@@ -210,8 +206,7 @@ fun LyricsMenu(
 
                 TextButton(
                     onClick = {
-                        
-                        
+
                         viewModel.search(
                             searchMediaMetadata.id,
                             titleField.text,
@@ -220,8 +215,7 @@ fun LyricsMenu(
                             searchMediaMetadata.album?.title
                         )
                         showSearchResultDialog = true
-                        
-                        
+
                         if (!isNetworkAvailable) {
                             Toast.makeText(context, context.getString(R.string.error_no_internet), Toast.LENGTH_SHORT).show()
                         }
@@ -294,7 +288,7 @@ fun LyricsMenu(
 
                         Surface(
                             color = MaterialTheme.colorScheme.secondaryContainer,
-                            shape = RoundedCornerShape(6.dp),
+                            shape = if (isFluidTheme()) ContinuousRoundedRectangle(6.dp) else RoundedCornerShape(6.dp),
                             modifier = Modifier.padding(top = 4.dp)
                         ) {
                             Row(
@@ -368,7 +362,6 @@ fun LyricsMenu(
 
     var lyricsOffset by rememberSaveable { mutableIntStateOf(songProvider()?.lyricsOffset ?: 0) }
 
-    
     LaunchedEffect(songProvider()) {
         isChecked = songProvider()?.romanizeLyrics ?: true
     }
@@ -442,7 +435,7 @@ fun LyricsMenu(
         item {
             Material3MenuGroup(
                 items = buildList {
-                    
+
                     if (hasApiKey) {
                         add(
                             Material3MenuItemData(
@@ -485,7 +478,7 @@ fun LyricsMenu(
                             )
                         )
                     }
-                    
+
                     add(
                         Material3MenuItemData(
                             title = { Text(stringResource(R.string.lyrics_offset)) },
@@ -508,7 +501,7 @@ fun LyricsMenu(
                             }
                         )
                     )
-                    
+
                     add(
                         Material3MenuItemData(
                             title = { Text(text = stringResource(R.string.romanize_current_track)) },
@@ -545,6 +538,5 @@ fun LyricsMenu(
             )
         }
     }
-    
-    
+
 }

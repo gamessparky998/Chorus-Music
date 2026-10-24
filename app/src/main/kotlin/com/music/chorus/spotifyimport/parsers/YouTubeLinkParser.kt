@@ -25,7 +25,7 @@ class YouTubeLinkParser : UniversalLinkParser {
                 UniversalParsedTrack(
                     title = title,
                     artist = artist,
-                    durationMs = item.duration?.toLong()?.times(1000L) 
+                    durationMs = item.duration?.toLong()?.times(1000L)
                 )
             } else null
         }

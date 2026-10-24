@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.spotify.models
 
 import kotlinx.serialization.SerialName

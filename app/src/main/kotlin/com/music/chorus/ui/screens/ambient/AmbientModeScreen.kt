@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.shape.RoundedCornerShape
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -84,7 +86,7 @@ fun AmbientModeScreen(navController: NavController) {
             .pointerInput(Unit) {
                 detectDragGestures(
                     onDragEnd = {
-                        
+
                         if (abs(swipeThresholdX) > 150f && abs(swipeThresholdX) > abs(swipeThresholdY)) {
                             if (swipeThresholdX > 0) {
                                 playerConnection.player.seekToPreviousMediaItem()
@@ -100,7 +102,6 @@ fun AmbientModeScreen(navController: NavController) {
                         swipeThresholdX += dragAmount.x
                         swipeThresholdY += dragAmount.y
 
-                        
                         if (abs(dragAmount.y) > 10f && abs(dragAmount.y) > abs(dragAmount.x)) {
                             val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
                             val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
@@ -109,7 +110,7 @@ fun AmbientModeScreen(navController: NavController) {
                             } else if (dragAmount.y > 0 && currentVolume > 0) {
                                 audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, AudioManager.FLAG_SHOW_UI)
                             }
-                            swipeThresholdY = 0f 
+                            swipeThresholdY = 0f
                         }
                     }
                 )
@@ -125,7 +126,7 @@ fun AmbientModeScreen(navController: NavController) {
                 .safeDrawingPadding(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            
+
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -140,7 +141,7 @@ fun AmbientModeScreen(navController: NavController) {
                     modifier = Modifier
                         .fillMaxHeight(0.85f)
                         .aspectRatio(1f)
-                        .clip(RoundedCornerShape(16.dp))
+                        .clip(if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else RoundedCornerShape(16.dp))
                         .pointerInput(Unit) {
                             detectTapGestures(
                                 onDoubleTap = {
@@ -151,7 +152,6 @@ fun AmbientModeScreen(navController: NavController) {
                 )
             }
 
-            
             Box(
                 modifier = Modifier
                     .weight(1f)

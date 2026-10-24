@@ -1,10 +1,7 @@
-
-
 package pushkar.chorus.music.ui.screens.playlist
 
 import pushkar.chorus.music.ui.utils.resize
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -28,11 +25,12 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -108,7 +106,6 @@ import pushkar.chorus.music.ui.utils.backToMain
 import pushkar.chorus.music.utils.listItemShape
 import pushkar.chorus.music.utils.makeTimeString
 import pushkar.chorus.music.viewmodels.TopPlaylistViewModel
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun TopPlaylistScreen(
     navController: NavController,
@@ -134,13 +131,13 @@ fun TopPlaylistScreen(
     var isSearching by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf(TextFieldValue()) }
     val focusRequester = remember { FocusRequester() }
-    
+
     LaunchedEffect(isSearching) {
         if (isSearching) {
             focusRequester.requestFocus()
         }
     }
-    
+
     var inSelectMode by rememberSaveable { mutableStateOf(false) }
     val selection = rememberSaveable(
         saver = listSaver<MutableList<String>, String>(
@@ -386,7 +383,6 @@ fun TopPlaylistScreen(
                 }
             }
 
-
         DraggableScrollbar(
             modifier = Modifier
                 .padding(
@@ -534,7 +530,6 @@ private fun TopPlaylistHeader(
     ) {
         Spacer(Modifier.height(50.dp))
 
-        
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -549,7 +544,7 @@ private fun TopPlaylistHeader(
                         if (LocalConfiguration.current.screenWidthDp > 600) Modifier.size(300.dp)
                         else Modifier.fillMaxWidth().aspectRatio(1f)
                     )
-                    .clip(RoundedCornerShape(8.dp)),
+                    .clip(if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else RoundedCornerShape(8.dp)),
                 contentScale = androidx.compose.ui.layout.ContentScale.Crop
             )
         }
@@ -563,7 +558,7 @@ private fun TopPlaylistHeader(
                 .padding(bottom = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            
+
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     painter = painterResource(R.drawable.queue_music),
@@ -584,13 +579,12 @@ private fun TopPlaylistHeader(
 
             Spacer(Modifier.height(24.dp))
 
-            
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                
+
                 Button(
                     onClick = {
                         playerConnection.playQueue(
@@ -600,7 +594,7 @@ private fun TopPlaylistHeader(
                             )
                         )
                     },
-                    shape = ButtonDefaults.shape,
+                    shape = if (isFluidTheme()) ContinuousRoundedRectangle(24.dp) else ButtonDefaults.shape,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant,
                         contentColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -627,7 +621,6 @@ private fun TopPlaylistHeader(
                     }
                 }
 
-                
                 Button(
                     onClick = {
                         playerConnection.playQueue(
@@ -637,7 +630,7 @@ private fun TopPlaylistHeader(
                             )
                         )
                     },
-                    shape = ButtonDefaults.shape,
+                    shape = if (isFluidTheme()) ContinuousRoundedRectangle(24.dp) else ButtonDefaults.shape,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary,
                         contentColor = MaterialTheme.colorScheme.onPrimary
@@ -663,7 +656,6 @@ private fun TopPlaylistHeader(
                     }
                 }
 
-                
                 Surface(
                     onClick = {
                         menuState.show {
@@ -727,7 +719,6 @@ private fun TopPlaylistHeader(
 
             Spacer(Modifier.height(16.dp))
 
-            
             Text(
                 text = buildString {
                     append(pluralStringResource(R.plurals.n_song, songs.size, songs.size))
@@ -742,7 +733,6 @@ private fun TopPlaylistHeader(
 
             Spacer(Modifier.height(16.dp))
 
-            
             Column(
                 modifier = Modifier.fillMaxWidth()
             ) {

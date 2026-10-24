@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.spotify.models
 
 import kotlinx.serialization.SerialName
@@ -37,7 +35,6 @@ data class SpotifySimpleAlbum(
     val artists: List<SpotifySimpleArtist> = emptyList(),
     val uri: String? = null,
 )
-
 
 @Serializable
 data class SpotifySavedTrack(

@@ -19,6 +19,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
+
 @Composable
 fun AutoPlaylistButton(
     title: String,
@@ -33,12 +36,12 @@ fun AutoPlaylistButton(
         Color(0xFF009688), Color(0xFF4CAF50), Color(0xFFFF9800),
         Color(0xFFFF5722), Color(0xFF795548), Color(0xFF607D8B)
     )
-    val backgroundColor = androidx.compose.runtime.remember(icon) { 
-        colors[kotlin.math.abs(icon * 31) % colors.size] 
+    val backgroundColor = androidx.compose.runtime.remember(icon) {
+        colors[kotlin.math.abs(icon * 31) % colors.size]
     }
 
     Surface(
-        shape = RoundedCornerShape(12.dp),
+        shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else RoundedCornerShape(12.dp),
         color = backgroundColor,
         modifier = modifier.clickable(onClick = onClick)
     ) {

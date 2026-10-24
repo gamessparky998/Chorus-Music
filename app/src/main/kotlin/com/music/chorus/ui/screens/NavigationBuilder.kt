@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.screens
 
 import android.app.Activity
@@ -9,7 +7,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.getValue
@@ -60,7 +57,6 @@ import pushkar.chorus.music.chorusmusic.commitscreen.CommitScreen
 import pushkar.chorus.music.ui.screens.equalizer.axion.AxionEqScreen
 import pushkar.chorus.music.ui.screens.ambient.AmbientModeScreen
 
-@OptIn(ExperimentalMaterial3Api::class)
 fun NavGraphBuilder.navigationBuilder(
     navController: NavHostController,
     scrollBehavior: TopAppBarScrollBehavior,
@@ -102,7 +98,6 @@ fun NavGraphBuilder.navigationBuilder(
     composable(Screens.Library.route) {
         LibraryScreen(navController)
     }
-
 
     composable("history") {
         HistoryScreen(navController)
@@ -324,26 +319,39 @@ fun NavGraphBuilder.navigationBuilder(
         SettingsScreen(navController, scrollBehavior)
     }
 
-
     composable(
         route = "settings/update?highlightKey={highlightKey}",
         arguments = listOf(navArgument("highlightKey") { type = NavType.StringType; nullable = true })
     ) { backStackEntry ->
-       UpdateSettings(navController, scrollBehavior, highlightKey = backStackEntry.arguments?.getString("highlightKey"))
+        UpdateSettings(
+            navController,
+            scrollBehavior,
+            highlightKey = backStackEntry.arguments?.getString("highlightKey")
+        )
     }
 
     composable(
         route = "settings/account?highlightKey={highlightKey}",
         arguments = listOf(navArgument("highlightKey") { type = NavType.StringType; nullable = true })
     ) { backStackEntry ->
-        AccountSettingsScreen(navController, scrollBehavior, highlightKey = backStackEntry.arguments?.getString("highlightKey"))
+        AccountSettingsScreen(
+            navController,
+            scrollBehavior,
+            highlightKey = backStackEntry.arguments?.getString("highlightKey")
+        )
     }
 
     composable(
         route = "settings/appearance?highlightKey={highlightKey}",
         arguments = listOf(navArgument("highlightKey") { type = NavType.StringType; nullable = true })
     ) { backStackEntry ->
-        AppearanceSettings(navController, scrollBehavior, activity, snackbarHostState, highlightKey = backStackEntry.arguments?.getString("highlightKey"))
+        AppearanceSettings(
+            navController,
+            scrollBehavior,
+            activity,
+            snackbarHostState,
+            highlightKey = backStackEntry.arguments?.getString("highlightKey")
+        )
     }
 
     composable("settings/appearance/theme") {
@@ -354,7 +362,11 @@ fun NavGraphBuilder.navigationBuilder(
         route = "settings/content?highlightKey={highlightKey}",
         arguments = listOf(navArgument("highlightKey") { type = NavType.StringType; nullable = true })
     ) { backStackEntry ->
-        ContentSettings(navController, scrollBehavior, highlightKey = backStackEntry.arguments?.getString("highlightKey"))
+        ContentSettings(
+            navController,
+            scrollBehavior,
+            highlightKey = backStackEntry.arguments?.getString("highlightKey")
+        )
     }
 
     composable("uptime") {
@@ -371,14 +383,16 @@ fun NavGraphBuilder.navigationBuilder(
     ) { backStackEntry ->
         AiSettings(navController, scrollBehavior, highlightKey = backStackEntry.arguments?.getString("highlightKey"))
     }
-    
 
-    
     composable(
         route = "settings/player?highlightKey={highlightKey}",
         arguments = listOf(navArgument("highlightKey") { type = NavType.StringType; nullable = true })
     ) { backStackEntry ->
-        PlayerSettings(navController, scrollBehavior, highlightKey = backStackEntry.arguments?.getString("highlightKey"))
+        PlayerSettings(
+            navController,
+            scrollBehavior,
+            highlightKey = backStackEntry.arguments?.getString("highlightKey")
+        )
     }
 
     composable(
@@ -409,14 +423,22 @@ fun NavGraphBuilder.navigationBuilder(
         route = "settings/privacy?highlightKey={highlightKey}",
         arguments = listOf(navArgument("highlightKey") { type = NavType.StringType; nullable = true })
     ) { backStackEntry ->
-        PrivacySettings(navController, scrollBehavior, highlightKey = backStackEntry.arguments?.getString("highlightKey"))
+        PrivacySettings(
+            navController,
+            scrollBehavior,
+            highlightKey = backStackEntry.arguments?.getString("highlightKey")
+        )
     }
 
     composable(
         route = "settings/backup_restore?highlightKey={highlightKey}",
         arguments = listOf(navArgument("highlightKey") { type = NavType.StringType; nullable = true })
     ) { backStackEntry ->
-        BackupAndRestore(navController, scrollBehavior, highlightKey = backStackEntry.arguments?.getString("highlightKey"))
+        BackupAndRestore(
+            navController,
+            scrollBehavior,
+            highlightKey = backStackEntry.arguments?.getString("highlightKey")
+        )
     }
 
     composable("settings/discord") {
@@ -427,14 +449,13 @@ fun NavGraphBuilder.navigationBuilder(
         com.music.chorus.ui.screens.settings.LastFMSettingsScreen(navController)
     }
 
-    composable("settings/discord/experimental") {
-        com.music.chorus.ui.screens.settings.DiscordExperimental(navController)
+    composable("settings/discord/buttons") {
+        com.music.chorus.ui.screens.settings.DiscordButtonSettings(navController)
     }
 
     composable("settings/spotify_import") {
         SpotifyImportScreen(navController)
     }
-
 
     composable(
         route = "settings/about?highlightKey={highlightKey}",
@@ -456,7 +477,7 @@ fun NavGraphBuilder.navigationBuilder(
     }
 
     composable("settings/changelog") {
-        ChangelogScreen(navController,scrollBehavior)
+        ChangelogScreen(navController, scrollBehavior)
     }
     composable("settings/commits") {
         CommitScreen(navController, scrollBehavior)

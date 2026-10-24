@@ -40,10 +40,10 @@ fun SpeedDialGridItem(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .aspectRatio(1f) 
+            .aspectRatio(1f)
             .clip(RoundedCornerShape(ThumbnailCornerRadius))
     ) {
-        
+
         ItemThumbnail(
             thumbnailUrl = item.thumbnail,
             isActive = isActive,
@@ -52,14 +52,13 @@ fun SpeedDialGridItem(
             modifier = Modifier.fillMaxSize()
         )
 
-        
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            Color.Black.copy(alpha = 0.4f), 
+                            Color.Black.copy(alpha = 0.4f),
                             Color.Transparent,
                             Color.Black.copy(alpha = 0.6f),
                             Color.Black.copy(alpha = 0.9f)
@@ -68,25 +67,23 @@ fun SpeedDialGridItem(
                 )
         )
 
-        
         Row(
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .padding(8.dp) 
+                .padding(8.dp)
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = item.title,
-                style = MaterialTheme.typography.titleSmall, 
+                style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f)
             )
-            
-            
+
             if (item !is SongItem) {
                 Icon(
                     painter = painterResource(R.drawable.navigate_next),
@@ -96,7 +93,7 @@ fun SpeedDialGridItem(
                 )
         }
     }
-        
+
         if (isPinned) {
             Icon(
                 painter = painterResource(R.drawable.ic_push_pin),
@@ -108,7 +105,6 @@ fun SpeedDialGridItem(
                     .size(16.dp)
             )
         }
-
 
     }
 }

@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.viewmodels
 
 import android.content.Context
@@ -27,21 +25,17 @@ class AccountSettingsViewModel @Inject constructor(
     private val syncUtils: SyncUtils,
 ) : ViewModel() {
 
-    
     fun logoutAndClearSyncedContent(context: Context, onCookieChange: (String) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
-            
+
             syncUtils.clearAllSyncedContent()
 
-            
             App.forgetAccount(context)
 
-            
             onCookieChange("")
         }
     }
 
-    
     fun logoutKeepData(context: Context, onCookieChange: (String) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             App.forgetAccount(context)
@@ -51,7 +45,6 @@ class AccountSettingsViewModel @Inject constructor(
         }
     }
 
-    
     fun saveTokenAndRestart(
         context: Context,
         cookie: String,

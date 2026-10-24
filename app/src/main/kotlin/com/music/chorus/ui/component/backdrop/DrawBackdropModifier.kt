@@ -1,6 +1,6 @@
-
 package pushkar.chorus.music.ui.component.backdrop
 
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -8,6 +8,7 @@ import androidx.compose.runtime.neverEqualPolicy
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
@@ -25,12 +26,15 @@ import androidx.compose.ui.node.GlobalPositionAwareModifierNode
 import androidx.compose.ui.node.LayoutModifierNode
 import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.node.ObserverModifierNode
+import androidx.compose.ui.node.invalidateDraw
+import kotlinx.coroutines.launch
 import androidx.compose.ui.node.observeReads
 import androidx.compose.ui.node.requireGraphicsContext
 import androidx.compose.ui.platform.InspectorInfo
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.toSize
 import pushkar.chorus.music.ui.component.backdrop.backdrops.LayerBackdrop
 import pushkar.chorus.music.ui.component.backdrop.highlight.Highlight
 import pushkar.chorus.music.ui.component.backdrop.highlight.HighlightElement
@@ -44,6 +48,9 @@ import pushkar.chorus.music.ui.component.backdrop.shadow.ShadowElement
 private val DefaultHighlight = { Highlight.Default }
 private val DefaultShadow = { Shadow.Default }
 private val DefaultOnDrawBackdrop: DrawScope.(DrawScope.() -> Unit) -> Unit = { it() }
+private val NeverFrozen: () -> Boolean = { false }
+
+private const val LoopPoolMaxSize = 64
 
 fun Modifier.drawPlainBackdrop(
     backdrop: Backdrop,
@@ -54,7 +61,9 @@ fun Modifier.drawPlainBackdrop(
     onDrawBehind: (DrawScope.() -> Unit)? = null,
     onDrawBackdrop: DrawScope.(drawBackdrop: DrawScope.() -> Unit) -> Unit = DefaultOnDrawBackdrop,
     onDrawSurface: (DrawScope.() -> Unit)? = null,
-    onDrawFront: (DrawScope.() -> Unit)? = null
+    onDrawFront: (DrawScope.() -> Unit)? = null,
+    backdropScale: Float = 1f,
+    frozen: () -> Boolean = NeverFrozen
 ): Modifier {
     val shapeProvider = ShapeProvider(shape)
     return this
@@ -76,7 +85,9 @@ fun Modifier.drawPlainBackdrop(
                 onDrawBackdrop = onDrawBackdrop,
                 onDrawSurface = onDrawSurface,
                 onDrawFront = onDrawFront,
-                backdropScale = 1f
+                backdropScale = backdropScale.coerceIn(0.05f, 1f),
+                frozen = frozen,
+                loopBucket = null
             )
         )
 }
@@ -94,12 +105,9 @@ fun Modifier.drawBackdrop(
     onDrawBackdrop: DrawScope.(drawBackdrop: DrawScope.() -> Unit) -> Unit = DefaultOnDrawBackdrop,
     onDrawSurface: (DrawScope.() -> Unit)? = null,
     onDrawFront: (DrawScope.() -> Unit)? = null,
-    
-    
-    
-    
-    
-    backdropScale: Float = 1f
+    backdropScale: Float = 1f,
+    frozen: () -> Boolean = NeverFrozen,
+    loopBucket: (() -> Int)? = null
 ): Modifier {
     val shapeProvider = ShapeProvider(shape)
     return this
@@ -151,7 +159,9 @@ fun Modifier.drawBackdrop(
                 onDrawBackdrop = onDrawBackdrop,
                 onDrawSurface = onDrawSurface,
                 onDrawFront = onDrawFront,
-                backdropScale = backdropScale.coerceIn(0.05f, 1f)
+                backdropScale = backdropScale.coerceIn(0.05f, 1f),
+                frozen = frozen,
+                loopBucket = loopBucket
             )
         )
 }
@@ -166,7 +176,9 @@ private class DrawBackdropElement(
     val onDrawBackdrop: DrawScope.(drawBackdrop: DrawScope.() -> Unit) -> Unit,
     val onDrawSurface: (DrawScope.() -> Unit)?,
     val onDrawFront: (DrawScope.() -> Unit)?,
-    val backdropScale: Float
+    val backdropScale: Float,
+    val frozen: () -> Boolean,
+    val loopBucket: (() -> Int)?
 ) : ModifierNodeElement<DrawBackdropNode>() {
 
     override fun create(): DrawBackdropNode {
@@ -180,11 +192,21 @@ private class DrawBackdropElement(
             onDrawBackdrop = onDrawBackdrop,
             onDrawSurface = onDrawSurface,
             onDrawFront = onDrawFront,
-            backdropScale = backdropScale
+            backdropScale = backdropScale,
+            frozen = frozen,
+            loopBucket = loopBucket
         )
     }
 
     override fun update(node: DrawBackdropNode) {
+        val captureChanged =
+            node.backdrop !== backdrop ||
+                    node.shapeProvider !== shapeProvider ||
+                    node.effects !== effects ||
+                    node.layerBlock !== layerBlock ||
+                    node.onDrawBackdrop !== onDrawBackdrop ||
+                    node.backdropScale != backdropScale
+
         node.backdrop = backdrop
         node.shapeProvider = shapeProvider
         node.effects = effects
@@ -198,6 +220,15 @@ private class DrawBackdropElement(
         node.onDrawSurface = onDrawSurface
         node.onDrawFront = onDrawFront
         node.backdropScale = backdropScale
+        node.frozen = frozen
+        if (node.loopBucket !== loopBucket) {
+            node.loopBucket = loopBucket
+            node.surfaceDirty = true
+        }
+        if (captureChanged) {
+            node.surfaceDirty = true
+            node.clearLoopPool()
+        }
         node.invalidateDrawCache()
     }
 
@@ -257,7 +288,9 @@ private class DrawBackdropNode(
     var onDrawBackdrop: DrawScope.(drawBackdrop: DrawScope.() -> Unit) -> Unit,
     var onDrawSurface: (DrawScope.() -> Unit)?,
     var onDrawFront: (DrawScope.() -> Unit)?,
-    var backdropScale: Float
+    var backdropScale: Float,
+    var frozen: () -> Boolean,
+    var loopBucket: (() -> Int)?
 ) : LayoutModifierNode, DrawModifierNode, GlobalPositionAwareModifierNode, ObserverModifierNode, Modifier.Node() {
 
     private val effectScope =
@@ -268,15 +301,60 @@ private class DrawBackdropNode(
 
     private var graphicsLayer: GraphicsLayer? = null
 
+    private var loopPool: HashMap<Int, GraphicsLayer>? = null
+
+    internal fun clearLoopPool() {
+        val pool = loopPool ?: return
+        val graphicsContext = requireGraphicsContext()
+        pool.values.forEach { graphicsContext.releaseGraphicsLayer(it) }
+        pool.clear()
+    }
+
     private val layoutLayerBlock: GraphicsLayerScope.() -> Unit = {
         clip = true
-        shape = shapeProvider.shape
-        compositingStrategy = androidx.compose.ui.graphics.CompositingStrategy.Offscreen
+        shape = if ((backdrop as? LayerBackdrop)?.masksSamplers == true) {
+            androidx.compose.ui.graphics.RectangleShape
+        } else {
+            shapeProvider.shape
+        }
+        compositingStrategy = androidx.compose.ui.graphics.CompositingStrategy.Auto
     }
 
     private var layoutCoordinates: LayoutCoordinates? by mutableStateOf(null, neverEqualPolicy())
 
     private var padding by mutableFloatStateOf(0f)
+
+    internal var surfaceDirty = true
+
+    private var recordedBackdropVersion: Int? = null
+    private var recordedBackdropOffset: Offset? = null
+    private var recordedBackdropSize: IntSize = IntSize.Zero
+
+    private var thawJob: kotlinx.coroutines.Job? = null
+
+    private fun scheduleThawRedraw() {
+        if (thawJob?.isActive == true) return
+        thawJob = coroutineScope.launch {
+            while (frozen()) kotlinx.coroutines.delay(ThawPollMs)
+            invalidateDraw()
+        }
+    }
+
+    private fun currentBackdropVersion(): Int? = (backdrop as? LayerBackdrop)?.geometryVersion
+
+    private fun isFullyStatic(rect: Rect): Boolean =
+        (backdrop as? LayerBackdrop)?.isFullyStatic(rect) == true
+
+    private fun currentBackdropOffset(): Offset? {
+        val source = backdrop as? LayerBackdrop ?: return null
+        val sourceCoordinates = source.layerCoordinates ?: return null
+        val selfCoordinates = layoutCoordinates ?: return null
+        return try {
+            sourceCoordinates.localPositionOf(selfCoordinates)
+        } catch (_: Exception) {
+            null
+        }
+    }
 
     private val recordBackdropBlock: (DrawScope.() -> Unit) = {
         val canvas = drawContext.canvas
@@ -286,8 +364,7 @@ private class DrawBackdropNode(
         if (padding != 0f) {
             canvas.translate(padding, padding)
         }
-        
-        
+
         if (scale != 1f) {
             canvas.scale(scale, scale)
         }
@@ -308,34 +385,108 @@ private class DrawBackdropNode(
         }
     }
 
-    private val drawBackdropLayer: DrawScope.() -> Unit = {
+    private fun DrawScope.drawBucketedLayer(bucket: Int): Boolean {
+        val padding = padding
+        val scale = backdropScale
+        val recordSize = IntSize(
+            ((size.width * scale).toInt() + padding.toInt() * 2).coerceAtLeast(1),
+            ((size.height * scale).toInt() + padding.toInt() * 2).coerceAtLeast(1)
+        )
+        val offset = currentBackdropOffset()
+        val geometryChanged = surfaceDirty ||
+                offset != recordedBackdropOffset ||
+                recordSize != recordedBackdropSize
+        if (geometryChanged) {
+            clearLoopPool()
+        }
+        recordedBackdropOffset = offset
+        recordedBackdropSize = recordSize
+
+        val pool = loopPool ?: HashMap<Int, GraphicsLayer>().also { loopPool = it }
+        var recorded = false
+        val layer = pool.getOrPut(bucket) {
+            recorded = true
+            val newLayer = requireGraphicsContext().createGraphicsLayer()
+            recordLayer(this@DrawBackdropNode, newLayer, size = recordSize, block = recordBackdropBlock)
+            newLayer.renderEffect = effectScope.renderEffect
+            newLayer.colorFilter = effectScope.compositeColorFilter
+            newLayer
+        }
+        if (pool.size > LoopPoolMaxSize) {
+            val staleKey = pool.keys.first { it != bucket }
+            pool.remove(staleKey)?.let { requireGraphicsContext().releaseGraphicsLayer(it) }
+        }
+
+        layer.topLeft =
+            if (padding != 0f) IntOffset(-padding.toInt(), -padding.toInt())
+            else IntOffset.Zero
+        if (scale != 1f) {
+            scale(1f / scale, pivot = Offset.Zero) {
+                drawLayer(layer)
+            }
+        } else {
+            drawLayer(layer)
+        }
+        return recorded
+    }
+
+    private val drawBackdropLayer: DrawScope.() -> Boolean = drawBackdropLayer@{
+        val bucket = loopBucket?.invoke()
+        if (bucket != null) {
+            return@drawBackdropLayer drawBucketedLayer(bucket)
+        }
         val layer = graphicsLayer
         if (layer != null) {
             val padding = padding
             val scale = backdropScale
-
-            recordLayer(
-                this@DrawBackdropNode,
-                layer,
-                size = IntSize(
-                    ((size.width * scale).toInt() + padding.toInt() * 2).coerceAtLeast(1),
-                    ((size.height * scale).toInt() + padding.toInt() * 2).coerceAtLeast(1)
-                ),
-                block = recordBackdropBlock
+            val recordSize = IntSize(
+                ((size.width * scale).toInt() + padding.toInt() * 2).coerceAtLeast(1),
+                ((size.height * scale).toInt() + padding.toInt() * 2).coerceAtLeast(1)
             )
+            val version = currentBackdropVersion()
+            val offset = currentBackdropOffset()
+            val hasRecording = recordedBackdropSize != IntSize.Zero
+            val geometryChanged = surfaceDirty ||
+                    offset != recordedBackdropOffset ||
+                    recordSize != recordedBackdropSize
+            val versionChanged = version == null || version != recordedBackdropVersion
+            val versionChangeIsElsewhere = versionChanged && !geometryChanged &&
+                    offset != null && isFullyStatic(Rect(offset, recordSize.toSize()))
+            val needsRecord = if (frozen() && hasRecording) {
+                if (geometryChanged) {
+                    true
+                } else {
+                    if (versionChanged) scheduleThawRedraw()
+                    false
+                }
+            } else {
+                (geometryChanged || versionChanged) && !versionChangeIsElsewhere
+            }
+            if (needsRecord) {
+                recordLayer(
+                    this@DrawBackdropNode,
+                    layer,
+                    size = recordSize,
+                    block = recordBackdropBlock
+                )
+                recordedBackdropVersion = version
+                recordedBackdropOffset = offset
+                recordedBackdropSize = recordSize
+            }
 
             layer.topLeft =
                 if (padding != 0f) IntOffset(-padding.toInt(), -padding.toInt())
                 else IntOffset.Zero
             if (scale != 1f) {
-                
-                
                 scale(1f / scale, pivot = Offset.Zero) {
                     drawLayer(layer)
                 }
             } else {
                 drawLayer(layer)
             }
+            needsRecord
+        } else {
+            false
         }
     }
 
@@ -355,19 +506,22 @@ private class DrawBackdropNode(
         }
 
         onDrawBehind?.invoke(this)
-        drawBackdropLayer()
+        val contentRecorded = drawBackdropLayer()
         onDrawSurface?.invoke(this)
         drawContent()
         onDrawFront?.invoke(this)
 
         exportedBackdrop?.graphicsLayer?.let { layer ->
-            recordLayer(this@DrawBackdropNode, layer) {
-                onDrawBehind?.invoke(this)
-                drawBackdropLayer()
-                onDrawSurface?.invoke(this)
-                onDrawFront?.invoke(this)
+            if (surfaceDirty || contentRecorded) {
+                recordLayer(this@DrawBackdropNode, layer) {
+                    onDrawBehind?.invoke(this)
+                    drawBackdropLayer()
+                    onDrawSurface?.invoke(this)
+                    onDrawFront?.invoke(this)
+                }
             }
         }
+        surfaceDirty = false
     }
 
     override fun onGloballyPositioned(coordinates: LayoutCoordinates) {
@@ -384,6 +538,7 @@ private class DrawBackdropNode(
     }
 
     override fun onObservedReadsChanged() {
+        surfaceDirty = true
         invalidateDrawCache()
     }
 
@@ -400,13 +555,19 @@ private class DrawBackdropNode(
 
         effectScope.apply(effects)
         graphicsLayer?.renderEffect = effectScope.renderEffect
-        padding = effectScope.padding
+        graphicsLayer?.colorFilter = effectScope.compositeColorFilter
+        val newPadding = effectScope.padding
+        if (newPadding != padding) {
+            padding = newPadding
+            surfaceDirty = true
+        }
     }
 
     override fun onAttach() {
         val graphicsContext = requireGraphicsContext()
         graphicsLayer = graphicsContext.createGraphicsLayer()
 
+        surfaceDirty = true
         observeEffects()
     }
 
@@ -416,9 +577,16 @@ private class DrawBackdropNode(
             graphicsContext.releaseGraphicsLayer(layer)
             graphicsLayer = null
         }
+        clearLoopPool()
 
+        (backdrop as? LayerBackdrop)?.lensRequest?.invoke(effectScope, Rect.Zero, null, null, null)
         effectScope.reset()
         layoutCoordinates = null
         exportedBackdrop?.layerCoordinates = null
+        recordedBackdropVersion = null
+        recordedBackdropOffset = null
+        recordedBackdropSize = IntSize.Zero
     }
 }
+
+private const val ThawPollMs = 48L

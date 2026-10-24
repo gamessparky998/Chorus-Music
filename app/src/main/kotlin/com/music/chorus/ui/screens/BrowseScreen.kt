@@ -1,15 +1,11 @@
-
-
 package pushkar.chorus.music.ui.screens
- 
- import androidx.compose.foundation.ExperimentalFoundationApi
- import androidx.compose.foundation.combinedClickable
+
+  import androidx.compose.foundation.combinedClickable
  import androidx.compose.foundation.layout.asPaddingValues
  import androidx.compose.foundation.lazy.grid.GridCells
  import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
  import androidx.compose.foundation.lazy.grid.items
- import androidx.compose.material3.ExperimentalMaterial3Api
- import androidx.compose.material3.Icon
+  import androidx.compose.material3.Icon
  import androidx.compose.material3.Text
  import androidx.compose.material3.TopAppBar
  import androidx.compose.material3.TopAppBarScrollBehavior
@@ -43,7 +39,6 @@ package pushkar.chorus.music.ui.screens
  import pushkar.chorus.music.utils.rememberEnumPreference
  import pushkar.chorus.music.viewmodels.BrowseViewModel
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
  @Composable
  fun BrowseScreen(
     navController: NavController,
@@ -55,13 +50,13 @@ package pushkar.chorus.music.ui.screens
      val playerConnection = LocalPlayerConnection.current ?: return
      val isPlaying by playerConnection.isEffectivelyPlaying.collectAsState()
      val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
- 
+
      val title by viewModel.title.collectAsState()
      val items by viewModel.items.collectAsState()
- 
+
      val coroutineScope = rememberCoroutineScope()
      val gridItemSize by rememberEnumPreference(GridItemsSizeKey, GridItemSize.BIG)
- 
+
      LazyVerticalGrid(
          columns = GridCells.Adaptive(minSize = GridThumbnailHeight + if (gridItemSize == GridItemSize.BIG) 24.dp else (-24).dp),
          contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
@@ -84,7 +79,7 @@ package pushkar.chorus.music.ui.screens
                                      is PlaylistItem -> navController.navigate("online_playlist/${item.id}")
                                      is ArtistItem -> navController.navigate("artist/${item.id}")
                                      else -> {
-                                         
+
                                      }
                                  }
                              },
@@ -97,7 +92,7 @@ package pushkar.chorus.music.ui.screens
                                                  navController = navController,
                                                  onDismiss = menuState::dismiss
                                              )
- 
+
                                          is PlaylistItem -> {
                                              YouTubePlaylistMenu(
                                                  playlist = item,
@@ -105,16 +100,16 @@ package pushkar.chorus.music.ui.screens
                                                  onDismiss = menuState::dismiss
                                              )
                                          }
- 
+
                                          is ArtistItem -> {
                                              YouTubeArtistMenu(
                                                  artist = item,
                                                  onDismiss = menuState::dismiss
                                              )
                                          }
- 
+
                                          else -> {
-                                             
+
                                          }
                                      }
                                  }
@@ -122,7 +117,7 @@ package pushkar.chorus.music.ui.screens
                          )
                  )
              }
- 
+
              if (items.isEmpty()) {
                  items(8) {
                      ShimmerHost {
@@ -132,7 +127,7 @@ package pushkar.chorus.music.ui.screens
              }
          }
      }
- 
+
      TopAppBar(
          title = { Text(title ?: "") },
          navigationIcon = {

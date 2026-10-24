@@ -61,9 +61,6 @@
         android:largeHeap="true"
         android:theme="@style/Theme.chorusmusic"
         tools:targetApi="tiramisu">
-        <uses-library
-            android:name="org.apache.http.legacy"
-            android:required="false" />
 
         <activity
             android:name=".ui.screens.CrashActivity"

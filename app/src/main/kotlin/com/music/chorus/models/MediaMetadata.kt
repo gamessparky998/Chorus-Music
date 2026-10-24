@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.models
 
 import androidx.compose.runtime.Immutable
@@ -89,7 +87,7 @@ fun Song.toMediaMetadata() =
             )
         },
         explicit = song.explicit,
-        
+
         musicVideoType = if (song.isVideo) "MUSIC_VIDEO_TYPE_OMV" else null,
         suggestedBy = null,
         source = QueueItemSource.USER,

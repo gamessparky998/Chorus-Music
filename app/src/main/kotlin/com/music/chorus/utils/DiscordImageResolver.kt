@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.utils
 
 import android.content.Context
@@ -116,7 +114,7 @@ object DiscordImageResolver {
         val trimmed = trim()
         return trimmed.takeIf {
             it.startsWith("http://", ignoreCase = true) ||
-                it.startsWith("https://", ignoreCase = true)
+                    it.startsWith("https://", ignoreCase = true)
         }
     }
 }

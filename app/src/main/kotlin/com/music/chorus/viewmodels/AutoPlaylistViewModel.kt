@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.viewmodels
 
 import android.content.Context
@@ -21,9 +19,9 @@ import pushkar.chorus.music.utils.dataStore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
@@ -31,7 +29,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class AutoPlaylistViewModel
 @Inject
@@ -46,7 +43,6 @@ constructor(
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing = _isRefreshing.asStateFlow()
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     val likedSongs =
         context.dataStore.data
             .map {
@@ -76,8 +72,12 @@ constructor(
 
                     "exported" -> {
                         val ids = exportedSongIds.split(",").filter { it.isNotBlank() }
-                        database.getSongsByIdsFlow(ids)
-                            .map { it.filterExplicit(hideExplicit).filterVideoSongs(hideVideoSongs) }
+                        combine(
+                            database.getSongsByIdsFlow(ids),
+                            database.importedPlaylistSongs()
+                        ) { exportedList, importedList ->
+                            (exportedList + importedList).distinctBy { it.id }
+                        }.map { it.filterExplicit(hideExplicit).filterVideoSongs(hideVideoSongs) }
                     }
 
                     else -> kotlinx.coroutines.flow.flowOf(emptyList())

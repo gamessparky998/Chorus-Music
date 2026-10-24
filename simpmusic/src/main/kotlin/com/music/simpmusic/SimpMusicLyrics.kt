@@ -52,16 +52,16 @@ object SimpMusicLyrics {
     suspend fun getLyricsByVideoId(videoId: String): List<LyricsData> {
         val primaryAttempt = runCatching {
             val response = client.get(BASE_URL + videoId)
-            
+
             if (response.status == HttpStatusCode.OK) {
                 val apiResponse = response.body<SimpMusicApiResponse>()
                 if (apiResponse.success) {
                     apiResponse.data
                 } else {
-                    emptyList() 
+                    emptyList()
                 }
             } else {
-                null 
+                null
             }
         }.getOrNull()
 
@@ -69,10 +69,9 @@ object SimpMusicLyrics {
             return primaryAttempt
         }
 
-        
         return runCatching {
             val response = client.get(FALLBACK_URL + videoId)
-            
+
             if (response.status == HttpStatusCode.OK) {
                 val apiResponse = response.body<SimpMusicApiResponse>()
                 if (apiResponse.success) {
@@ -91,12 +90,11 @@ object SimpMusicLyrics {
         duration: Int = 0,
     ): Result<String> = runCatching {
         val tracks = getLyricsByVideoId(videoId)
-        
+
         if (tracks.isEmpty()) {
             throw IllegalStateException("Lyrics unavailable")
         }
 
-        
         val validTracks = if (duration > 0) {
             tracks.filter { track ->
                 abs((track.duration ?: 0) - duration) <= 10
@@ -117,12 +115,11 @@ object SimpMusicLyrics {
             validTracks.firstOrNull()
         }
 
-        
         val lyrics = bestMatch?.richSyncLyrics?.takeIf { it.isNotBlank() }
             ?: bestMatch?.syncedLyrics?.takeIf { it.isNotBlank() }
             ?: bestMatch?.plainLyrics?.takeIf { it.isNotBlank() }
             ?: throw IllegalStateException("Lyrics unavailable")
-        
+
         lyrics
     }
 
@@ -143,10 +140,9 @@ object SimpMusicLyrics {
 
         sortedTracks.forEach { track ->
             if (count <= 4) {
-                
+
                 val durationMatch = duration <= 0 || abs((track.duration ?: 0) - duration) <= 10
 
-                
                 if (track.richSyncLyrics != null && track.richSyncLyrics.isNotBlank() && durationMatch) {
                     count++
                     callback(track.richSyncLyrics)

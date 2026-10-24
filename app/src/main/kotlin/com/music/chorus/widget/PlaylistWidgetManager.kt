@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.widget
 
 import android.app.PendingIntent
@@ -298,7 +296,7 @@ class PlaylistWidgetManager @Inject constructor(
         quickPicks: List<QuickPick>,
     ) {
         val maxItems = maxQuickPicksForSize(options)
-        
+
         val actualPicks = if (quickPicks.isEmpty() && maxItems >= 4) {
             listOf(
                 QuickPick("liked", PlaylistWidgetReceiver.TARGET_TYPE_LIKED, "", "Liked Songs", null, R.drawable.ic_widget_heart_nav),
@@ -310,7 +308,7 @@ class PlaylistWidgetManager @Inject constructor(
         } else {
             quickPicks
         }
-        
+
         val displayCount = balancedDisplayCount(actualPicks.size, maxItems)
         val visiblePicks = actualPicks.take(displayCount)
         val visibleSlots = (0 until displayCount).toSet()
@@ -367,7 +365,6 @@ class PlaylistWidgetManager @Inject constructor(
             else -> capped
         }
     }
-
 
     private fun reservedEmptySlotsFor(displayCount: Int): Set<Int> = when (displayCount) {
         1 -> setOf(1, 2, 3)

@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.extensions
 
 import androidx.sqlite.db.SimpleSQLiteQuery

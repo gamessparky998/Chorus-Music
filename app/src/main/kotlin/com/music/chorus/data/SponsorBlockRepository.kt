@@ -24,7 +24,7 @@ class SponsorBlockRepository @Inject constructor() {
             val categories = listOf("sponsor", "intro", "outro", "interaction", "selfpromo", "music_offtopic")
             val categoriesParam = categories.joinToString(separator = "%22,%22", prefix = "[%22", postfix = "%22]")
             val url = "https://sponsor.ajay.app/api/skipSegments?videoID=$videoId&categories=$categoriesParam"
-            
+
             val request = Request.Builder()
                 .url(url)
                 .build()
@@ -39,7 +39,7 @@ class SponsorBlockRepository @Inject constructor() {
 
             val responseBody = response.body.string()
             val jsonArray = JSONArray(responseBody)
-            
+
             val segments = mutableListOf<SponsorBlockSegment>()
             for (i in 0 until jsonArray.length()) {
                 val obj = jsonArray.getJSONObject(i)
@@ -58,7 +58,7 @@ class SponsorBlockRepository @Inject constructor() {
                     )
                 }
             }
-            
+
             cache[videoId] = segments
             segments
         } catch (e: Exception) {

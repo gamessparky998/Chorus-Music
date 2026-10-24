@@ -39,7 +39,6 @@ object YTPlayerUtils {
     private const val logTag = "YTPlayerUtils"
     private const val TAG = "YTPlayerUtils"
 
-
     @Volatile
     var playbackEngine: PlaybackEngine = PlaybackEngine.AUTO
 
@@ -53,9 +52,7 @@ object YTPlayerUtils {
 
     private val poTokenGenerator = PoTokenGenerator()
 
-
     private const val VALIDATION_CHUNK_LENGTH = 512 * 1024L
-
 
     private fun describeStreamUrl(url: String): String =
         try {
@@ -79,7 +76,6 @@ object YTPlayerUtils {
         } catch (e: Exception) {
             "unparseable url (${e.javaClass.simpleName})"
         }
-
 
     private fun describeResponse(client: YouTubeClient, response: PlayerResponse?): String =
         try {
@@ -114,7 +110,6 @@ object YTPlayerUtils {
 
     private val MAIN_CLIENT: YouTubeClient = WEB_REMIX
 
-
     private val STREAM_FALLBACK_CLIENTS: Array<YouTubeClient> = arrayOf(
         VISIONOS,
         ANDROID_VR_1_65_10,
@@ -125,7 +120,6 @@ object YTPlayerUtils {
         WEB_CREATOR
     )
     private val NORMAL_CONTENT_STREAM_START_INDEX: Int = 0
-
 
     private val PRIVATE_TRACK_STREAM_START_INDEX: Int =
         STREAM_FALLBACK_CLIENTS.indexOf(TVHTML5).takeIf { it >= 0 } ?: 0
@@ -151,7 +145,6 @@ object YTPlayerUtils {
         Timber.tag(TAG).d("videoId: $videoId")
         Timber.tag(TAG).d("playlistId: $playlistId")
         Timber.tag(TAG).d("audioQuality: $audioQuality")
-
 
         val isUploadedTrack = playlistId == "MLPT" || playlistId?.contains("MLPT") == true
         Timber.tag(TAG).d("Content type detection (preliminary):")
@@ -181,7 +174,6 @@ object YTPlayerUtils {
                 "locale" to "${YouTube.locale.hl}/${YouTube.locale.gl}",
             ),
         )
-
 
         val signatureTimestamp = getSignatureTimestampOrNull(videoId)
         Timber.tag(logTag).d("Signature timestamp: ${signatureTimestamp.timestamp}")
@@ -235,7 +227,6 @@ object YTPlayerUtils {
             Fix403.w(fx, "mainClient.skipped", Fix403.kv("reason" to "poTokenUnavailable"))
         }
 
-
         Timber.tag(logTag).d("Attempting to get player response using MAIN_CLIENT: ${MAIN_CLIENT.clientName}")
         var mainPlayerResponse = Fix403.trapRethrow(fx, "mainClient.player") {
             Fix403.timed(fx, "mainClient.request") {
@@ -249,7 +240,6 @@ object YTPlayerUtils {
             }
         }
         Fix403.i(fx, "mainClient.response", describeResponse(MAIN_CLIENT, mainPlayerResponse))
-
 
         if (isUploadedTrack || playlistId?.contains("MLPT") == true) {
             println("[PLAYBACK_DEBUG] Main player response status: ${mainPlayerResponse.playabilityStatus.status}")
@@ -266,7 +256,6 @@ object YTPlayerUtils {
 
         var usedAgeRestrictedClient: YouTubeClient? = null
         val wasOriginallyAgeRestricted: Boolean
-
 
         val mainStatus = mainPlayerResponse.playabilityStatus.status
         val isAgeRestrictedFromResponse = mainStatus in listOf(
@@ -289,7 +278,6 @@ object YTPlayerUtils {
             }
         }
 
-
         val audioConfig = mainPlayerResponse.playerConfig?.audioConfig
         val videoDetails = mainPlayerResponse.videoDetails
         val playbackTracking = mainPlayerResponse.playbackTracking
@@ -298,7 +286,6 @@ object YTPlayerUtils {
         var streamExpiresInSeconds: Int? = null
         var streamPlayerResponse: PlayerResponse? = null
         val retryMainPlayerResponse: PlayerResponse? = if (usedAgeRestrictedClient != null) mainPlayerResponse else null
-
 
         val currentStatus = mainPlayerResponse.playabilityStatus.status
         val isAgeRestricted = currentStatus in listOf(

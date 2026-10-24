@@ -162,7 +162,6 @@ fun ErrorSnackbar(
     }
 }
 
-
 private const val ConnectedCornerRadius = 4
 private const val EndCornerRadius = 16
 
@@ -190,7 +189,7 @@ fun String.parseMarkdown(): androidx.compose.ui.text.AnnotatedString {
     var currentIndex = 0
     val primaryColor = MaterialTheme.colorScheme.primary
     val codeBgColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-    
+
     val pattern = Regex("(\\*\\*(.*?)\\*\\*)|(\\*([^*]+)\\*)|(`([^`]+)`)|(\\[([^\\]]+)\\]\\(([^)]+)\\))|((?:https?://|www\\.)[\\w-]+(?:\\.[\\w-]+)+(?:[/?][\\w\\-._~:/?#\\[\\]@!$&'()*+,;=%]*)?)")
 
     val matches = pattern.findAll(this)
@@ -198,19 +197,19 @@ fun String.parseMarkdown(): androidx.compose.ui.text.AnnotatedString {
         if (match.range.first > currentIndex) {
             builder.append(this.substring(currentIndex, match.range.first))
         }
-        
+
         when {
-            match.groups[1] != null -> { 
+            match.groups[1] != null -> {
                 builder.withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
                     append(match.groups[2]!!.value)
                 }
             }
-            match.groups[3] != null -> { 
+            match.groups[3] != null -> {
                 builder.withStyle(SpanStyle(fontStyle = FontStyle.Italic)) {
                     append(match.groups[4]!!.value)
                 }
             }
-            match.groups[5] != null -> { 
+            match.groups[5] != null -> {
                 builder.withStyle(SpanStyle(
                     background = codeBgColor,
                     fontFamily = FontFamily.Monospace
@@ -218,7 +217,7 @@ fun String.parseMarkdown(): androidx.compose.ui.text.AnnotatedString {
                     append(match.groups[6]!!.value)
                 }
             }
-            match.groups[7] != null -> { 
+            match.groups[7] != null -> {
                 val text = match.groups[8]!!.value
                 val url = match.groups[9]!!.value
                 val startIndex = builder.length
@@ -230,7 +229,7 @@ fun String.parseMarkdown(): androidx.compose.ui.text.AnnotatedString {
                 }
                 builder.addStringAnnotation("URL", url, startIndex, builder.length)
             }
-            match.groups[10] != null -> { 
+            match.groups[10] != null -> {
                 val url = match.groups[10]!!.value
                 val startIndex = builder.length
                 val fullUrl = if (url.startsWith("http")) url else "https://$url"
@@ -245,11 +244,11 @@ fun String.parseMarkdown(): androidx.compose.ui.text.AnnotatedString {
         }
         currentIndex = match.range.last + 1
     }
-    
+
     if (currentIndex < this.length) {
         builder.append(this.substring(currentIndex))
     }
-    
+
     return builder.toAnnotatedString()
 }
 

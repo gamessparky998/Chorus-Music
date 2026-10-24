@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.playback.audio
 
 import androidx.media3.common.C
@@ -8,7 +6,6 @@ import androidx.media3.common.util.UnstableApi
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.abs
-
 
 @UnstableApi
 @Suppress("DEPRECATION")
@@ -56,7 +53,6 @@ class SilenceDetectorAudioProcessor(
             return
         }
 
-        
         if (instantModeEnabled && sampleRate > 0 && channelCount > 0) {
             detectSilence(inputBuffer)
         } else {
@@ -69,7 +65,7 @@ class SilenceDetectorAudioProcessor(
     }
 
     private fun detectSilence(inputBuffer: ByteBuffer) {
-        
+
         inputBuffer.order(ByteOrder.LITTLE_ENDIAN)
 
         val frameCount = inputBuffer.remaining() / 2 / channelCount

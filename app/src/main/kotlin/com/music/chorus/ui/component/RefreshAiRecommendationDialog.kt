@@ -24,7 +24,7 @@ fun RefreshAiRecommendationDialog(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    
+
     var isGenerating by remember { mutableStateOf(true) }
     var generationLog by remember { mutableStateOf("Initializing...") }
     var errorLog by remember { mutableStateOf<String?>(null) }

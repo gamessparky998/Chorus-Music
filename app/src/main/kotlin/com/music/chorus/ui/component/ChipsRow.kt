@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.component
 
 import android.annotation.SuppressLint
@@ -27,6 +25,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.DropdownMenu
@@ -68,18 +68,18 @@ fun <E> ChipsRow(
 ) {
     Row(
         modifier =
-        modifier
-            .fillMaxWidth()
-            .padding(top = 8.dp, bottom = 4.dp)
-            .horizontalScroll(rememberScrollState())
-            .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal)),
+            modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp, bottom = 4.dp)
+                .horizontalScroll(rememberScrollState())
+                .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal)),
     ) {
         Spacer(Modifier.width(12.dp))
 
         chips.forEach { (value, label) ->
             val isSelected = currentValue == value
 
-            
+            val isFluid = isFluidTheme()
             val cornerRadius by animateDpAsState(
                 targetValue = if (isSelected) 20.dp else 8.dp,
                 animationSpec = spring(
@@ -107,7 +107,7 @@ fun <E> ChipsRow(
                 } else {
                     null
                 },
-                shape = RoundedCornerShape(cornerRadius),
+                shape = if (isFluid) ContinuousRoundedRectangle(cornerRadius) else RoundedCornerShape(cornerRadius),
                 border = null,
                 modifier = Modifier.animateContentSize(
                     animationSpec = spring(
@@ -150,6 +150,7 @@ fun <Int> ChoiceChipsRow(
                 .horizontalScroll(rememberScrollState())
                 .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal)),
         ) {
+            val isFluid = isFluidTheme()
             Spacer(Modifier.width(12.dp))
             Box(contentAlignment = Alignment.Center) {
                 FilterChip(
@@ -185,7 +186,7 @@ fun <Int> ChoiceChipsRow(
                                 .graphicsLayer(rotationZ = rotationAnimation)
                         )
                     },
-                    shape = RoundedCornerShape(16.dp),
+                    shape = if (isFluid) ContinuousRoundedRectangle(16.dp) else RoundedCornerShape(16.dp),
                     border = null,
                     colors = FilterChipDefaults.filterChipColors(
                         containerColor = containerColor,
@@ -254,7 +255,7 @@ fun <Int> ChoiceChipsRow(
                     } else {
                         null
                     },
-                    shape = RoundedCornerShape(cornerRadius),
+                    shape = if (isFluid) ContinuousRoundedRectangle(cornerRadius) else RoundedCornerShape(cornerRadius),
                     border = null,
                     modifier = Modifier
                         .padding(horizontal = 4.dp)

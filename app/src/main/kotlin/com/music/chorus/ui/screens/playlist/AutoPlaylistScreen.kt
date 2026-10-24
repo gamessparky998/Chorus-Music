@@ -1,10 +1,7 @@
-
-
 package pushkar.chorus.music.ui.screens.playlist
 
 import pushkar.chorus.music.ui.utils.resize
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,9 +26,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -122,7 +120,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun AutoPlaylistScreen(
     navController: NavController,
@@ -208,7 +205,7 @@ fun AutoPlaylistScreen(
     var downloadState by remember {
         mutableIntStateOf(Download.STATE_STOPPED)
     }
-    
+
     LaunchedEffect(Unit) {
         if (ytmSync) {
             withContext(Dispatchers.IO) {
@@ -511,7 +508,7 @@ fun AutoPlaylistScreen(
                         )
                     }
                     else -> {
-                        
+
                     }
                 }
             },
@@ -608,7 +605,7 @@ private fun AutoPlaylistHeader(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    
+
     val density = androidx.compose.ui.platform.LocalDensity.current
     val systemBarsTopPadding = androidx.compose.foundation.layout.WindowInsets.systemBars.asPaddingValues().calculateTopPadding()
     val headerOffset = with(density) {
@@ -624,7 +621,7 @@ private fun AutoPlaylistHeader(
                     .offset { IntOffset(0, headerOffset) }
             )
         }
-        
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -633,7 +630,6 @@ private fun AutoPlaylistHeader(
         ) {
             Spacer(Modifier.height(50.dp))
 
-        
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -648,14 +644,13 @@ private fun AutoPlaylistHeader(
                         if (LocalConfiguration.current.screenWidthDp > 600) Modifier.size(300.dp)
                         else Modifier.fillMaxWidth().aspectRatio(1f)
                     )
-                    .clip(RoundedCornerShape(8.dp)),
+                    .clip(if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else RoundedCornerShape(8.dp)),
                 contentScale = androidx.compose.ui.layout.ContentScale.Crop
             )
         }
 
         Spacer(Modifier.height(32.dp))
 
-        
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(horizontal = 32.dp)
@@ -672,7 +667,6 @@ private fun AutoPlaylistHeader(
 
         Spacer(Modifier.height(24.dp))
 
-        
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -683,7 +677,7 @@ private fun AutoPlaylistHeader(
             ),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            
+
             androidx.compose.material3.Button(
                 onClick = {
                     playerConnection?.playQueue(
@@ -693,7 +687,7 @@ private fun AutoPlaylistHeader(
                         ),
                     )
                 },
-                shape = androidx.compose.material3.ButtonDefaults.shape,
+                shape = if (isFluidTheme()) ContinuousRoundedRectangle(24.dp) else androidx.compose.material3.ButtonDefaults.shape,
                 colors = androidx.compose.material3.ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant,
                     contentColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -723,7 +717,6 @@ private fun AutoPlaylistHeader(
                 }
             }
 
-            
             androidx.compose.material3.Button(
                 onClick = {
                     playerConnection?.playQueue(
@@ -733,7 +726,7 @@ private fun AutoPlaylistHeader(
                         ),
                     )
                 },
-                shape = androidx.compose.material3.ButtonDefaults.shape,
+                shape = if (isFluidTheme()) ContinuousRoundedRectangle(24.dp) else androidx.compose.material3.ButtonDefaults.shape,
                 colors = androidx.compose.material3.ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary
@@ -761,7 +754,6 @@ private fun AutoPlaylistHeader(
                 }
             }
 
-            
            Surface(
                 onClick = {
                     menuState.show {
@@ -806,7 +798,7 @@ private fun AutoPlaylistHeader(
                         )
                     }
                 },
-                shape = androidx.compose.foundation.shape.CircleShape,
+                shape = if (isFluidTheme()) ContinuousRoundedRectangle(24.dp) else androidx.compose.foundation.shape.CircleShape,
                 color = MaterialTheme.colorScheme.surfaceVariant,
                 modifier = Modifier.size(48.dp)
             ) {
@@ -826,7 +818,6 @@ private fun AutoPlaylistHeader(
 
         Spacer(Modifier.height(16.dp))
 
-        
         Text(
             text = buildString {
                 append(pluralStringResource(R.plurals.n_song, songs.size, songs.size))
@@ -870,7 +861,6 @@ private fun AutoPlaylistHeader(
     }
     }
 }
-
 
 enum class PlaylistType {
     LIKE, DOWNLOAD, UPLOADED, EXPORTED, OTHER

@@ -1,5 +1,3 @@
-
-
 package com.music.chorus.ui.screens.settings
 
 import android.content.Context

@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.viewmodels
 
 import android.content.Context
@@ -12,7 +10,6 @@ import pushkar.chorus.music.db.MusicDatabase
 import pushkar.chorus.music.utils.dataStore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -34,7 +31,6 @@ constructor(
 
     val topPeriod = MutableStateFlow(MyTopFilter.ALL_TIME)
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     val topSongs =
         combine(
             topPeriod,

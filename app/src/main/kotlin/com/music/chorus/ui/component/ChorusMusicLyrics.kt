@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.component
 
 import androidx.compose.animation.core.animateFloatAsState
@@ -9,7 +7,6 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -46,8 +43,6 @@ import pushkar.chorus.music.lyrics.LyricsEntry
 import pushkar.chorus.music.ui.screens.settings.LyricsPosition
 import pushkar.chorus.music.utils.rememberPreference
 
-
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun chorusmusicLyricsLine(
     entry: LyricsEntry,
@@ -72,18 +67,19 @@ fun chorusmusicLyricsLine(
 ) {
     val (appleMusicLyricsBlur) = rememberPreference(AppleMusicLyricsBlurKey, true)
 
-    val targetBlur = if (!appleMusicLyricsBlur || !isAutoScrollActive || isActive || !isSynced || isSelectionModeActive) {
-        0f
-    } else {
-        
-        when (distanceFromCurrent) {
-            1 -> 0f
-            2 -> 0f
-            3 -> 2f
-            4 -> 4f
-            else -> 6f
+    val targetBlur =
+        if (!appleMusicLyricsBlur || !isAutoScrollActive || isActive || !isSynced || isSelectionModeActive) {
+            0f
+        } else {
+
+            when (distanceFromCurrent) {
+                1 -> 0f
+                2 -> 0f
+                3 -> 2f
+                4 -> 4f
+                else -> 6f
+            }
         }
-    }
 
     val animatedBlur by animateFloatAsState(
         targetValue = targetBlur,
@@ -94,23 +90,21 @@ fun chorusmusicLyricsLine(
         if (nextEntryTime != null) nextEntryTime - entry.time else 4000L
     }
 
-    
     val activeDuration = remember(duration) {
         (duration * 0.95).toLong().coerceAtLeast(300L)
     }
 
-    
     val wordData = remember(entry.text, entry.words, activeDuration) {
         val isHindiText = pushkar.chorus.music.lyrics.LyricsUtils.isHindi(entry.text)
         if (!isHindiText && entry.words != null && entry.words.isNotEmpty()) {
-            
+
             entry.words.mapIndexed { index, word ->
                 val wordStart = ((word.startTime * 1000).toLong() - entry.time).coerceAtLeast(0L)
                 val wordEnd = ((word.endTime * 1000).toLong() - entry.time).coerceAtLeast(wordStart + 50L)
                 Triple(word.text, wordStart, wordEnd)
             }
         } else {
-            
+
             val words = entry.text.split(" ").filter { it.isNotEmpty() }
             if (words.isEmpty()) {
                 listOf(Triple(entry.text, 0L, activeDuration))
@@ -122,7 +116,8 @@ fun chorusmusicLyricsLine(
                     val includeSpace = index < words.size - 1
                     val charCount = if (includeSpace) wordLength + 1 else wordLength
                     val wordStart = accumulatedTime
-                    val wordDur = if (totalChars > 0) (activeDuration * charCount.toFloat() / totalChars).toLong() else activeDuration
+                    val wordDur =
+                        if (totalChars > 0) (activeDuration * charCount.toFloat() / totalChars).toLong() else activeDuration
                     val wordEnd = wordStart + wordDur
                     accumulatedTime += wordDur
                     Triple(word, wordStart, wordEnd)
@@ -134,9 +129,9 @@ fun chorusmusicLyricsLine(
     val targetAlpha = when {
         !isSynced || (isSelectionModeActive && isSelected) -> 1f
         isActive -> 1f
-        distanceFromCurrent == 1 -> 0.65f 
-        distanceFromCurrent == 2 -> 0.45f 
-        else -> 0.35f 
+        distanceFromCurrent == 1 -> 0.65f
+        distanceFromCurrent == 2 -> 0.45f
+        else -> 0.35f
     }
 
     val animatedAlpha by animateFloatAsState(
@@ -172,7 +167,6 @@ fun chorusmusicLyricsLine(
         .padding(horizontal = 24.dp, vertical = (8 * lineSpacing).dp)
         .blur(animatedBlur.dp)
 
-    
     val agentAlignment = when {
         entry.isBackground -> Alignment.CenterHorizontally
         entry.agent == "v1" -> Alignment.Start
@@ -209,14 +203,14 @@ fun chorusmusicLyricsLine(
                 else -> Arrangement.Start
             },
             verticalArrangement = Arrangement.spacedBy(
-                
+
                 with(LocalDensity.current) { (textSize * (lineSpacing.coerceAtMost(1.3f) - 1f)).sp.toDp() }
             )
         ) {
             wordData.forEachIndexed { index, (wordText, startRelative, endRelative) ->
                 val lineRelTime = (effectivePlaybackPosition - entry.time).coerceAtLeast(0L)
                 val wordDuration = (endRelative - startRelative).coerceAtLeast(1L)
-                
+
                 val progress by animateFloatAsState(
                     targetValue = when {
                         lineRelTime >= endRelative -> 1f
@@ -229,8 +223,6 @@ fun chorusmusicLyricsLine(
 
                 val finalFontWeight = if (isActive) FontWeight.ExtraBold else FontWeight.Bold
 
-                
-                
                 Text(
                     text = wordText,
                     fontSize = textSize.sp,
@@ -243,7 +235,6 @@ fun chorusmusicLyricsLine(
                         ),
                         fontWeight = finalFontWeight,
 
-                        
                         lineHeight = (textSize * lineSpacing.coerceAtMost(1.3f)).sp,
                         textAlign = agentTextAlign,
                         shadow = androidx.compose.ui.graphics.Shadow(
@@ -257,7 +248,7 @@ fun chorusmusicLyricsLine(
                     Text(
                         text = " ",
                         fontSize = textSize.sp,
-                        color = textColor.copy(alpha = if (lineRelTime >= endRelative) 1f else 0.45f), 
+                        color = textColor.copy(alpha = if (lineRelTime >= endRelative) 1f else 0.45f),
                         lineHeight = (textSize * lineSpacing.coerceAtMost(1.3f)).sp,
                         style = TextStyle(
                             shadow = if (lineRelTime >= endRelative) {
@@ -273,7 +264,6 @@ fun chorusmusicLyricsLine(
             }
         }
 
-        
         if (showRomanized) {
             val romanizedText by entry.romanizedTextFlow.collectAsState()
             romanizedText?.let { romanized ->
@@ -290,7 +280,6 @@ fun chorusmusicLyricsLine(
             }
         }
 
-        
         if (showTranslated) {
             val translatedText by entry.translatedTextFlow.collectAsState()
             translatedText?.let { translated ->

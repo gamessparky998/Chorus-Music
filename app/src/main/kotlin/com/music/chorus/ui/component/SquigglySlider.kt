@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.component
 
 import androidx.compose.animation.core.Animatable
@@ -52,32 +50,29 @@ fun SquigglySlider(
 
     var isDragging by remember { mutableStateOf(false) }
     var dragPosition by remember { mutableFloatStateOf(value) }
-    
+
     val currentValue = if (isDragging) dragPosition else value
     val duration = valueRange.endInclusive - valueRange.start
     val position = currentValue - valueRange.start
 
-    
     var phaseOffset by remember { mutableFloatStateOf(0f) }
     var heightFraction by remember { mutableFloatStateOf(if (isPlaying) 1f else 0f) }
 
     val scope = rememberCoroutineScope()
 
-    
     val waveLength = 80f
     val lineAmplitude = 6f
-    val phaseSpeed = 24f 
+    val phaseSpeed = 24f
     val transitionPeriods = 1.5f
     val minWaveEndpoint = 0f
     val matchedWaveEndpoint = 1f
     val transitionEnabled = true
 
-    
     LaunchedEffect(isPlaying, isDragging) {
         scope.launch {
             val shouldFlatten = !isPlaying || isDragging
             val targetHeight = if (shouldFlatten) 0f else 1f
-            val animDuration = if (shouldFlatten) 150 else 200 
+            val animDuration = if (shouldFlatten) 150 else 200
             val startDelay = if (shouldFlatten) 0L else 30L
 
             delay(startDelay)
@@ -95,7 +90,6 @@ fun SquigglySlider(
         }
     }
 
-    
     LaunchedEffect(isPlaying) {
         if (!isPlaying) return@LaunchedEffect
 
@@ -165,7 +159,6 @@ fun SquigglySlider(
             val totalProgressPx = totalWidth * progress
             val centerY = size.height / 2f
 
-            
             val waveProgressPx = if (!transitionEnabled || progress > matchedWaveEndpoint) {
                 totalWidth * progress
             } else {
@@ -173,7 +166,6 @@ fun SquigglySlider(
                 totalWidth * (minWaveEndpoint + (matchedWaveEndpoint - minWaveEndpoint) * t)
             }
 
-            
             fun computeAmplitude(x: Float, sign: Float): Float {
                 return if (transitionEnabled) {
                     val length = transitionPeriods * waveLength
@@ -184,7 +176,6 @@ fun SquigglySlider(
                 }
             }
 
-            
             val path = Path()
             val waveStart = -phaseOffset - waveLength / 2f
             val waveEnd = if (transitionEnabled) totalWidth else waveProgressPx
@@ -215,7 +206,6 @@ fun SquigglySlider(
                 currentX = nextX
             }
 
-            
             val clipTop = lineAmplitude + strokeWidth
 
             val disabledAlpha = 77f / 255f
@@ -238,37 +228,31 @@ fun SquigglySlider(
                 }
             }
 
-            
             drawPathSegment(0f, totalProgressPx, primaryColor)
 
-            
             drawPathSegment(totalProgressPx, totalWidth, inactiveTrackColor)
 
-            
             fun getWaveY(x: Float): Float {
                 val phase = (x - waveStart) / waveLength
                 val waveCycle = phase - kotlin.math.floor(phase)
                 val waveValue = kotlin.math.cos(waveCycle * 2f * kotlin.math.PI.toFloat())
-                
-                
+
                 val ampCoeff = if (transitionEnabled) {
                     val length = transitionPeriods * waveLength
                     ((waveProgressPx + length / 2f - x) / length).coerceIn(0f, 1f)
                 } else {
                     1f
                 }
-                
+
                 return centerY + waveValue * lineAmplitude * heightFraction * ampCoeff
             }
 
-            
             drawCircle(
                 color = primaryColor,
                 radius = capRadius,
                 center = Offset(0f, getWaveY(0f)),
             )
 
-            
             val endWaveY = getWaveY(totalWidth)
             clipRect(
                 left = totalWidth,
@@ -283,7 +267,6 @@ fun SquigglySlider(
                 )
             }
 
-            
             val barHalfHeight = (lineAmplitude + strokeWidth)
             val barWidth = 5.dp.toPx()
 

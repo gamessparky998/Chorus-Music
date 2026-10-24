@@ -1,13 +1,8 @@
-@file:OptIn(ExperimentalSharedTransitionApi::class)
-
-
-
 package pushkar.chorus.music.ui.component.floatingtabbar
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.EnterExitState
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.animateContentSize
@@ -61,8 +56,14 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-
-
+import androidx.compose.foundation.border
+import pushkar.chorus.music.constants.AppThemeMode
+import pushkar.chorus.music.constants.AppThemeModeKey
+import pushkar.chorus.music.ui.fluid.foundation.BounceIndication
+import pushkar.chorus.music.ui.fluid.foundation.FluidShapes
+import pushkar.chorus.music.ui.fluid.foundation.GlassIntensity
+import pushkar.chorus.music.ui.fluid.foundation.fluidGlass
+import pushkar.chorus.music.utils.rememberPreference
 
 @Composable
 fun FloatingTabBar(
@@ -104,7 +105,6 @@ fun FloatingTabBar(
     )
 }
 
-
 @Composable
 fun FloatingTabBar(
     selectedTabKey: Any?,
@@ -120,7 +120,9 @@ fun FloatingTabBar(
     contentKey: Any? = null,
     content: FloatingTabBarScope.() -> Unit
 ) {
-    val scope = remember(contentKey) { FloatingTabBarScopeImpl().apply { content() } }
+    val (themeMode) = rememberPreference(AppThemeModeKey, AppThemeMode.MaterialUI.name)
+    val isFluid = themeMode == AppThemeMode.FluidUI.name
+    val scope = remember(contentKey, isFluid) { FloatingTabBarScopeImpl(isFluid).apply { content() } }
 
     val isAccessoryShared = inlineAccessory != null && expandedAccessory != null
 
@@ -142,7 +144,8 @@ fun FloatingTabBar(
                     sizes = sizes,
                     elevations = elevations,
                     tabBarContentModifier = tabBarContentModifier,
-                    animatedVisibilityScope = this@AnimatedContent
+                    animatedVisibilityScope = this@AnimatedContent,
+                    isFluid = isFluid
                 )
             } else {
                 ExpandedBar(
@@ -155,13 +158,13 @@ fun FloatingTabBar(
                     sizes = sizes,
                     elevations = elevations,
                     tabBarContentModifier = tabBarContentModifier,
-                    animatedVisibilityScope = this@AnimatedContent
+                    animatedVisibilityScope = this@AnimatedContent,
+                    isFluid = isFluid
                 )
             }
         }
     }
 }
-
 
 class FloatingTabBarScrollConnection(
     initialIsInline: Boolean = false,
@@ -184,57 +187,54 @@ class FloatingTabBarScrollConnection(
     }
 
     override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-        
+
         if (inlineBehavior == FloatingTabBarInlineBehavior.Never) {
             return Offset.Zero
         }
 
         val scrollDelta = available.y
 
-        
         if ((accumulatedScroll > 0 && scrollDelta < 0) || (accumulatedScroll < 0 && scrollDelta > 0)) {
             accumulatedScroll = 0f
         }
 
-        
         accumulatedScroll += scrollDelta
 
         when (inlineBehavior) {
             FloatingTabBarInlineBehavior.OnScrollDown -> {
-                
+
                 if (accumulatedScroll <= -scrollThresholdPx && !isInline) {
-                    
+
                     isInline = true
-                    accumulatedScroll = 0f 
+                    accumulatedScroll = 0f
                 } else if (accumulatedScroll >= scrollThresholdPx && isInline) {
-                    
+
                     isInline = false
-                    accumulatedScroll = 0f 
+                    accumulatedScroll = 0f
                 }
             }
 
             FloatingTabBarInlineBehavior.OnScrollUp -> {
-                
+
                 if (accumulatedScroll >= scrollThresholdPx && !isInline) {
-                    
+
                     isInline = true
-                    accumulatedScroll = 0f 
+                    accumulatedScroll = 0f
                 } else if (accumulatedScroll <= -scrollThresholdPx && isInline) {
-                    
+
                     isInline = false
-                    accumulatedScroll = 0f 
+                    accumulatedScroll = 0f
                 }
             }
 
             FloatingTabBarInlineBehavior.Never -> {
-                
+
             }
         }
 
-        return Offset.Zero 
+        return Offset.Zero
     }
 }
-
 
 @Composable
 fun rememberFloatingTabBarScrollConnection(
@@ -248,20 +248,17 @@ fun rememberFloatingTabBarScrollConnection(
     }
 }
 
-
 enum class FloatingTabBarInlineBehavior {
-    
+
     Never,
 
-    
     OnScrollDown,
 
-    
     OnScrollUp
 }
 
 interface FloatingTabBarScope {
-    
+
     fun tab(
         key: Any,
         title: @Composable () -> Unit,
@@ -270,7 +267,6 @@ interface FloatingTabBarScope {
         indication: (@Composable () -> Indication)? = { LocalIndication.current }
     )
 
-    
     fun standaloneTab(
         key: Any,
         icon: @Composable () -> Unit,
@@ -291,14 +287,13 @@ private fun SharedTransitionScope.InlineBar(
     sizes: FloatingTabBarSizes,
     elevations: FloatingTabBarElevations,
     tabBarContentModifier: Modifier,
-    animatedVisibilityScope: AnimatedVisibilityScope
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    isFluid: Boolean = false
 ) {
     val inlineTab = scope.getInlineTab(selectedTabKey)
     val standaloneTab = scope.standaloneTab
     val hasInlineTab = inlineTab != null
 
-    
-    
     Row(
         horizontalArrangement = Arrangement.spacedBy(sizes.componentSpacing),
         verticalAlignment = Alignment.CenterVertically,
@@ -317,7 +312,8 @@ private fun SharedTransitionScope.InlineBar(
                 elevations = elevations,
                 animatedVisibilityScope = animatedVisibilityScope,
                 tabBarContentModifier = tabBarContentModifier,
-                modifier = Modifier
+                modifier = Modifier,
+                isFluid = isFluid
             )
         }
 
@@ -331,7 +327,8 @@ private fun SharedTransitionScope.InlineBar(
                 animatedVisibilityScope = animatedVisibilityScope,
                 modifier = Modifier
                     .weight(1f)
-                    .fillMaxHeight()
+                    .fillMaxHeight(),
+                isFluid = isFluid
             )
         }
 
@@ -345,7 +342,8 @@ private fun SharedTransitionScope.InlineBar(
                 tabBarContentModifier = tabBarContentModifier,
                 modifier = Modifier
                     .fillMaxHeight()
-                    .aspectRatio(1f)
+                    .aspectRatio(1f),
+                isFluid = isFluid
             )
         }
     }
@@ -361,7 +359,8 @@ private fun SharedTransitionScope.InlineTab(
     elevations: FloatingTabBarElevations,
     animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier,
-    tabBarContentModifier: Modifier
+    tabBarContentModifier: Modifier,
+    isFluid: Boolean = false
 ) {
     Box(
         modifier = modifier
@@ -370,15 +369,25 @@ private fun SharedTransitionScope.InlineTab(
                 animatedVisibilityScope = animatedVisibilityScope,
                 zIndexInOverlay = 1f
             )
-            .shadow(
-                shape = shapes.tabBarShape,
-                elevation = elevations.inlineElevation
+            .then(
+                if (isFluid) {
+                    Modifier
+                        .clip(shapes.tabBarShape)
+                        .fluidGlass(intensity = GlassIntensity.Standard)
+                        .border(0.5.dp, Color.White.copy(alpha = 0.22f), shapes.tabBarShape)
+                } else {
+                    Modifier
+                        .shadow(
+                            shape = shapes.tabBarShape,
+                            elevation = elevations.inlineElevation
+                        )
+                        .background(
+                            color = colors.backgroundColor,
+                            shape = shapes.tabBarShape
+                        )
+                        .clip(shapes.tabBarShape)
+                }
             )
-            .background(
-                color = colors.backgroundColor,
-                shape = shapes.tabBarShape
-            )
-            .clip(shapes.tabBarShape)
             .then(tabBarContentModifier)
             .clickable(
                 onClick = {
@@ -416,7 +425,8 @@ private fun SharedTransitionScope.InlineStandaloneTab(
     elevations: FloatingTabBarElevations,
     animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier,
-    tabBarContentModifier: Modifier
+    tabBarContentModifier: Modifier,
+    isFluid: Boolean = false
 ) {
     Tab(
         icon = standaloneTab.icon,
@@ -429,15 +439,25 @@ private fun SharedTransitionScope.InlineStandaloneTab(
                 animatedVisibilityScope = animatedVisibilityScope,
                 zIndexInOverlay = 1f
             )
-            .shadow(
-                shape = shapes.standaloneTabShape,
-                elevation = elevations.inlineElevation
+            .then(
+                if (isFluid) {
+                    Modifier
+                        .clip(shapes.standaloneTabShape)
+                        .fluidGlass(intensity = GlassIntensity.Standard)
+                        .border(0.5.dp, Color.White.copy(alpha = 0.22f), shapes.standaloneTabShape)
+                } else {
+                    Modifier
+                        .shadow(
+                            shape = shapes.standaloneTabShape,
+                            elevation = elevations.inlineElevation
+                        )
+                        .background(
+                            color = colors.backgroundColor,
+                            shape = shapes.standaloneTabShape
+                        )
+                        .clip(shapes.standaloneTabShape)
+                }
             )
-            .background(
-                color = colors.backgroundColor,
-                shape = shapes.standaloneTabShape
-            )
-            .clip(shapes.standaloneTabShape)
             .then(tabBarContentModifier)
             .clickable(
                 onClick = standaloneTab.onClick,
@@ -455,7 +475,8 @@ private fun SharedTransitionScope.InlineAccessory(
     shapes: FloatingTabBarShapes,
     elevations: FloatingTabBarElevations,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    modifier: Modifier
+    modifier: Modifier,
+    isFluid: Boolean = false
 ) {
     accessory?.let { accessory ->
         Box(
@@ -474,7 +495,13 @@ private fun SharedTransitionScope.InlineAccessory(
                     }
                 )
         ) {
-            accessory(
+            val baseModifier = if (isFluid) {
+                Modifier
+                    .fillMaxSize()
+                    .clip(shapes.accessoryShape)
+                    .fluidGlass(intensity = GlassIntensity.Standard)
+                    .border(0.5.dp, Color.White.copy(alpha = 0.22f), shapes.accessoryShape)
+            } else {
                 Modifier
                     .fillMaxSize()
                     .shadow(
@@ -482,9 +509,9 @@ private fun SharedTransitionScope.InlineAccessory(
                         elevation = elevations.inlineElevation
                     )
                     .background(color = colors.accessoryBackgroundColor, shapes.accessoryShape)
-                    .clip(shapes.accessoryShape),
-                animatedVisibilityScope
-            )
+                    .clip(shapes.accessoryShape)
+            }
+            accessory(baseModifier, animatedVisibilityScope)
         }
     }
 }
@@ -500,13 +527,12 @@ private fun SharedTransitionScope.ExpandedBar(
     sizes: FloatingTabBarSizes,
     elevations: FloatingTabBarElevations,
     tabBarContentModifier: Modifier,
-    animatedVisibilityScope: AnimatedVisibilityScope
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    isFluid: Boolean = false
 ) {
     val standaloneTab = scope.standaloneTab
     val hasTabGroup = scope.tabs.isNotEmpty()
 
-    
-    
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(sizes.componentSpacing),
@@ -520,7 +546,8 @@ private fun SharedTransitionScope.ExpandedBar(
                 colors = colors,
                 elevations = elevations,
                 animatedVisibilityScope = animatedVisibilityScope,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                isFluid = isFluid
             )
         }
 
@@ -539,7 +566,8 @@ private fun SharedTransitionScope.ExpandedBar(
                     elevations = elevations,
                     animatedVisibilityScope = animatedVisibilityScope,
                     tabBarContentModifier = tabBarContentModifier,
-                    modifier = Modifier
+                    modifier = Modifier,
+                    isFluid = isFluid
                 )
             }
 
@@ -553,7 +581,8 @@ private fun SharedTransitionScope.ExpandedBar(
                     tabBarContentModifier = tabBarContentModifier,
                     modifier = Modifier
                         .fillMaxHeight()
-                        .aspectRatio(1f)
+                        .aspectRatio(1f),
+                    isFluid = isFluid
                 )
             }
         }
@@ -568,7 +597,8 @@ private fun SharedTransitionScope.ExpandedAccessory(
     shapes: FloatingTabBarShapes,
     elevations: FloatingTabBarElevations,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    modifier: Modifier
+    modifier: Modifier,
+    isFluid: Boolean = false
 ) {
     Box(
         modifier = modifier
@@ -586,18 +616,24 @@ private fun SharedTransitionScope.ExpandedAccessory(
                 }
             )
     ) {
-        accessory(
+        val baseModifier = if (isFluid) {
+            Modifier
+                .clip(shapes.accessoryShape)
+                .fluidGlass(intensity = GlassIntensity.Standard)
+                .border(0.5.dp, Color.White.copy(alpha = 0.22f), shapes.accessoryShape)
+        } else {
             Modifier
                 .shadow(
                     shape = shapes.accessoryShape,
                     elevation = elevations.expandedElevation
                 )
                 .background(color = colors.accessoryBackgroundColor, shapes.accessoryShape)
-                .clip(shapes.accessoryShape),
-            animatedVisibilityScope
-        )
+                .clip(shapes.accessoryShape)
+        }
+        accessory(baseModifier, animatedVisibilityScope)
     }
 }
+
 @Composable
 private fun SharedTransitionScope.ExpandedTabs(
     scope: FloatingTabBarScopeImpl,
@@ -608,7 +644,8 @@ private fun SharedTransitionScope.ExpandedTabs(
     elevations: FloatingTabBarElevations,
     animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier,
-    tabBarContentModifier: Modifier
+    tabBarContentModifier: Modifier,
+    isFluid: Boolean = false
 ) {
     val inlineTab = scope.getInlineTab(selectedTabKey)
 
@@ -620,15 +657,25 @@ private fun SharedTransitionScope.ExpandedTabs(
                 animatedVisibilityScope = animatedVisibilityScope,
                 zIndexInOverlay = 1f
             )
-            .shadow(
-                shape = shapes.tabBarShape,
-                elevation = elevations.expandedElevation
+            .then(
+                if (isFluid) {
+                    Modifier
+                        .clip(shapes.tabBarShape)
+                        .fluidGlass(intensity = GlassIntensity.Standard)
+                        .border(0.5.dp, Color.White.copy(alpha = 0.22f), shapes.tabBarShape)
+                } else {
+                    Modifier
+                        .shadow(
+                            shape = shapes.tabBarShape,
+                            elevation = elevations.expandedElevation
+                        )
+                        .background(
+                            color = colors.backgroundColor,
+                            shape = shapes.tabBarShape
+                        )
+                        .clip(shapes.tabBarShape)
+                }
             )
-            .background(
-                color = colors.backgroundColor,
-                shape = shapes.tabBarShape
-            )
-            .clip(shapes.tabBarShape)
             .then(tabBarContentModifier)
             .padding(sizes.tabBarContentPadding)
             .wrapContentWidth(align = Alignment.Start, unbounded = true)
@@ -687,7 +734,8 @@ private fun SharedTransitionScope.ExpandedStandaloneTab(
     elevations: FloatingTabBarElevations,
     animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier,
-    tabBarContentModifier: Modifier
+    tabBarContentModifier: Modifier,
+    isFluid: Boolean = false
 ) {
     Tab(
         icon = standaloneTab.icon,
@@ -700,15 +748,25 @@ private fun SharedTransitionScope.ExpandedStandaloneTab(
                 animatedVisibilityScope = animatedVisibilityScope,
                 zIndexInOverlay = 1f
             )
-            .shadow(
-                shape = shapes.standaloneTabShape,
-                elevation = elevations.expandedElevation
+            .then(
+                if (isFluid) {
+                    Modifier
+                        .clip(shapes.standaloneTabShape)
+                        .fluidGlass(intensity = GlassIntensity.Standard)
+                        .border(0.5.dp, Color.White.copy(alpha = 0.22f), shapes.standaloneTabShape)
+                } else {
+                    Modifier
+                        .shadow(
+                            shape = shapes.standaloneTabShape,
+                            elevation = elevations.expandedElevation
+                        )
+                        .background(
+                            color = colors.backgroundColor,
+                            shape = shapes.standaloneTabShape
+                        )
+                        .clip(shapes.standaloneTabShape)
+                }
             )
-            .background(
-                color = colors.backgroundColor,
-                shape = shapes.standaloneTabShape
-            )
-            .clip(shapes.standaloneTabShape)
             .then(tabBarContentModifier)
             .clickable(
                 onClick = standaloneTab.onClick,
@@ -738,7 +796,6 @@ private fun Tab(
     }
 }
 
-
 @Composable
 private fun Modifier.animateEnterExitAccessory(
     sharedTransitionScope: SharedTransitionScope,
@@ -760,7 +817,6 @@ private fun Modifier.animateEnterExitAccessory(
             )
     }
 }
-
 
 @Composable
 private fun Modifier.animateEnterExitTab(
@@ -817,7 +873,7 @@ private fun Modifier.animateEnterExitTab(
     }
 }
 
-private class FloatingTabBarScopeImpl : FloatingTabBarScope {
+private class FloatingTabBarScopeImpl(private val isFluid: Boolean = false) : FloatingTabBarScope {
     val tabs = mutableStateListOf<FloatingTabBarTab>()
     var standaloneTab: FloatingTabBarTab? by mutableStateOf(null)
         private set
@@ -844,29 +900,37 @@ private class FloatingTabBarScopeImpl : FloatingTabBarScope {
         onClick: () -> Unit,
         indication: (@Composable () -> Indication)?
     ) {
+        val effectiveIndication: (@Composable () -> Indication)? = indication ?: if (isFluid) {
+            { BounceIndication }
+        } else null
+
         tabs.add(
             FloatingTabBarTab(
                 key = key,
                 title = title,
                 icon = icon,
                 onClick = onClick,
-                indication = indication
+                indication = effectiveIndication
             )
         )
     }
-    
+
     override fun standaloneTab(
         key: Any,
         icon: @Composable () -> Unit,
         onClick: () -> Unit,
         indication: (@Composable () -> Indication)?
     ) {
+        val effectiveIndication: (@Composable () -> Indication)? = indication ?: if (isFluid) {
+            { BounceIndication }
+        } else null
+
         standaloneTab = FloatingTabBarTab(
             key = key,
             title = {},
             icon = icon,
             onClick = onClick,
-            indication = indication
+            indication = effectiveIndication
         )
     }
 }
@@ -879,13 +943,11 @@ private data class FloatingTabBarTab(
     val indication: (@Composable () -> Indication)?
 )
 
-
 @Immutable
 data class FloatingTabBarColors(
     val backgroundColor: Color,
     val accessoryBackgroundColor: Color,
 )
-
 
 @Immutable
 data class FloatingTabBarShapes(
@@ -895,13 +957,11 @@ data class FloatingTabBarShapes(
     val accessoryShape: Shape,
 )
 
-
 @Immutable
 data class FloatingTabBarElevations(
     val inlineElevation: Dp,
     val expandedElevation: Dp,
 )
-
 
 @Immutable
 data class FloatingTabBarSizes(
@@ -912,25 +972,23 @@ data class FloatingTabBarSizes(
     val tabSpacing: Dp,
 )
 
-
 object FloatingTabBarDefaults {
-    
+
     @Composable
     fun colors(
-        backgroundColor: Color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        accessoryBackgroundColor: Color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        backgroundColor: Color = if (isFluidTabBar()) Color(0x33787880) else MaterialTheme.colorScheme.surfaceContainerHigh,
+        accessoryBackgroundColor: Color = if (isFluidTabBar()) Color(0x33787880) else MaterialTheme.colorScheme.surfaceContainerHigh,
     ): FloatingTabBarColors = FloatingTabBarColors(
         backgroundColor = backgroundColor,
         accessoryBackgroundColor = accessoryBackgroundColor,
     )
 
-    
     @Composable
     fun shapes(
-        tabBarShape: Shape = RoundedCornerShape(100),
-        tabShape: Shape = RoundedCornerShape(100),
+        tabBarShape: Shape = if (isFluidTabBar()) FluidShapes.Capsule else RoundedCornerShape(100),
+        tabShape: Shape = if (isFluidTabBar()) FluidShapes.Capsule else RoundedCornerShape(100),
         standaloneTabShape: Shape = CircleShape,
-        accessoryShape: Shape = RoundedCornerShape(100),
+        accessoryShape: Shape = if (isFluidTabBar()) FluidShapes.Capsule else RoundedCornerShape(100),
     ): FloatingTabBarShapes = FloatingTabBarShapes(
         tabBarShape = tabBarShape,
         tabShape = tabShape,
@@ -938,7 +996,6 @@ object FloatingTabBarDefaults {
         accessoryShape = accessoryShape,
     )
 
-    
     @Composable
     fun sizes(
         tabBarContentPadding: PaddingValues = PaddingValues(vertical = 4.dp, horizontal = 4.dp),
@@ -954,13 +1011,18 @@ object FloatingTabBarDefaults {
         tabSpacing = tabSpacing,
     )
 
-    
     @Composable
     fun elevations(
-        inlineElevation: Dp = 6.dp,
-        expandedElevation: Dp = 12.dp,
+        inlineElevation: Dp = if (isFluidTabBar()) 0.dp else 6.dp,
+        expandedElevation: Dp = if (isFluidTabBar()) 0.dp else 12.dp,
     ): FloatingTabBarElevations = FloatingTabBarElevations(
         inlineElevation = inlineElevation,
         expandedElevation = expandedElevation,
     )
+
+    @Composable
+    private fun isFluidTabBar(): Boolean {
+        val (themeMode) = rememberPreference(AppThemeModeKey, AppThemeMode.MaterialUI.name)
+        return themeMode == AppThemeMode.FluidUI.name
+    }
 }

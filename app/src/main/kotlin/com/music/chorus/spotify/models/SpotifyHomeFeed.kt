@@ -1,7 +1,4 @@
-
-
 package pushkar.chorus.music.spotify.models
-
 
 data class SpotifyHomeFeed(
     val greeting: String?,

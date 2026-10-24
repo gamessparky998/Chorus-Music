@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.db
 
 import androidx.room.TypeConverter

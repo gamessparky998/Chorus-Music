@@ -1,6 +1,3 @@
-
-
-
 package pushkar.chorus.music.localmedia
 
 import java.util.Locale

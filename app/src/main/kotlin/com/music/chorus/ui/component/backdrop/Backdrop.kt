@@ -1,4 +1,3 @@
-
 package pushkar.chorus.music.ui.component.backdrop
 
 import androidx.compose.ui.graphics.GraphicsLayerScope

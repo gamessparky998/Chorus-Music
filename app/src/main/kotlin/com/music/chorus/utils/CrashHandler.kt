@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.utils
 
 import android.content.Context
@@ -23,19 +21,17 @@ class CrashHandler private constructor(
         try {
             val crashLog = buildCrashLog(throwable)
             Timber.e(throwable, "App crashed")
-            
-            
+
             val intent = Intent(applicationContext, CrashActivity::class.java).apply {
                 putExtra(EXTRA_CRASH_LOG, crashLog)
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
             }
             applicationContext.startActivity(intent)
-            
-            
+
             android.os.Process.killProcess(android.os.Process.myPid())
             exitProcess(1)
         } catch (e: Exception) {
-            
+
             Timber.e(e, "Error handling crash")
             defaultHandler?.uncaughtException(thread, throwable)
         }

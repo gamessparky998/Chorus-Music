@@ -1,11 +1,9 @@
-
+@file:Suppress("OPT_IN_USAGE_ERROR", "OPT_IN_USAGE")
 
 package pushkar.chorus.music.ui.component
 
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.height
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
@@ -21,9 +19,11 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.unit.dp
 import pushkar.chorus.music.R
-
+import pushkar.chorus.music.ui.fluid.foundation.FluidTheme
+import pushkar.chorus.music.ui.theme.isFluidTheme
 
 private object VolumeSliderDefaults {
     val TrackHeight: Dp = 40.dp
@@ -36,7 +36,6 @@ private object VolumeSliderDefaults {
     val StopIndicatorRadius: Dp = 4.dp
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun VolumeSlider(
     value: Float,
@@ -60,15 +59,28 @@ fun VolumeSlider(
         else -> volumeUpIcon
     }
 
+    val isFluid = isFluidTheme()
+    val isDark = isSystemInDarkTheme()
+    val effectiveAccent = if (isFluid) FluidTheme.tint else accentColor
+    val effectiveInactiveTrack = if (isFluid) {
+        if (isDark) Color(0x33FFFFFF) else Color(0x1F000000)
+    } else MaterialTheme.colorScheme.surfaceVariant
+    val effectiveActiveTick = if (isFluid) Color.White else MaterialTheme.colorScheme.onPrimary
+    val effectiveInactiveTick = if (isFluid) {
+        if (isDark) Color(0x80FFFFFF) else Color(0x4D000000)
+    } else MaterialTheme.colorScheme.onSurfaceVariant
+
     val colors = SliderDefaults.colors(
-        thumbColor = accentColor,
-        activeTrackColor = accentColor,
-        activeTickColor = MaterialTheme.colorScheme.onPrimary,
-        inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant,
-        inactiveTickColor = MaterialTheme.colorScheme.onSurfaceVariant
+        thumbColor = effectiveAccent,
+        activeTrackColor = effectiveAccent,
+        activeTickColor = effectiveActiveTick,
+        inactiveTrackColor = effectiveInactiveTrack,
+        inactiveTickColor = effectiveInactiveTick
     )
-    
-    val stopIndicatorColor = MaterialTheme.colorScheme.onSurfaceVariant
+
+    val stopIndicatorColor = if (isFluid) {
+        if (isDark) Color(0x44FFFFFF) else Color(0x22000000)
+    } else MaterialTheme.colorScheme.onSurfaceVariant
 
     Slider(
         value = value,
@@ -113,8 +125,8 @@ fun VolumeSlider(
                     },
                 colors = colors,
                 enabled = enabled,
-                thumbTrackGapSize = VolumeSliderDefaults.ThumbTrackGapSize,
-                trackCornerSize = VolumeSliderDefaults.TrackCornerRadius,
+                thumbTrackGapSize = if (isFluid) 0.dp else VolumeSliderDefaults.ThumbTrackGapSize,
+                trackCornerSize = if (isFluid) 20.dp else VolumeSliderDefaults.TrackCornerRadius,
                 drawStopIndicator = if (value < 0.90f) { offset ->
                     drawCircle(
                         color = stopIndicatorColor,

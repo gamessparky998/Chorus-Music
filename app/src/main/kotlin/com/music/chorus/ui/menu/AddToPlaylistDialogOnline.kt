@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.menu
 
 import androidx.compose.foundation.Image
@@ -12,6 +10,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import pushkar.chorus.music.utils.listItemShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -76,7 +76,7 @@ fun AddToPlaylistDialogOnline(
     isVisible: Boolean,
     allowSyncing: Boolean = true,
     initialTextFieldValue: String? = null,
-    songs: SnapshotStateList<Song>, 
+    songs: SnapshotStateList<Song>,
     onDismiss: () -> Unit,
     onProgressStart: (Boolean) -> Unit,
     onPercentageChange: (Int) -> Unit,
@@ -107,7 +107,7 @@ fun AddToPlaylistDialogOnline(
         mutableStateOf<Playlist?>(null)
     }
     val songIds by remember {
-        mutableStateOf<List<String>?>(null) 
+        mutableStateOf<List<String>?>(null)
     }
     val duplicates by remember {
         mutableStateOf(emptyList<String>())
@@ -151,12 +151,12 @@ fun AddToPlaylistDialogOnline(
                     OutlinedTextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
-                        placeholder = { 
+                        placeholder = {
                             Text(
                                 text = stringResource(R.string.search),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                            ) 
+                            )
                         },
                         leadingIcon = {
                             Icon(
@@ -165,8 +165,8 @@ fun AddToPlaylistDialogOnline(
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         },
-                        trailingIcon = {
-                            if (searchQuery.isNotEmpty()) {
+                        trailingIcon = if (searchQuery.isNotEmpty()) {
+                            {
                                 IconButton(onClick = { searchQuery = "" }) {
                                     Icon(
                                         painter = painterResource(R.drawable.close),
@@ -175,9 +175,9 @@ fun AddToPlaylistDialogOnline(
                                     )
                                 }
                             }
-                        },
+                        } else null,
                         singleLine = true,
-                        shape = RoundedCornerShape(24.dp),
+                        shape = if (isFluidTheme()) ContinuousRoundedRectangle(24.dp) else RoundedCornerShape(24.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
                             unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
@@ -240,14 +240,17 @@ fun AddToPlaylistDialogOnline(
                         coroutineScope.launch(Dispatchers.IO) {
                             onDismiss()
                             val songsTot = songs.count().toDouble()
-                            var  songsIdx = 0.toDouble()
+                            var songsIdx = 0.toDouble()
                             onProgressStart(true)
-                            songs.reversed().forEach{
-                                    song ->
+                            songs.reversed().forEach { song ->
                                 var allArtists = ""
-                                song.artists.forEach {
-                                        artist ->
-                                    allArtists += " ${URLDecoder.decode(artist.name, StandardCharsets.UTF_8.toString())}"
+                                song.artists.forEach { artist ->
+                                    allArtists += " ${
+                                        URLDecoder.decode(
+                                            artist.name,
+                                            StandardCharsets.UTF_8.toString()
+                                        )
+                                    }"
                                 }
                                 val query = "${song.title} - $allArtists"
 
@@ -286,12 +289,19 @@ fun AddToPlaylistDialogOnline(
                                         if (songsIdx.toInt() == songsTot.toInt() - 1) {
                                             onProgressStart(false)
                                             withContext(Dispatchers.Main) {
-                                                Toast.makeText(context, context.getString(R.string.added_to_playlist, playlist.playlist.name), Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(
+                                                    context,
+                                                    context.getString(
+                                                        R.string.added_to_playlist,
+                                                        playlist.playlist.name
+                                                    ),
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
                                             }
                                         }
                                         onPercentageChange(((songsIdx / songsTot) * 100).toInt())
 
-                                    } catch (e: Exception){
+                                    } catch (e: Exception) {
                                         Timber.tag("ERROR").v(e.toString())
                                     }
 
@@ -310,14 +320,17 @@ fun AddToPlaylistDialogOnline(
                         coroutineScope.launch(Dispatchers.IO) {
                             onDismiss()
                             val songsTot = songs.count().toDouble()
-                            var  songsIdx = 0.toDouble()
+                            var songsIdx = 0.toDouble()
                             onProgressStart(true)
-                            songs.reversed().forEach{
-                                    song ->
+                            songs.reversed().forEach { song ->
                                 var allArtists = ""
-                                song.artists.forEach {
-                                        artist ->
-                                    allArtists += " ${URLDecoder.decode(artist.name, StandardCharsets.UTF_8.toString())}"
+                                song.artists.forEach { artist ->
+                                    allArtists += " ${
+                                        URLDecoder.decode(
+                                            artist.name,
+                                            StandardCharsets.UTF_8.toString()
+                                        )
+                                    }"
                                 }
                                 val query = "${song.title} - $allArtists"
 
@@ -358,12 +371,19 @@ fun AddToPlaylistDialogOnline(
                                         if (songsIdx.toInt() == songsTot.toInt() - 1) {
                                             onProgressStart(false)
                                             withContext(Dispatchers.Main) {
-                                                Toast.makeText(context, context.getString(R.string.added_to_playlist, context.getString(R.string.liked_songs)), Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(
+                                                    context,
+                                                    context.getString(
+                                                        R.string.added_to_playlist,
+                                                        context.getString(R.string.liked_songs)
+                                                    ),
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
                                             }
                                         }
                                         onPercentageChange(((songsIdx / songsTot) * 100).toInt())
 
-                                    } catch (e: Exception){
+                                    } catch (e: Exception) {
                                         Timber.tag("ERROR").v(e.toString())
                                     }
 
@@ -376,10 +396,10 @@ fun AddToPlaylistDialogOnline(
                     title = stringResource(R.string.liked_songs),
                     thumbnailContent = {
                         Image(
-                            painter = painterResource(id = R.drawable.favorite), 
+                            painter = painterResource(id = R.drawable.favorite),
                             contentDescription = null,
-                            modifier = Modifier.size(40.dp), 
-                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground) 
+                            modifier = Modifier.size(40.dp),
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
                         )
                     },
                     trailingContent = {}
@@ -404,7 +424,6 @@ fun AddToPlaylistDialogOnline(
         )
     }
 
-    
     if (showDuplicateDialog) {
         DefaultDialog(
             title = { Text(stringResource(R.string.duplicates)) },
@@ -421,7 +440,11 @@ fun AddToPlaylistDialogOnline(
                                 }
                             )
                         }
-                        Toast.makeText(context, context.getString(R.string.added_to_playlist, selectedPlaylist!!.playlist.name), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.added_to_playlist, selectedPlaylist!!.playlist.name),
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 ) {
                     Text(stringResource(R.string.skip_duplicates))
@@ -434,7 +457,11 @@ fun AddToPlaylistDialogOnline(
                         database.transaction {
                             addSongToPlaylist(selectedPlaylist!!, songIds!!)
                         }
-                        Toast.makeText(context, context.getString(R.string.added_to_playlist, selectedPlaylist!!.playlist.name), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.added_to_playlist, selectedPlaylist!!.playlist.name),
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 ) {
                     Text(stringResource(R.string.add_anyway))

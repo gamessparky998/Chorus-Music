@@ -1,4 +1,4 @@
-
+@file:Suppress("OPT_IN_USAGE_ERROR", "OPT_IN_USAGE")
 
 package pushkar.chorus.music.ui.screens
 
@@ -18,8 +18,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.material3.BottomSheetDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -38,7 +39,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import pushkar.chorus.music.R
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ActivityHistoryBottomSheet(
     onDismiss: () -> Unit,
@@ -50,13 +50,14 @@ fun ActivityHistoryBottomSheet(
     periodLabel: String,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val isFluid = isFluidTheme()
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         dragHandle = { BottomSheetDefaults.DragHandle() },
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+        shape = if (isFluid) ContinuousRoundedRectangle(topStart = 28.dp, topEnd = 28.dp) else RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
     ) {
         Column(
             modifier = Modifier
@@ -66,7 +67,7 @@ fun ActivityHistoryBottomSheet(
                 .animateContentSize(animationSpec = spring(stiffness = Spring.StiffnessMediumLow)),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -101,10 +102,9 @@ fun ActivityHistoryBottomSheet(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
+                shape = if (isFluid) ContinuousRoundedRectangle(24.dp) else RoundedCornerShape(24.dp),
                 color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
             ) {
                 Row(
@@ -160,21 +160,24 @@ fun ActivityHistoryBottomSheet(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
             ) {
                 val segmentBgColor = MaterialTheme.colorScheme.surfaceContainerHigh
 
-                
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .height(112.dp)
                         .background(
                             color = segmentBgColor,
-                            shape = RoundedCornerShape(
+                            shape = if (isFluid) ContinuousRoundedRectangle(
+                                topStart = 20.dp,
+                                bottomStart = 20.dp,
+                                topEnd = 6.dp,
+                                bottomEnd = 6.dp
+                            ) else RoundedCornerShape(
                                 topStart = 20.dp,
                                 bottomStart = 20.dp,
                                 topEnd = 6.dp,
@@ -225,14 +228,13 @@ fun ActivityHistoryBottomSheet(
 
                 Spacer(modifier = Modifier.width(3.dp))
 
-                
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .height(112.dp)
                         .background(
                             color = segmentBgColor,
-                            shape = RoundedCornerShape(6.dp)
+                            shape = if (isFluid) ContinuousRoundedRectangle(6.dp) else RoundedCornerShape(6.dp)
                         ),
                     contentAlignment = Alignment.Center
                 ) {
@@ -278,14 +280,18 @@ fun ActivityHistoryBottomSheet(
 
                 Spacer(modifier = Modifier.width(3.dp))
 
-                
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .height(112.dp)
                         .background(
                             color = segmentBgColor,
-                            shape = RoundedCornerShape(
+                            shape = if (isFluid) ContinuousRoundedRectangle(
+                                topEnd = 20.dp,
+                                bottomEnd = 20.dp,
+                                topStart = 6.dp,
+                                bottomStart = 6.dp
+                            ) else RoundedCornerShape(
                                 topEnd = 20.dp,
                                 bottomEnd = 20.dp,
                                 topStart = 6.dp,
@@ -337,10 +343,9 @@ fun ActivityHistoryBottomSheet(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
+                shape = if (isFluid) ContinuousRoundedRectangle(24.dp) else RoundedCornerShape(24.dp),
                 color = MaterialTheme.colorScheme.surfaceContainerHigh
             ) {
                 Row(
@@ -408,7 +413,6 @@ fun ActivityHistoryBottomSheet(
         }
     }
 }
-
 
 private fun formatDuration(ms: Long): String {
     if (ms <= 0L) return "0m"

@@ -2,9 +2,8 @@ package com.music.innertube.utils
 
 import com.music.innertube.models.WatchEndpoint
 
-
 object YouTubeUrlParser {
-    
+
     sealed class ParsedUrl {
         abstract val id: String
 
@@ -17,7 +16,6 @@ object YouTubeUrlParser {
         ) : ParsedUrl()
     }
 
-    
     private val VIDEO_URL_PATTERNS =
         listOf(
             Regex("""(?:https?://)?(?:www\.)?(?:music\.)?youtube\.com/watch\?.*v=([a-zA-Z0-9_-]{11})"""),
@@ -26,22 +24,18 @@ object YouTubeUrlParser {
             Regex("""(?:https?://)?(?:www\.)?youtube\.com/shorts/([a-zA-Z0-9_-]{11})"""),
         )
 
-    
     private val ARTIST_URL_PATTERNS =
         listOf(
             Regex("""(?:https?://)?(?:www\.)?music\.youtube\.com/channel/([a-zA-Z0-9_-]+)"""),
             Regex("""(?:https?://)?(?:www\.)?music\.youtube\.com/browse/(MPRE[a-zA-Z0-9_-]+)"""),
         )
 
-    
     fun isYouTubeUrl(text: String): Boolean = parse(text) != null
 
-    
     fun parse(url: String): ParsedUrl? {
         val trimmedUrl = url.trim()
         println("[LINK_PARSE_DEBUG] Parsing URL: $trimmedUrl")
 
-        
         for (pattern in VIDEO_URL_PATTERNS) {
             pattern.find(trimmedUrl)?.let { matchResult ->
                 matchResult.groupValues.getOrNull(1)?.let { videoId ->
@@ -51,7 +45,6 @@ object YouTubeUrlParser {
             }
         }
 
-        
         if (trimmedUrl.contains("music.youtube.com")) {
             for (pattern in ARTIST_URL_PATTERNS) {
                 pattern.find(trimmedUrl)?.let { matchResult ->
@@ -67,10 +60,8 @@ object YouTubeUrlParser {
         return null
     }
 
-    
     fun extractVideoId(url: String): String? = (parse(url) as? ParsedUrl.Video)?.id
 
-    
     fun createWatchEndpoint(url: String): WatchEndpoint? =
         extractVideoId(url)?.let { videoId ->
             WatchEndpoint(videoId = videoId)

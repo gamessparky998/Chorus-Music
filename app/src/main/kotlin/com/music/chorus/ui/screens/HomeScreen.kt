@@ -2,7 +2,6 @@ package pushkar.chorus.music.ui.screens
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.horizontalScroll
 
-
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.focusGroup
@@ -11,7 +10,6 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.border
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
@@ -49,6 +47,8 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -56,8 +56,6 @@ import androidx.compose.material3.carousel.HorizontalMultiBrowseCarousel
 import androidx.compose.material3.carousel.HorizontalCenteredHeroCarousel
 import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.material3.ContainedLoadingIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -228,7 +226,7 @@ fun CommunityPlaylistCard(
         colors = CardDefaults.cardColors(
             containerColor = containerColor
         ),
-        shape = RoundedCornerShape(28.dp),
+        shape = if (isFluidTheme()) ContinuousRoundedRectangle(28.dp) else RoundedCornerShape(28.dp),
         onClick = onClick
     ) {
         Column(
@@ -240,11 +238,11 @@ fun CommunityPlaylistCard(
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                
+
                 Box(
                     modifier = Modifier
                         .size(100.dp)
-                        .clip(RoundedCornerShape(12.dp))
+                        .clip(if (isFluidTheme()) ContinuousRoundedRectangle(12.dp) else RoundedCornerShape(12.dp))
                 ) {
                     Column(modifier = Modifier.fillMaxSize()) {
                         Row(modifier = Modifier.weight(1f)) {
@@ -317,7 +315,7 @@ fun CommunityPlaylistCard(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 4.dp)
-                            .clip(RoundedCornerShape(12.dp))
+                            .clip(if (isFluidTheme()) ContinuousRoundedRectangle(12.dp) else RoundedCornerShape(12.dp))
                             .combinedClickable(onClick = { onSongClick(song) }),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -328,7 +326,7 @@ fun CommunityPlaylistCard(
                             modifier = Modifier
                                 .width(56.dp)
                                 .wrapContentHeight()
-                                .clip(RoundedCornerShape(12.dp)),
+                                .clip(if (isFluidTheme()) ContinuousRoundedRectangle(12.dp) else RoundedCornerShape(12.dp)),
                             contentScale = ContentScale.FillWidth
                         )
                         Column(modifier = Modifier.weight(1f)) {
@@ -364,7 +362,7 @@ fun CommunityPlaylistCard(
                     },
                     modifier = Modifier
                         .size(48.dp)
-                        .background(MaterialTheme.colorScheme.primaryContainer, CircleShape)
+                        .background(MaterialTheme.colorScheme.primaryContainer, if (isFluidTheme()) ContinuousRoundedRectangle(24.dp) else CircleShape)
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_widget_play),
@@ -382,7 +380,7 @@ fun CommunityPlaylistCard(
                     },
                     modifier = Modifier
                         .size(48.dp)
-                        .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f), CircleShape)
+                        .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f), if (isFluidTheme()) ContinuousRoundedRectangle(24.dp) else CircleShape)
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.radio),
@@ -434,7 +432,7 @@ fun CommunityPlaylistCard(
                     },
                     modifier = Modifier
                         .size(48.dp)
-                        .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f), CircleShape)
+                        .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f), if (isFluidTheme()) ContinuousRoundedRectangle(24.dp) else CircleShape)
                 ) {
                     Icon(
                         painter = painterResource(if (isBookmarked) R.drawable.library_add_check else R.drawable.library_add),
@@ -448,7 +446,6 @@ fun CommunityPlaylistCard(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun DailyDiscoverCard(
     dailyDiscover: pushkar.chorus.music.viewmodels.DailyDiscoverItem,
@@ -467,7 +464,7 @@ fun DailyDiscoverCard(
     Card(
         modifier = modifier
             .fillMaxSize()
-            .clip(RoundedCornerShape(28.dp))
+            .clip(if (isFluidTheme()) ContinuousRoundedRectangle(28.dp) else RoundedCornerShape(28.dp))
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = {
@@ -486,7 +483,7 @@ fun DailyDiscoverCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant,
         ),
-        shape = RoundedCornerShape(28.dp)
+        shape = if (isFluidTheme()) ContinuousRoundedRectangle(28.dp) else RoundedCornerShape(28.dp)
     ) {
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             AsyncImage(
@@ -565,8 +562,6 @@ fun DailyDiscoverCard(
     }
 }
 
-
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun HomeScreen(
     navController: NavController,
@@ -599,6 +594,8 @@ fun HomeScreen(
     val allLocalItems by viewModel.allLocalItems.collectAsState()
     val allYtItems by viewModel.allYtItems.collectAsState()
     val speedDialItems by viewModel.speedDialItems.collectAsState()
+    val rawSpeedDialEntities by database.speedDialDao.getAll().collectAsState(initial = emptyList())
+    val pinnedSpeedDialIds = remember(rawSpeedDialEntities) { rawSpeedDialEntities.map { it.id }.toSet() }
     val selectedChip by viewModel.selectedChip.collectAsState()
 
     val isLoading: Boolean by viewModel.isLoading.collectAsState()
@@ -615,7 +612,6 @@ fun HomeScreen(
     val innerTubeCookie by rememberPreference(InnerTubeCookieKey, "")
     val (randomizeHomeOrder) = rememberPreference(RandomizeHomeOrderKey, true)
     val (showSpeedDial) = rememberPreference(ShowSpeedDialKey, true)
-
 
     val isLoggedIn = remember(innerTubeCookie) {
         "SAPISID" in parseCookieString(innerTubeCookie)
@@ -635,7 +631,6 @@ fun HomeScreen(
     val backStackEntry by navController.currentBackStackEntryAsState()
     val scrollToTop =
         backStackEntry?.savedStateHandle?.getStateFlow("scrollToTop", false)?.collectAsState()
-
 
     var randomSeed by rememberSaveable { mutableLongStateOf(System.currentTimeMillis()) }
 
@@ -670,7 +665,7 @@ fun HomeScreen(
 
     if (selectedChip != null) {
         BackHandler {
-            
+
             viewModel.toggleChip(selectedChip)
         }
     }
@@ -833,9 +828,9 @@ fun HomeScreen(
     ) {
         val list = mutableListOf<HomeSection>()
 
-        if (showSpeedDial && speedDialItems.isNotEmpty()) list.add(HomeSection.SpeedDial)
+        if (showSpeedDial && speedDialItems.size >= 3) list.add(HomeSection.SpeedDial)
         if (aiRecommendedPlaylist != null && aiRecommendedPlaylist!!.second.isNotEmpty()) list.add(HomeSection.AiRecommendations)
-        if (quickPicks?.isNotEmpty() == true) list.add(HomeSection.QuickPicks)
+        if ((quickPicks?.size ?: 0) >= 3) list.add(HomeSection.QuickPicks)
         if (communityPlaylists?.isNotEmpty() == true) list.add(HomeSection.FromTheCommunity)
         if (dailyDiscover?.isNotEmpty() == true) list.add(HomeSection.DailyDiscover)
         if (keepListening?.isNotEmpty() == true) list.add(HomeSection.KeepListening)
@@ -854,42 +849,33 @@ fun HomeScreen(
 
         if (randomizeHomeOrder) {
             list.sortedByDescending { section ->
-                
-                
-                
+
                 val sectionRandom = Random(randomSeed + section.id.hashCode())
 
-                
-                
                 val base = when (section) {
                     HomeSection.QuickPicks -> 10000
                     HomeSection.SpeedDial,
-                    HomeSection.DailyDiscover -> 500 
+                    HomeSection.DailyDiscover -> 500
 
                     HomeSection.KeepListening,
                     HomeSection.AccountPlaylists,
                     HomeSection.ForgottenFavorites,
-                    HomeSection.FromTheCommunity -> 300 
+                    HomeSection.FromTheCommunity -> 300
 
-                    else -> 100 
+                    else -> 100
                 }
 
                 val modifier = when (section) {
-                    
-                    
+
                     HomeSection.QuickPicks -> 0
                     HomeSection.SpeedDial,
                     HomeSection.DailyDiscover -> sectionRandom.nextInt(-200, 400)
 
-                    
-                    
-                    
                     HomeSection.KeepListening,
                     HomeSection.AccountPlaylists,
                     HomeSection.ForgottenFavorites,
                     HomeSection.FromTheCommunity -> sectionRandom.nextInt(-100, 400)
 
-                    
                     else -> sectionRandom.nextInt(-50, 50)
                 }
                 base + modifier
@@ -969,7 +955,7 @@ fun HomeScreen(
                     item(key = "offline_mode_card") {
                         OfflineModeCard(navController = navController)
                     }
-                    
+
                     if (downloadedSongs.isNotEmpty()) {
                         item(key = "offline_downloads_title") {
                             NavigationTitle(title = "Downloads")
@@ -978,7 +964,6 @@ fun HomeScreen(
                             androidx.compose.foundation.lazy.LazyRow(
                                 contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp),
                                 horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp),
-                                modifier = Modifier.animateItem()
                             ) {
                                 items(downloadedSongs, key = { it.id }) { song ->
                                     ytGridItem(
@@ -1006,7 +991,6 @@ fun HomeScreen(
                             androidx.compose.foundation.lazy.LazyRow(
                                 contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp),
                                 horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp),
-                                modifier = Modifier.animateItem()
                             ) {
                                 itemsIndexed(cachedSongs, key = { _, it -> it.id }) { index, song ->
                                     val songItem = com.music.innertube.models.SongItem(
@@ -1057,7 +1041,7 @@ fun HomeScreen(
                     if (downloadedSongs.isEmpty() && cachedSongs.isEmpty()) {
                         item(key = "offline_empty_state") {
                             androidx.compose.material3.Surface(
-                                shape = androidx.compose.foundation.shape.RoundedCornerShape(28.dp),
+                                shape = if (isFluidTheme()) ContinuousRoundedRectangle(28.dp) else androidx.compose.foundation.shape.RoundedCornerShape(28.dp),
                                 color = androidx.compose.material3.MaterialTheme.colorScheme.surfaceContainerLow,
                                 modifier = androidx.compose.ui.Modifier
                                     .fillMaxWidth()
@@ -1093,8 +1077,8 @@ fun HomeScreen(
                 } else {
                 item {
                     ChipsRow(
-                        chips = homePage?.chips?.filter { 
-                            !it.title.equals("Podcasts", ignoreCase = true) && 
+                        chips = homePage?.chips?.filter {
+                            !it.title.equals("Podcasts", ignoreCase = true) &&
                             !it.title.equals("Uploaded", ignoreCase = true)
                         }?.map { it to it.title } ?: emptyList(),
                         currentValue = selectedChip,
@@ -1116,7 +1100,7 @@ fun HomeScreen(
                                 repeat(5) {
                                     TextPlaceholder(
                                         height = 30.dp,
-                                        shape = RoundedCornerShape(16.dp),
+                                        shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else RoundedCornerShape(16.dp),
                                         modifier = Modifier.width(72.dp)
                                     )
                                 }
@@ -1125,15 +1109,13 @@ fun HomeScreen(
                     }
                 }
 
-
                 homeSections.forEach { section ->
                     when (section) {
                         HomeSection.SpeedDial -> {
-                            speedDialItems.takeIf { it.isNotEmpty() }?.let { items ->
+                            speedDialItems.takeIf { it.size >= 3 }?.let { items ->
                                 item(key = "speed_dial_title") {
                                     NavigationTitle(
                                         title = stringResource(R.string.speed_dial),
-                                        modifier = Modifier.animateItem()
                                     )
                                 }
 
@@ -1150,8 +1132,7 @@ fun HomeScreen(
                                     Column(
                                         modifier =
                                             Modifier
-                                                .fillMaxWidth()
-                                                .animateItem(),
+                                                .fillMaxWidth(),
                                     ) {
                                         HorizontalPager(
                                             state = pagerState,
@@ -1208,7 +1189,7 @@ fun HomeScreen(
                                                                 }
                                                             } else if (itemIndex < pageItems.size) {
                                                                 val item = pageItems[itemIndex]
-                                                                val isPinned by database.speedDialDao.isPinned(item.id).collectAsState(initial = false)
+                                                                val isPinned = item.id in pinnedSpeedDialIds
 
                                                                 Box(
                                                                     modifier = Modifier
@@ -1316,14 +1297,12 @@ fun HomeScreen(
                                         onClick = {
                                             navController.navigate("local_playlist/${playlist.id}")
                                         },
-                                        modifier = Modifier.animateItem()
                                     )
                                 }
                                 item(key = "ai_recommendation_list") {
                                     LazyRow(
                                         contentPadding = PaddingValues(horizontal = 16.dp),
                                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                        modifier = Modifier.animateItem()
                                     ) {
                                         items(items = songs, key = { it.id }) { songObj ->
                                             localGridItem(songObj)
@@ -1333,8 +1312,7 @@ fun HomeScreen(
                             }
                         }
                         HomeSection.QuickPicks -> {
-                            quickPicks?.takeIf { it.isNotEmpty() }?.let { quickPicks ->
-
+                            quickPicks?.takeIf { it.size >= 3 }?.let { quickPicks ->
 
                                 item(key = "quick_picks_list") {
                                     val distinctQuickPicks = quickPicks.distinctBy { it.id }
@@ -1346,7 +1324,6 @@ fun HomeScreen(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .height(290.dp)
-                                            .animateItem()
                                     ) { index ->
                                         val pageOffset = (pagerState.currentPage - index) + pagerState.currentPageOffsetFraction
                                         val scale = androidx.compose.ui.util.lerp(
@@ -1373,10 +1350,10 @@ fun HomeScreen(
                                                     scaleY = scale
                                                     this.alpha = alpha
                                                 }
-                                                .clip(MaterialTheme.shapes.extraLarge)
+                                                .clip(if (isFluidTheme()) ContinuousRoundedRectangle(28.dp) else MaterialTheme.shapes.extraLarge)
                                                 .border(
                                                     BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-                                                    MaterialTheme.shapes.extraLarge
+                                                    if (isFluidTheme()) ContinuousRoundedRectangle(28.dp) else MaterialTheme.shapes.extraLarge
                                                 )
                                                 .focusable()
                                                 .combinedClickable(
@@ -1474,7 +1451,6 @@ fun HomeScreen(
                                 item(key = "community_playlists_title") {
                                     NavigationTitle(
                                         title = stringResource(R.string.from_the_community),
-                                        modifier = Modifier.animateItem()
                                     )
                                 }
 
@@ -1482,7 +1458,6 @@ fun HomeScreen(
                                     LazyRow(
                                         contentPadding = PaddingValues(horizontal = 16.dp),
                                         horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                        modifier = Modifier.animateItem()
                                     ) {
                                         items(playlists, key = { it.playlist.id }) { item ->
                                             CommunityPlaylistCard(
@@ -1506,7 +1481,7 @@ fun HomeScreen(
                         }
                         HomeSection.DailyDiscover -> {
                             dailyDiscover?.takeIf { it.isNotEmpty() }?.let { discoverList ->
-                                
+
                                 item(key = "daily_discover_title") {
                                     val title = stringResource(R.string.your_daily_discover)
                                     NavigationTitle(
@@ -1560,7 +1535,7 @@ fun HomeScreen(
                                                     }
                                                 },
                                                 navController = navController,
-                                                modifier = Modifier.maskClip(MaterialTheme.shapes.extraLarge)
+                                                modifier = Modifier.maskClip(if (isFluidTheme()) ContinuousRoundedRectangle(28.dp) else MaterialTheme.shapes.extraLarge)
                                             )
                                         }
                                     }
@@ -1572,7 +1547,6 @@ fun HomeScreen(
                                 item(key = "keep_listening_title") {
                                     NavigationTitle(
                                         title = stringResource(R.string.keep_listening),
-                                        modifier = Modifier.animateItem()
                                     )
                                 }
 
@@ -1589,7 +1563,6 @@ fun HomeScreen(
                                                 MaterialTheme.typography.bodyLarge.lineHeight.toDp() * 2 +
                                                         MaterialTheme.typography.bodyMedium.lineHeight.toDp() * 2
                                             }) * rows)
-                                            .animateItem()
                                     ) {
                                         items(keepListening, key = { it.id }) {
                                             localGridItem(it)
@@ -1633,7 +1606,6 @@ fun HomeScreen(
                                         onClick = {
                                             navController.navigate("account")
                                         },
-                                        modifier = Modifier.animateItem()
                                     )
                                 }
 
@@ -1642,7 +1614,6 @@ fun HomeScreen(
                                         contentPadding = WindowInsets.systemBars
                                             .only(WindowInsetsSides.Horizontal)
                                             .asPaddingValues(),
-                                        modifier = Modifier.animateItem()
                                     ) {
                                         items(
                                             items = accountPlaylists.distinctBy { it.id },
@@ -1660,7 +1631,6 @@ fun HomeScreen(
                                     val forgottenFavoritesTitle = stringResource(R.string.forgotten_favorites)
                                     NavigationTitle(
                                         title = forgottenFavoritesTitle,
-                                        modifier = Modifier.animateItem(),
                                         onPlayAllClick = {
                                             playerConnection.playQueue(
                                                 ListQueue(
@@ -1673,7 +1643,7 @@ fun HomeScreen(
                                 }
 
                                 item(key = "forgotten_favorites_list") {
-                                    
+
                                     val rows = min(4, forgottenFavorites.size)
                                     LazyHorizontalGrid(
                                         state = forgottenFavoritesLazyGridState,
@@ -1686,7 +1656,6 @@ fun HomeScreen(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .height(ListItemHeight * rows)
-                                            .animateItem()
                                     ) {
                                         itemsIndexed(
                                             items = forgottenFavorites.distinctBy { it.id },
@@ -1761,7 +1730,7 @@ fun HomeScreen(
                                         title = recommendation.title.title,
                                         thumbnail = recommendation.title.thumbnailUrl?.let { thumbnailUrl ->
                                             {
-                                                val shape = RoundedCornerShape(ThumbnailCornerRadius)
+                                                val shape = if (isFluidTheme()) ContinuousRoundedRectangle(ThumbnailCornerRadius) else RoundedCornerShape(ThumbnailCornerRadius)
                                                 AsyncImage(
                                                     model = thumbnailUrl,
                                                     contentDescription = null,
@@ -1779,7 +1748,6 @@ fun HomeScreen(
                                                 is Playlist -> {}
                                             }
                                         },
-                                        modifier = Modifier.animateItem()
                                     )
                                 }
 
@@ -1788,7 +1756,6 @@ fun HomeScreen(
                                         contentPadding = WindowInsets.systemBars
                                             .only(WindowInsetsSides.Horizontal)
                                             .asPaddingValues(),
-                                        modifier = Modifier.animateItem()
                                     ) {
                                         items(recommendation.items, key = { it.id }) { item ->
                                             ytGridItem(item)
@@ -1800,10 +1767,10 @@ fun HomeScreen(
                         is HomeSection.HomePageSection -> {
                             val sectionData = homePage?.sections?.getOrNull(section.index)
                             sectionData?.let {
-                                
+
                                 val sectionSongs = sectionData.items.filterIsInstance<SongItem>()
                                 val hasPlayableSongs = sectionSongs.isNotEmpty()
-                                
+
                                 val isSongsOnlySection = sectionData.items.isNotEmpty() &&
                                         sectionData.items.all { it is SongItem }
 
@@ -1813,7 +1780,7 @@ fun HomeScreen(
                                         label = sectionData.label,
                                         thumbnail = sectionData.thumbnail?.let { thumbnailUrl ->
                                             {
-                                                val shape = RoundedCornerShape(ThumbnailCornerRadius)
+                                                val shape = if (isFluidTheme()) ContinuousRoundedRectangle(ThumbnailCornerRadius) else RoundedCornerShape(ThumbnailCornerRadius)
                                                 AsyncImage(
                                                     model = thumbnailUrl,
                                                     contentDescription = null,
@@ -1845,12 +1812,11 @@ fun HomeScreen(
                                                 )
                                             }
                                         } else null,
-                                        modifier = Modifier.animateItem()
                                     )
                                 }
 
                                 if (isSongsOnlySection) {
-                                    
+
                                     item(key = "home_section_list_${section.index}") {
                                         LazyHorizontalGrid(
                                             state = rememberLazyGridState(),
@@ -1861,7 +1827,6 @@ fun HomeScreen(
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .height(ListItemHeight * 4)
-                                                .animateItem()
                                         ) {
                                             itemsIndexed(
                                                 items = sectionSongs.distinctBy { it.id },
@@ -1919,13 +1884,12 @@ fun HomeScreen(
                                         }
                                     }
                                 } else {
-                                    
+
                                     item(key = "home_section_list_${section.index}") {
                                         LazyRow(
                                             contentPadding = WindowInsets.systemBars
                                                 .only(WindowInsetsSides.Horizontal)
                                                 .asPaddingValues(),
-                                            modifier = Modifier.animateItem()
                                         ) {
                                             items(sectionData.items, key = { it.id }) { item ->
                                                 ytGridItem(item)
@@ -1943,7 +1907,6 @@ fun HomeScreen(
                                         onClick = {
                                             navController.navigate("mood_and_genres")
                                         },
-                                        modifier = Modifier.animateItem()
                                     )
                                 }
                                 item(key = "mood_and_genres_list") {
@@ -1952,7 +1915,6 @@ fun HomeScreen(
                                         contentPadding = PaddingValues(6.dp),
                                         modifier = Modifier
                                             .height((MoodAndGenresButtonHeight + 12.dp) * 4 + 12.dp)
-                                            .animateItem()
                                     ) {
                                         items(moodAndGenres.distinctBy { it.title }, key = { it.title }) {
                                             MoodAndGenresButton(
@@ -1975,10 +1937,8 @@ fun HomeScreen(
 
                 if (isLoading || homePage?.continuation != null && homePage?.sections?.isNotEmpty() == true) {
                     item(key = "loading_shimmer") {
-                        ShimmerHost(
-                            modifier = Modifier.animateItem()
-                        ) {
-                            
+                        ShimmerHost {
+
                             Row(
                                 modifier = Modifier
                                     .horizontalScroll(rememberScrollState())
@@ -1996,7 +1956,6 @@ fun HomeScreen(
                                 }
                             }
 
-                            
                             TextPlaceholder(
                                 height = 36.dp,
                                 modifier = Modifier
@@ -2020,7 +1979,6 @@ fun HomeScreen(
                                 }
                             }
 
-                            
                             TextPlaceholder(
                                 height = 36.dp,
                                 modifier = Modifier

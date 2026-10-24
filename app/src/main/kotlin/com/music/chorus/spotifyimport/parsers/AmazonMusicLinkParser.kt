@@ -30,10 +30,10 @@ class AmazonMusicLinkParser : UniversalLinkParser {
                 val rawJson = stateMatch.groupValues[1]
                 val titleMatches = Regex(""""title":"([^"]+)"""").findAll(rawJson)
                 val artistMatches = Regex(""""artistName":"([^"]+)"""").findAll(rawJson)
-                
+
                 val titles = titleMatches.map { it.groupValues[1] }.toList()
                 val artists = artistMatches.map { it.groupValues[1] }.toList()
-                
+
                 for (i in 0 until minOf(titles.size, artists.size)) {
                     val trackName = titles[i].trim()
                     if (trackName.isNotBlank() && !tracks.any { it.title == trackName }) {
@@ -42,14 +42,13 @@ class AmazonMusicLinkParser : UniversalLinkParser {
                 }
             } catch (e: Exception) {}
         }
-        
-        // Fallback generic json search
+
         if (tracks.isEmpty()) {
             val genericTitles = Regex(""""title":"([^"]+)"""").findAll(html)
             val genericArtists = Regex(""""artistName":"([^"]+)"""").findAll(html)
             val titles = genericTitles.map { it.groupValues[1] }.toList()
             val artists = genericArtists.map { it.groupValues[1] }.toList()
-            
+
             for (i in 0 until minOf(titles.size, artists.size)) {
                 val trackName = titles[i].trim()
                 if (trackName.isNotBlank() && !tracks.any { it.title == trackName }) {

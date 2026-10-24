@@ -4,6 +4,7 @@ import pushkar.chorus.music.BuildConfig
 import pushkar.chorus.music.ui.screens.settings.RingtoneViewModel
 import pushkar.chorus.music.ui.component.RingtoneTrimmerDialog
 import pushkar.chorus.music.ui.component.RingtoneProgressDialog
+import pushkar.chorus.music.ui.component.CreatePlaylistDialog
 
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.compositionLocalOf
@@ -62,7 +63,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -74,7 +74,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -153,6 +152,8 @@ import com.music.innertube.models.WatchEndpoint
 import pushkar.chorus.music.constants.AppBarHeight
 import pushkar.chorus.music.constants.AiRecommendationsKey
 import pushkar.chorus.music.constants.AppLanguageKey
+import pushkar.chorus.music.constants.AppThemeMode
+import pushkar.chorus.music.constants.AppThemeModeKey
 import pushkar.chorus.music.constants.DarkModeKey
 import pushkar.chorus.music.constants.DefaultOpenTabKey
 import pushkar.chorus.music.constants.DisableScreenshotKey
@@ -178,7 +179,6 @@ import pushkar.chorus.music.constants.PureBlackKey
 import pushkar.chorus.music.constants.SYSTEM_DEFAULT
 import pushkar.chorus.music.constants.SelectedThemeColorKey
 import pushkar.chorus.music.constants.StopMusicOnTaskClearKey
-import pushkar.chorus.music.constants.UseNewMiniPlayerDesignKey
 import pushkar.chorus.music.constants.*
 import pushkar.chorus.music.ui.component.shimmer.getShimmerTheme
 import pushkar.chorus.music.db.MusicDatabase
@@ -199,6 +199,9 @@ import pushkar.chorus.music.ui.screens.Screens
 import pushkar.chorus.music.ui.screens.SettingDialoge
 import pushkar.chorus.music.ui.screens.WelcomeDialog
 import pushkar.chorus.music.ui.screens.navigationBuilder
+import pushkar.chorus.music.ui.component.AppBottomBar
+import pushkar.chorus.music.ui.component.AppNavHost
+import pushkar.chorus.music.ui.component.AppTopBar
 import pushkar.chorus.music.ui.screens.settings.DarkMode
 import pushkar.chorus.music.ui.screens.settings.NavigationTab
 import pushkar.chorus.music.ui.theme.ColorSaver
@@ -263,7 +266,7 @@ class MainActivity : ComponentActivity() {
                     Timber.tag("MainActivity").d("PlayerConnection created successfully")
                 } catch (e: Exception) {
                     Timber.tag("MainActivity").e(e, "Failed to create PlayerConnection")
-                    
+
                     lifecycleScope.launch {
                         delay(500)
                         try {
@@ -284,16 +287,13 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
-        
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1000)
             }
         }
 
-        
-        
-        
         bindService(
             Intent(this, MusicService::class.java),
             serviceConnection,
@@ -346,7 +346,6 @@ class MainActivity : ComponentActivity() {
     }
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -376,7 +375,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
         }
-        
+
         lifecycleScope.launch {
             dataStore.data
                 .map { it[AiRecommendationsKey] ?: false }
@@ -409,7 +408,6 @@ class MainActivity : ComponentActivity() {
     }
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-    @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
     @Composable
     private fun chorusmusicApp(
         playerConnection: PlayerConnection?,
@@ -429,13 +427,11 @@ class MainActivity : ComponentActivity() {
         val isOnline by networkObserver.networkStatus.collectAsState(initial = networkObserver.isCurrentlyConnected())
         val isOffline = !isOnline
 
-
-
         LaunchedEffect(Unit) {
             val prefs = context.dataStore.data.first()
 
             if (getAutoUpdateCheckSetting(context)) {
-                
+
                 delay(2000L)
                 checkForUpdate(
                     context = context,
@@ -443,7 +439,7 @@ class MainActivity : ComponentActivity() {
                         val currentVersion = BuildConfig.VERSION_NAME
                         Log.d("UpdateCheck", "Startup check success. Latest: $latestVersion, Current: $currentVersion, isAvailable: $isAvailable")
                         saveUpdateAvailableState(context, isAvailable)
-                        
+
                         if (isAvailable && getAutoUpdateCheckSetting(context)) {
                             Log.d("UpdateCheck", "Showing update dialog for $latestVersion")
                             latestUpdateVersion = latestVersion
@@ -453,7 +449,7 @@ class MainActivity : ComponentActivity() {
                     },
                     onError = {
                         Log.e("UpdateCheck", "Startup check failed")
-                        
+
                     }
                 )
             }
@@ -486,6 +482,7 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        val appThemeMode by rememberEnumPreference(AppThemeModeKey, defaultValue = AppThemeMode.MaterialUI)
         val darkTheme by rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
         val isSystemInDarkTheme = isSystemInDarkTheme()
         val useDarkTheme = remember(darkTheme, isSystemInDarkTheme) {
@@ -537,7 +534,7 @@ class MainActivity : ComponentActivity() {
                             )
                             themeColor = result.image?.toBitmap()?.extractThemeColor() ?: selectedThemeColor
                         } catch (e: Exception) {
-                            
+
                             themeColor = selectedThemeColor
                         }
                     }
@@ -552,6 +549,7 @@ class MainActivity : ComponentActivity() {
         var lastScrollHapticTime by remember { mutableStateOf(0L) }
 
         chorusmusicTheme(
+            themeMode = appThemeMode,
             darkTheme = useDarkTheme,
             pureBlack = pureBlack,
             themeColor = themeColor,
@@ -596,7 +594,7 @@ class MainActivity : ComponentActivity() {
                 val (previousTab, setPreviousTab) = rememberSaveable { mutableStateOf("home") }
 
                 val navigationItems = remember { Screens.MainScreens }
-                val (useNewMiniPlayerDesign) = rememberPreference(UseNewMiniPlayerDesignKey, defaultValue = true)
+                val useNewMiniPlayerDesign = true
                 val defaultOpenTab = remember {
                     dataStore[DefaultOpenTabKey].toEnum(defaultValue = NavigationTab.HOME)
                 }
@@ -636,7 +634,6 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                
                 val currentRoute by remember {
                     derivedStateOf { navBackStackEntry?.destination?.route }
                 }
@@ -669,7 +666,7 @@ class MainActivity : ComponentActivity() {
                     animationSpec = NavigationBarAnimationSpec,
                     label = "navBarHeight",
                 )
-                
+
                 val floatingNavBarScrollConnection = remember {
                     object : androidx.compose.ui.input.nestedscroll.NestedScrollConnection {}
                 }
@@ -699,8 +696,6 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-
-
                 val playerMediaMetadata = playerConnection?.player?.currentMediaItem?.mediaMetadata
                 val hasDockedPlayerAccessory =
                     playerMediaMetadata != null && !showRail && shouldShowNavigationBar
@@ -720,12 +715,6 @@ class MainActivity : ComponentActivity() {
                         .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
                         .add(WindowInsets(top = AppBarHeight, bottom = bottom))
                 }
-                appBarScrollBehavior(
-                    canScroll = {
-                        !inSearchScreen &&
-                            (playerBottomSheetState.isCollapsed || playerBottomSheetState.isDismissed)
-                    }
-                )
 
                 val topAppBarScrollBehavior = appBarScrollBehavior(
                     canScroll = {
@@ -734,7 +723,6 @@ class MainActivity : ComponentActivity() {
                     },
                 )
 
-                
                 LaunchedEffect(navBackStackEntry) {
                     if (inSearchScreen) {
                         val searchQuery = withContext(Dispatchers.IO) {
@@ -755,7 +743,6 @@ class MainActivity : ComponentActivity() {
                         onQueryChange(TextFieldValue())
                     }
 
-                    
                     if (navigationItems.fastAny { it.route == navBackStackEntry?.destination?.route }) {
                         if (navigationItems.fastAny { it.route == previousTab }) {
                             topAppBarScrollBehavior.state.resetHeightOffset()
@@ -764,7 +751,6 @@ class MainActivity : ComponentActivity() {
 
                     topAppBarScrollBehavior.state.resetHeightOffset()
 
-                    
                     navController.currentBackStackEntry?.destination?.route?.let {
                         setPreviousTab(it)
                     }
@@ -818,6 +804,7 @@ class MainActivity : ComponentActivity() {
                 }
                 val snackbarHostState = remember { SnackbarHostState() }
                 var showSettingDialoge by remember { mutableStateOf(false) }
+                var showCreatePlaylistDialog by remember { mutableStateOf(false) }
 
                 val (lastOpenedVersionCode, setLastOpenedVersionCode) = rememberPreference(pushkar.chorus.music.constants.LastOpenedVersionCodeKey, -1)
                 var showWelcomeDialog by remember { mutableStateOf(false) }
@@ -839,7 +826,7 @@ class MainActivity : ComponentActivity() {
 
                     } else if (intent != null && intent.action == android.provider.MediaStore.INTENT_ACTION_MEDIA_PLAY_FROM_SEARCH) {
                         handleAssistantSearchIntent(intent, navController)
-                        
+
                     } else if (intent != null && intent.action == "pushkar.chorus.music.action.OPEN_WIDGET_TARGET") {
                         handleWidgetIntent(intent, navController)
                     } else if (intent != null && intent.action == "pushkar.chorus.music.action.OPEN_UPDATE") {
@@ -854,7 +841,7 @@ class MainActivity : ComponentActivity() {
 
                         } else if (intent.action == android.provider.MediaStore.INTENT_ACTION_MEDIA_PLAY_FROM_SEARCH) {
                             handleAssistantSearchIntent(intent, navController)
-                            
+
                         } else if (intent.action == "pushkar.chorus.music.action.OPEN_WIDGET_TARGET") {
                             handleWidgetIntent(intent, navController)
                         } else if (intent.action == "pushkar.chorus.music.action.OPEN_UPDATE") {
@@ -867,13 +854,11 @@ class MainActivity : ComponentActivity() {
                 }
 
                 val currentTitle = if (isOffline) "Chorus Bar" else when (navBackStackEntry?.destination?.route) {
-                    Screens.Home.route -> "Chorus Music"
+                    Screens.Home.route -> stringResource(R.string.home)
                     Screens.Search.route -> stringResource(R.string.search)
                     Screens.Library.route -> stringResource(R.string.filter_library)
                     else -> ""
                 }
-
-
 
                 val pauseListenHistory by rememberPreference(PauseListenHistoryKey, defaultValue = false)
                 val eventCount by database.eventCount().collectAsState(initial = 0)
@@ -904,199 +889,39 @@ class MainActivity : ComponentActivity() {
                                 enter = fadeIn(animationSpec = tween(durationMillis = 300)),
                                 exit = fadeOut(animationSpec = tween(durationMillis = 200))
                             ) {
-                                Row {
-                                    TopAppBar(
-                                        title = {
-                                            Text(
-                                                text = currentTitle,
-                                                style = MaterialTheme.typography.titleLarge.copy(
-                                                    fontWeight = FontWeight.Bold,
-                                                    fontSize = 24.sp
-                                                ),
-                                            )
-                                        },
-                                        actions = {
-                                            if (isOffline) {
-                                                IconButton(onClick = { navController.navigate("settings") }) {
-                                                    Icon(
-                                                        painter = painterResource(R.drawable.settings),
-                                                        contentDescription = stringResource(R.string.settings)
-                                                    )
-                                                }
-                                            } else {
-                                                if (showHistoryButton) {
-                                                    IconButton(onClick = { navController.navigate("history") }) {
-                                                        Icon(
-                                                            painter = painterResource(R.drawable.music_history),
-                                                            contentDescription = stringResource(R.string.history)
-                                                        )
-                                                    }
-                                                }
-                                                IconButton(onClick = { navController.navigate("stats") }) {
-                                                    Icon(
-                                                        painter = painterResource(R.drawable.stats),
-                                                        contentDescription = stringResource(R.string.stats)
-                                                    )
-                                                }
-                                                 IconButton(onClick = { showSettingDialoge = true }) {
-                                                    BadgedBox(badge = {}) {
-                                                        if (accountImageUrl != null) {
-                                                            AsyncImage(
-                                                                model = accountImageUrl,
-                                                                contentDescription = stringResource(R.string.account),
-                                                                modifier = Modifier
-                                                                    .size(24.dp)
-                                                                    .clip(CircleShape)
-                                                            )
-                                                         } else {
-                                                             Icon(
-                                                                 painter = painterResource(R.drawable.settings),
-                                                                 contentDescription = stringResource(R.string.account),
-                                                                 modifier = Modifier.size(24.dp)
-                                                             )
-                                                         }
-                                                    }
-                                                }
-                                            }
-                                        },
-                                        scrollBehavior = topAppBarScrollBehavior,
-                                        colors = TopAppBarDefaults.topAppBarColors(
-                                            containerColor = if (pureBlack) Color.Black else MaterialTheme.colorScheme.surfaceContainer,
-                                            scrolledContainerColor = if (pureBlack) Color.Black else MaterialTheme.colorScheme.surfaceContainer,
-                                            titleContentColor = MaterialTheme.colorScheme.onSurface,
-                                            actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            navigationIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                                        ),
-                                        windowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top),
-                                        modifier = Modifier
-                                            .windowInsetsPadding(
-                                            if (showRail) {
-                                                WindowInsets(left = NavigationBarHeight)
-                                                    .add(cutoutInsets.only(WindowInsetsSides.Start))
-                                            } else {
-                                                cutoutInsets.only(WindowInsetsSides.Start + WindowInsetsSides.End)
-                                            }
-                                        )
-                                    )
-                                }
+                                AppTopBar(
+                                    title = currentTitle,
+                                    currentRoute = currentRoute,
+                                    isOffline = isOffline,
+                                    showHistoryButton = showHistoryButton,
+                                    accountImageUrl = accountImageUrl,
+                                    scrollBehavior = topAppBarScrollBehavior,
+                                    pureBlack = pureBlack,
+                                    showRail = showRail,
+                                    cutoutInsets = cutoutInsets,
+                                    onHistoryClick = { navController.navigate("history") },
+                                    onStatsClick = { navController.navigate("stats") },
+                                    onSettingsClick = { navController.navigate("settings") },
+                                    onCreatePlaylistClick = { showCreatePlaylistDialog = true },
+                                )
                             }
                         },
                         bottomBar = {
-                            val onNavItemClick: (Screens, Boolean) -> Unit = remember(navController, coroutineScope, topAppBarScrollBehavior, playerBottomSheetState) {
-                                { screen: Screens, isSelected: Boolean ->
-                                    if (playerBottomSheetState.isExpanded) {
-                                        playerBottomSheetState.collapseSoft()
-                                    }
-
-                                    if (isSelected) {
-                                        navController.currentBackStackEntry?.savedStateHandle?.set("scrollToTop", true)
-                                        coroutineScope.launch {
-                                            topAppBarScrollBehavior.state.resetHeightOffset()
-                                        }
-                                    } else {
-                                        navController.navigate(screen.route) {
-                                            popUpTo(navController.graph.startDestinationId) {
-                                                saveState = true
-                                            }
-                                            launchSingleTop = true
-                                            restoreState = true
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (!showRail && currentRoute != "update" && currentRoute != "ambient_mode" && currentRoute != "uptime" && currentRoute?.startsWith("settings") != true) {
-                                Box {
-                                    BottomSheetPlayer(
-                                        state = playerBottomSheetState,
-                                        navController = navController,
-                                        pureBlack = pureBlack
-                                    )
-
-                                    val navSlideDistance = bottomInset + FloatingToolbarBottomPadding + NavigationBarHeight
-
-                                    val navOffsetY = if (navigationBarHeight == 0.dp) {
-                                        navSlideDistance
-                                    } else {
-                                        val slideOffset =
-                                            navSlideDistance * playerBottomSheetState.progress.coerceIn(0f, 1f)
-                                        val hideOffset =
-                                            navSlideDistance * (1 - navigationBarHeight.coerceAtMost(NavigationBarHeight) / NavigationBarHeight)
-                                        slideOffset + hideOffset
-                                    }
-
-                                        if (!isOffline) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .align(Alignment.BottomCenter)
-                                                    .height(navSlideDistance)
-                                                    .offset(y = navOffsetY),
-                                            ) {
-                                                FloatingNavigationToolbar(
-                                                    items = navigationItems,
-                                                    pureBlack = pureBlack,
-                                                    onShuffleClick = onShuffleClick,
-                                                    shuffleIconRes = R.drawable.shuffle,
-                                                    shuffleContentDescription = stringResource(R.string.shuffle),
-
-                                                    onSettingsClick = { 
-                                                        navController.navigate("settings") {
-                                                            launchSingleTop = true
-                                                        }
-                                                    },
-                                                    settingsIconRes = R.drawable.settings,
-                                                    settingsContentDescription = stringResource(R.string.settings),
-                                                    isSelected = { screen ->
-                                                        currentRoute == screen.route || currentRoute?.startsWith("${screen.route}/") == true
-                                                    },
-                                                    onItemClick = onNavItemClick,
-                                                    modifier = Modifier
-                                                        .align(Alignment.BottomCenter)
-                                                        .padding(
-                                                            start = FloatingToolbarHorizontalPadding,
-                                                            end = FloatingToolbarHorizontalPadding,
-                                                            bottom = bottomInset + FloatingToolbarBottomPadding,
-                                                        )
-                                                        .height(NavigationBarHeight)
-                                                )
-                                            }
-                                        }
-
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .align(Alignment.BottomCenter)
-                                                .height(bottomInsetDp)
-                                                
-                                                .graphicsLayer {
-                                                    val progress = playerBottomSheetState.progress
-                                                    alpha = if (progress > 0f || (useNewMiniPlayerDesign && !shouldShowNavigationBar)) 0f else 1f
-                                                }
-                                                .background(baseBg)
-                                        )
-                                }
-                            } else {
-                                if (currentRoute != "update" && currentRoute != "ambient_mode" && currentRoute != "uptime" && currentRoute?.startsWith("settings") != true) {
-                                    BottomSheetPlayer(
-                                        state = playerBottomSheetState,
-                                        navController = navController,
-                                        pureBlack = pureBlack
-                                    )
-                                }
-
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .align(Alignment.BottomCenter)
-                                        .height(bottomInsetDp)
-                                        
-                                        .graphicsLayer {
-                                            val progress = playerBottomSheetState.progress
-                                            alpha = if (progress > 0f || (useNewMiniPlayerDesign && !shouldShowNavigationBar)) 0f else 1f
-                                        }
-                                        .background(baseBg)
-                                )
-                            }
+                            AppBottomBar(
+                                navController = navController,
+                                currentRoute = currentRoute,
+                                navigationItems = navigationItems,
+                                playerBottomSheetState = playerBottomSheetState,
+                                shouldShowNavigationBar = shouldShowNavigationBar,
+                                showRail = showRail,
+                                isOffline = isOffline,
+                                useNewMiniPlayerDesign = useNewMiniPlayerDesign,
+                                pureBlack = pureBlack,
+                                bottomInset = bottomInset,
+                                bottomInsetDp = bottomInsetDp,
+                                topAppBarScrollBehavior = topAppBarScrollBehavior,
+                                onShuffleClick = onShuffleClick,
+                            )
                         },
                         modifier = Modifier
                             .fillMaxSize()
@@ -1127,8 +952,6 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
 
-
-
                             if (showRail && currentRoute != "update") {
                                 AppNavigationRail(
                                     navigationItems = navigationItems,
@@ -1138,80 +961,18 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                             Box(Modifier.weight(1f)) {
-                                
-                                NavHost(
+                                AppNavHost(
                                     navController = navController,
+                                    navigationItems = navigationItems,
                                     startDestination = when (tabOpenedFromShortcut ?: defaultOpenTab) {
                                         NavigationTab.HOME -> Screens.Home
                                         NavigationTab.LIBRARY -> Screens.Library
                                         else -> Screens.Home
                                     }.route,
-                                    
-                                    enterTransition = {
-                                        val currentRouteIndex = navigationItems.indexOfFirst {
-                                            it.route == targetState.destination.route
-                                        }
-                                        val previousRouteIndex = navigationItems.indexOfFirst {
-                                            it.route == initialState.destination.route
-                                        }
-
-                                        if (currentRouteIndex == -1 || currentRouteIndex > previousRouteIndex)
-                                            slideInHorizontally { it / 8 } + fadeIn(tween(200))
-                                        else
-                                            slideInHorizontally { -it / 8 } + fadeIn(tween(200))
-                                    },
-                                    
-                                    exitTransition = {
-                                        val currentRouteIndex = navigationItems.indexOfFirst {
-                                            it.route == initialState.destination.route
-                                        }
-                                        val targetRouteIndex = navigationItems.indexOfFirst {
-                                            it.route == targetState.destination.route
-                                        }
-
-                                        if (targetRouteIndex == -1 || targetRouteIndex > currentRouteIndex)
-                                            slideOutHorizontally { -it / 8 } + fadeOut(tween(200))
-                                        else
-                                            slideOutHorizontally { it / 8 } + fadeOut(tween(200))
-                                    },
-                                    
-                                    popEnterTransition = {
-                                        val currentRouteIndex = navigationItems.indexOfFirst {
-                                            it.route == targetState.destination.route
-                                        }
-                                        val previousRouteIndex = navigationItems.indexOfFirst {
-                                            it.route == initialState.destination.route
-                                        }
-
-                                        if (previousRouteIndex != -1 && previousRouteIndex < currentRouteIndex)
-                                            slideInHorizontally { it / 8 } + fadeIn(tween(200))
-                                        else
-                                            slideInHorizontally { -it / 8 } + fadeIn(tween(200))
-                                    },
-                                    
-                                    popExitTransition = {
-                                        val currentRouteIndex = navigationItems.indexOfFirst {
-                                            it.route == initialState.destination.route
-                                        }
-                                        val targetRouteIndex = navigationItems.indexOfFirst {
-                                            it.route == targetState.destination.route
-                                        }
-
-                                        if (currentRouteIndex != -1 && currentRouteIndex < targetRouteIndex)
-                                            slideOutHorizontally { -it / 8 } + fadeOut(tween(200))
-                                        else
-                                            slideOutHorizontally { it / 8 } + fadeOut(tween(200))
-                                    },
-                                    modifier = Modifier
-                                        .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
-                                ) {
-                                    navigationBuilder(
-                                        navController = navController,
-                                        scrollBehavior = topAppBarScrollBehavior,
-                                        activity = this@MainActivity,
-                                        snackbarHostState = snackbarHostState
-                                    )
-                                }
+                                    topAppBarScrollBehavior = topAppBarScrollBehavior,
+                                    activity = this@MainActivity,
+                                    snackbarHostState = snackbarHostState,
+                                )
                             }
                         }
                     }
@@ -1225,8 +986,6 @@ class MainActivity : ComponentActivity() {
                         state = LocalBottomSheetPageState.current,
                         modifier = Modifier.align(Alignment.BottomCenter)
                     )
-
-
 
                     sharedSong?.let { song ->
                         playerConnection?.let {
@@ -1284,6 +1043,18 @@ class MainActivity : ComponentActivity() {
                                 navController.navigate(route)
                             },
                             homeViewModel = homeViewModel
+                        )
+                    }
+
+                    if (showCreatePlaylistDialog) {
+                        CreatePlaylistDialog(
+                            onDismiss = { showCreatePlaylistDialog = false },
+                            initialTextFieldValue = null,
+                            allowSyncing = true,
+                            onPlaylistCreated = { playlistId ->
+                                showCreatePlaylistDialog = false
+                                navController.navigate("local_playlist/$playlistId")
+                            }
                         )
                     }
 
@@ -1457,7 +1228,6 @@ class MainActivity : ComponentActivity() {
             window.navigationBarColor = (if (isDark) Color.Transparent else Color.Black.copy(alpha = 0.2f)).toArgb()
         }
     }
-
 
     private fun handleAssistantSearchIntent(
         intent: Intent,

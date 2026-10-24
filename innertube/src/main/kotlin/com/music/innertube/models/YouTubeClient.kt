@@ -65,7 +65,6 @@ data class YouTubeClient(
             useWebPoTokens = true,
         )
 
-        
         val WEB_CREATOR = YouTubeClient(
             clientName = "WEB_CREATOR",
             clientVersion = "1.20260213.00.00",
@@ -88,7 +87,6 @@ data class YouTubeClient(
             useWebPoTokens = true,
         )
 
-        
         val TVHTML5_SIMPLY_EMBEDDED_PLAYER = YouTubeClient(
             clientName = "TVHTML5_SIMPLY_EMBEDDED_PLAYER",
             clientVersion = "2.0",
@@ -117,7 +115,6 @@ data class YouTubeClient(
             useSignatureTimestamp = true
         )
 
-        
         val ANDROID_NO_SDK = YouTubeClient(
             clientName = "ANDROID",
             clientVersion = "21.03.38",
@@ -137,7 +134,6 @@ data class YouTubeClient(
             useSignatureTimestamp = false
         )
 
-        
         val ANDROID_VR_1_61_48 = YouTubeClient(
             clientName = "ANDROID_VR",
             clientVersion = "1.61.48",
@@ -156,7 +152,6 @@ data class YouTubeClient(
             useSignatureTimestamp = false
         )
 
-        
         val ANDROID_VR_1_65_10 = YouTubeClient(
             clientName = "ANDROID_VR",
             clientVersion = "1.65.10",
@@ -172,7 +167,6 @@ data class YouTubeClient(
             useSignatureTimestamp = false
         )
 
-        
         val ANDROID_VR_1_43_32 = YouTubeClient(
             clientName = "ANDROID_VR",
             clientVersion = "1.43.32",
@@ -191,7 +185,6 @@ data class YouTubeClient(
             useSignatureTimestamp = false
         )
 
-        
         val ANDROID_CREATOR = YouTubeClient(
             clientName = "ANDROID_CREATOR",
             clientVersion = "25.03.101",
@@ -210,7 +203,6 @@ data class YouTubeClient(
             useSignatureTimestamp = true
         )
 
-        
         val VISIONOS = YouTubeClient(
             clientName = "VISIONOS",
             clientVersion = "0.1",
@@ -225,7 +217,6 @@ data class YouTubeClient(
             useSignatureTimestamp = false
         )
 
-        
         val IPADOS = YouTubeClient(
             clientName = "IOS",
             clientVersion = "21.03.3",

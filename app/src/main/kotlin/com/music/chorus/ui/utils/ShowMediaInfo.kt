@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.utils
 
 import android.content.ClipData
@@ -23,7 +21,6 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -57,7 +54,6 @@ import pushkar.chorus.music.ui.component.LocalBottomSheetPageState
 import pushkar.chorus.music.ui.component.shimmer.ShimmerHost
 import pushkar.chorus.music.ui.component.shimmer.TextPlaceholder
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ShowMediaInfo(videoId: String) {
     if (videoId.isBlank() || videoId.isEmpty()) return
@@ -82,7 +78,6 @@ fun ShowMediaInfo(videoId: String) {
         database.format(videoId).collect { currentFormat = it }
     }
 
-    
     val albumArtShape = RoundedCornerShape(24.dp)
 
     LazyColumn(
@@ -94,7 +89,7 @@ fun ShowMediaInfo(videoId: String) {
             .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        
+
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -113,7 +108,6 @@ fun ShowMediaInfo(videoId: String) {
             }
         }
 
-        
         item {
             Box(
                 modifier = Modifier
@@ -134,13 +128,12 @@ fun ShowMediaInfo(videoId: String) {
             }
         }
 
-        
         if (song != null || info != null) {
             item {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
-                    
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -159,7 +152,6 @@ fun ShowMediaInfo(videoId: String) {
                         )
                     }
 
-                    
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -181,7 +173,6 @@ fun ShowMediaInfo(videoId: String) {
                         )
                     }
 
-                    
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -200,7 +191,6 @@ fun ShowMediaInfo(videoId: String) {
                         )
                     }
 
-                    
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -217,7 +207,6 @@ fun ShowMediaInfo(videoId: String) {
                         )
                     }
 
-                    
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -234,7 +223,6 @@ fun ShowMediaInfo(videoId: String) {
                         )
                     }
 
-                    
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -251,7 +239,6 @@ fun ShowMediaInfo(videoId: String) {
                         )
                     }
 
-                    
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -268,7 +255,6 @@ fun ShowMediaInfo(videoId: String) {
                         )
                     }
 
-                    
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -291,7 +277,6 @@ fun ShowMediaInfo(videoId: String) {
                 }
             }
 
-            
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
@@ -322,7 +307,7 @@ fun ShowMediaInfo(videoId: String) {
             }
 
         } else {
-            
+
             item {
                 Box(
                     modifier = Modifier

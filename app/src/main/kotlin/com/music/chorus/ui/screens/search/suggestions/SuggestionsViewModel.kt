@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.screens.search.suggestions
 
 import android.util.Log
@@ -26,7 +24,7 @@ import androidx.navigation.NavController
 @HiltViewModel
 class SuggestionsViewModel @Inject constructor() : ViewModel() {
     private var currentLoadedRegion: String? = null
-    
+
     private val _suggestionTracks = MutableStateFlow<List<SuggestionTrack>?>(null)
     val suggestionTracks: StateFlow<List<SuggestionTrack>?> = _suggestionTracks
 
@@ -52,14 +50,12 @@ class SuggestionsViewModel @Inject constructor() : ViewModel() {
             countryCode.lowercase()
         }
 
-        
         if (_isLoading.value && !force && currentLoadedRegion == resolvedCode) return
-        
+
         viewModelScope.launch(Dispatchers.IO) {
             _isLoading.value = true
             if (force) _isManualLoading.value = true
-            
-            
+
             if (currentLoadedRegion != resolvedCode || force) {
                 _suggestionTracks.value = null
                 _suggestionArtists.value = null
@@ -69,7 +65,7 @@ class SuggestionsViewModel @Inject constructor() : ViewModel() {
 
             try {
                 coroutineScope {
-                    
+
                     launch {
                         try {
                             val tracks = AppleMusicScraper.fetchTopSongs(resolvedCode)
@@ -118,7 +114,7 @@ class SuggestionsViewModel @Inject constructor() : ViewModel() {
     private fun artistMatches(ytArtistName: String, appleMusicArtist: String): Boolean {
         val ytNorm = ytArtistName.trim().lowercase()
         val apNorm = appleMusicArtist.trim().lowercase()
-        
+
         return apNorm.contains(ytNorm) || ytNorm.contains(apNorm)
     }
 
@@ -127,22 +123,21 @@ class SuggestionsViewModel @Inject constructor() : ViewModel() {
             val query = "${track.title} ${track.artist}"
             YouTube.search(query, YouTube.SearchFilter.FILTER_SONG).onSuccess { searchResult ->
                 val songs = searchResult.items.filterIsInstance<SongItem>()
-                
-                
+
                 val bestMatch = songs.firstOrNull { s ->
                     s.title.equals(track.title, ignoreCase = true) &&
                     s.artists.any { a -> artistMatches(a.name, track.artist) }
-                } ?: 
-                
+                } ?:
+
                 songs.firstOrNull { s ->
                     s.title.contains(track.title, ignoreCase = true) &&
                     s.artists.any { a -> artistMatches(a.name, track.artist) }
                 } ?:
-                
+
                 songs.firstOrNull { s ->
                     s.artists.any { a -> artistMatches(a.name, track.artist) }
                 } ?:
-                
+
                 songs.firstOrNull()
 
                 if (bestMatch != null) {
@@ -191,7 +186,6 @@ class SuggestionsViewModel @Inject constructor() : ViewModel() {
                 .onSuccess { searchResult ->
                     val songs = searchResult.items.filterIsInstance<SongItem>()
 
-                    
                     val bestMatch = songs.firstOrNull { s ->
                         s.title.equals(video.title, ignoreCase = true) &&
                         s.artists.any { a -> artistMatches(a.name, video.artist) }

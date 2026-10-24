@@ -1,4 +1,3 @@
-
 package pushkar.chorus.music.ui.component.backdrop.effects
 
 import androidx.annotation.FloatRange
@@ -11,6 +10,11 @@ import pushkar.chorus.music.ui.component.backdrop.isRenderEffectSupported
 
 fun BackdropEffectScope.colorFilter(colorFilter: ColorFilter) {
     if (!isRenderEffectSupported()) return
+
+    if (renderEffect == null && compositeColorFilter == null) {
+        compositeColorFilter = colorFilter
+        return
+    }
 
     renderEffect = ColorFilterEffect(renderEffect, colorFilter)
 }

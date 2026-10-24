@@ -1,4 +1,3 @@
-
 package pushkar.chorus.music.ui.component.backdrop.highlight
 
 import androidx.annotation.FloatRange
@@ -17,6 +16,8 @@ import pushkar.chorus.music.ui.component.backdrop.internal.AmbientHighlightShade
 import pushkar.chorus.music.ui.component.backdrop.internal.DefaultHighlightShaderString
 import pushkar.chorus.music.ui.component.backdrop.isRuntimeShaderSupported
 import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
 
 @Immutable
 interface HighlightStyle {
@@ -59,10 +60,14 @@ interface HighlightStyle {
                     "Default",
                     DefaultHighlightShaderString
                 ).apply {
-                    setFloatUniform("size", size.width, size.height)
+                    val w = size.width
+                    val h = size.height
+                    setFloatUniform("halfSize", w * 0.5f, h * 0.5f)
+                    setFloatUniform("minHalf", minOf(w, h) * 0.5f)
                     setFloatUniform("cornerRadii", getCornerRadii(shape))
                     setColorUniform("color", color.copy(alpha = 1f))
-                    setFloatUniform("angle", angle * (PI / 180f).toFloat())
+                    val angleRad = angle * (PI / 180f).toFloat()
+                    setFloatUniform("lightDir", cos(angleRad), sin(angleRad))
                     setFloatUniform("falloff", falloff)
                 }
             } else {
@@ -89,9 +94,13 @@ interface HighlightStyle {
                     "Ambient",
                     AmbientHighlightShaderString
                 ).apply {
-                    setFloatUniform("size", size.width, size.height)
+                    val w = size.width
+                    val h = size.height
+                    setFloatUniform("halfSize", w * 0.5f, h * 0.5f)
+                    setFloatUniform("minHalf", minOf(w, h) * 0.5f)
                     setFloatUniform("cornerRadii", getCornerRadii(shape))
-                    setFloatUniform("angle", 45f * (PI / 180f).toFloat())
+                    val angleRad = 45f * (PI / 180f).toFloat()
+                    setFloatUniform("lightDir", cos(angleRad), sin(angleRad))
                     setFloatUniform("falloff", 1f)
                 }
             } else {

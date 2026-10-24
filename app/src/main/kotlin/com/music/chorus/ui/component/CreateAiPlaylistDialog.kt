@@ -25,7 +25,7 @@ fun CreateAiPlaylistDialog(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    
+
     var prompt by remember { mutableStateOf("") }
     var numSongs by remember { mutableFloatStateOf(15f) }
     var isGenerating by remember { mutableStateOf(false) }
@@ -69,7 +69,7 @@ fun CreateAiPlaylistDialog(
                         maxLines = 3,
                         shape = RoundedCornerShape(12.dp)
                     )
-                    
+
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(
                             text = "Number of songs: ${numSongs.toInt()}",

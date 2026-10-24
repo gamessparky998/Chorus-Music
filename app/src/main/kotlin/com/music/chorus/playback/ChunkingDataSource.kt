@@ -64,7 +64,7 @@ class ChunkingDataSource(
         } catch (e: Exception) {
             -1
         }
-        
+
         if (bytes == C.RESULT_END_OF_INPUT || bytes == -1) {
             upstream.close()
             try {
@@ -106,7 +106,7 @@ class ChunkingDataSource(
 
 class ChunkingDataSourceFactory(
     private val upstreamFactory: DataSource.Factory,
-    private val chunkSize: Long = 5L * 1024 * 1024 
+    private val chunkSize: Long = 5L * 1024 * 1024
 ) : DataSource.Factory {
     override fun createDataSource(): DataSource {
         return ChunkingDataSource(upstreamFactory.createDataSource(), chunkSize)

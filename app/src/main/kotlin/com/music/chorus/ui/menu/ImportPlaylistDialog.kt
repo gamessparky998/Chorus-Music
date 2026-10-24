@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.menu
 
 import androidx.compose.material3.Icon
@@ -24,7 +22,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun ImportPlaylistDialog(
     isVisible: Boolean,
-    onGetSong: suspend () -> List<String>, 
+    onGetSong: suspend () -> List<String>,
     playlistTitle: String,
     onDismiss: () -> Unit,
 ) {
@@ -33,7 +31,7 @@ fun ImportPlaylistDialog(
 
     val textFieldValue by remember { mutableStateOf(TextFieldValue(text = playlistTitle)) }
     var songIds by remember {
-        mutableStateOf<List<String>?>(null) 
+        mutableStateOf<List<String>?>(null)
     }
 
     if (isVisible) {

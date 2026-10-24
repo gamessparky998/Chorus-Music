@@ -74,7 +74,6 @@ object Fix403 {
             null
         }
 
-    
     inline fun <T> trapRethrow(id: String, op: String, block: () -> T): T =
         try {
             block()
@@ -83,7 +82,6 @@ object Fix403 {
             throw t
         }
 
-    
     inline fun <T> timed(id: String, op: String, block: () -> T): T {
         val startedAt = System.nanoTime()
         try {

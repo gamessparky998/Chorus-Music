@@ -26,8 +26,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Error
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -81,7 +79,6 @@ data class CommitData(
     val htmlUrl: String
 )
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun CommitScreen(
     navController: NavController,
@@ -118,7 +115,7 @@ fun CommitScreen(
 
                     val commitObj = obj.getJSONObject("commit")
                     val fullMessage = commitObj.getString("message")
-                    
+
                     val message = fullMessage.lines().firstOrNull { it.isNotBlank() } ?: fullMessage
 
                     val authorObj = commitObj.getJSONObject("author")
@@ -128,7 +125,6 @@ fun CommitScreen(
                         ZonedDateTime.parse(rawDate).format(outputFormatter)
                     } catch (e: Exception) { rawDate }
 
-                    
                     val authorLogin = if (!obj.isNull("author")) {
                         obj.getJSONObject("author").optString("login").takeIf { it.isNotEmpty() }
                     } else null
@@ -237,7 +233,6 @@ fun CommitScreen(
                 }
             }
 
-            
             Box(
                 Modifier
                     .align(Alignment.TopCenter)

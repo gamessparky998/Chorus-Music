@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.lyrics
 import pushkar.chorus.music.R
 
@@ -30,7 +28,6 @@ object LyricsTranslationHelper {
     private val _status = MutableStateFlow<TranslationStatus>(TranslationStatus.Idle)
     val status: StateFlow<TranslationStatus> = _status.asStateFlow()
 
-    
     private val _hasActiveTranslations = MutableStateFlow(false)
     val hasActiveTranslations: StateFlow<Boolean> = _hasActiveTranslations.asStateFlow()
 
@@ -55,13 +52,11 @@ object LyricsTranslationHelper {
     private var translationJob: Job? = null
     private var isCompositionActive = true
 
-    
     private val translationCache = mutableMapOf<String, List<String>>()
 
     private fun getCacheKey(lyricsText: String, mode: String, language: String): String =
         "${lyricsText.hashCode()}_${mode}_$language"
 
-    
     private fun tryParsePartialTranslation(content: String, expectedCount: Int): List<String> {
         val startIdx = content.indexOf('[')
         if (startIdx == -1) return emptyList()
@@ -163,17 +158,15 @@ object LyricsTranslationHelper {
         translationJob = null
     }
 
-    
     fun loadTranslationsFromDatabase(
         lyrics: List<LyricsEntry>,
         lyricsEntity: LyricsEntity?,
         targetLanguage: String,
         mode: String,
     ) {
-        
+
         lyrics.forEach { it.translatedTextFlow.value = null }
 
-        
         if (lyricsEntity?.translatedLyrics.isNullOrBlank()) {
             _hasActiveTranslations.value = false
             return
@@ -198,9 +191,6 @@ object LyricsTranslationHelper {
             }
         }
 
-        
-        
-        
         val lyricsText = lyrics.filter { it.text.isNotBlank() }.joinToString("\n") { it.text }
         val cacheKey = getCacheKey(lyricsText, mode, targetLanguage)
         translationCache[cacheKey] = translatedLines
@@ -226,12 +216,11 @@ object LyricsTranslationHelper {
         translationJob?.cancel()
         _status.value = TranslationStatus.Translating()
 
-        
         lyrics.forEach { it.translatedTextFlow.value = null }
 
         translationJob = scope.launch(Dispatchers.IO) {
             try {
-                
+
                 val effectiveApiKey = if (provider == "DeepL") deeplApiKey else apiKey
                 if (effectiveApiKey.isBlank()) {
                     _status.value = TranslationStatus.Error(context.getString(pushkar.chorus.music.R.string.ai_error_api_key_required))
@@ -243,7 +232,6 @@ object LyricsTranslationHelper {
                     return@launch
                 }
 
-                
                 val nonEmptyEntries = lyrics.mapIndexedNotNull { index, entry ->
                     if (entry.text.isNotBlank()) index to entry else null
                 }
@@ -253,14 +241,12 @@ object LyricsTranslationHelper {
                     return@launch
                 }
 
-                
                 val fullText = nonEmptyEntries.joinToString("\n") { it.second.text }
 
-                
                 val cacheKey = getCacheKey(fullText, mode, targetLanguage)
                 val cachedTranslations = translationCache[cacheKey]
                 if (cachedTranslations != null && cachedTranslations.size >= nonEmptyEntries.size) {
-                    
+
                     nonEmptyEntries.forEachIndexed { idx, (originalIndex, _) ->
                         if (idx < cachedTranslations.size) {
                             lyrics[originalIndex].translatedTextFlow.value = cachedTranslations[idx]
@@ -269,8 +255,6 @@ object LyricsTranslationHelper {
                     _hasActiveTranslations.value = true
                     _status.value = TranslationStatus.Success
 
-                    
-                    
                     if (songId.isNotBlank() && database != null) {
                         try {
                             val currentLyrics = database.lyrics(songId).first()
@@ -298,13 +282,11 @@ object LyricsTranslationHelper {
                     return@launch
                 }
 
-                
                 if (targetLanguage.isBlank()) {
                     _status.value = TranslationStatus.Error(context.getString(pushkar.chorus.music.R.string.ai_error_language_required))
                     return@launch
                 }
 
-                
                 val fullLanguageName = LanguageCodeToName[targetLanguage]
                     ?: try {
                         Locale.forLanguageTag(targetLanguage).displayLanguage.takeIf { it.isNotBlank() && it != targetLanguage }
@@ -415,11 +397,9 @@ object LyricsTranslationHelper {
                         return@onSuccess
                     }
 
-                    
                     val cacheKey2 = getCacheKey(fullText, mode, targetLanguage)
                     translationCache[cacheKey2] = translatedLines
 
-                    
                     if (songId.isNotBlank() && database != null) {
                         scope.launch(Dispatchers.IO) {
                             try {
@@ -434,7 +414,7 @@ object LyricsTranslationHelper {
                                             ),
                                         )
                                     }
-                                    
+
                                     _translationSaved.tryEmit(Unit)
                                 }
                             } catch (e: Exception) {
@@ -443,7 +423,6 @@ object LyricsTranslationHelper {
                         }
                     }
 
-                    
                     val expectedCount = nonEmptyEntries.size
 
                     when {
@@ -469,7 +448,6 @@ object LyricsTranslationHelper {
                         }
                     }
 
-                    
                     delay(3000)
                     if (_status.value is TranslationStatus.Success && isCompositionActive) {
                         _status.value = TranslationStatus.Idle

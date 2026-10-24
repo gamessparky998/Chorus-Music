@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.component
 
 import androidx.annotation.DrawableRes
@@ -28,9 +26,9 @@ fun EmptyPlaceholder(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier =
-        modifier
-            .fillMaxSize()
-            .padding(12.dp),
+            modifier
+                .fillMaxSize()
+                .padding(12.dp),
     ) {
         Image(
             painter = painterResource(icon),

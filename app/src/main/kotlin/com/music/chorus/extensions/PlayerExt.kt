@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.extensions
 
 import androidx.media3.common.C
@@ -39,7 +37,7 @@ fun Player.getQueueWindows(): List<Timeline.Window> {
     if (currentMediaItemIndex == C.INDEX_UNSET || currentMediaItemIndex < 0 || currentMediaItemIndex >= timeline.windowCount) {
         return emptyList()
     }
-    
+
     val queue = ArrayDeque<Timeline.Window>()
     val queueSize = timeline.windowCount
 
@@ -78,7 +76,7 @@ fun Player.getCurrentQueueIndex(): Int {
     if (currentMediaItemIndex == C.INDEX_UNSET || currentMediaItemIndex < 0 || currentMediaItemIndex >= currentTimeline.windowCount) {
         return -1
     }
-    
+
     var index = 0
     while (currentMediaItemIndex != C.INDEX_UNSET) {
         currentMediaItemIndex = currentTimeline.getPreviousWindowIndex(

@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.playback.queues
 
 import androidx.media3.common.MediaItem
@@ -21,8 +19,7 @@ class YouTubeQueue(
     override suspend fun getInitialStatus(): Queue.Status {
         return withContext(IO) {
             var lastException: Throwable? = null
-            
-            
+
             for (attempt in 0..maxRetries) {
                 try {
                     val nextResult = YouTube.next(endpoint, continuation).getOrThrow()
@@ -36,7 +33,7 @@ class YouTubeQueue(
                     )
                 } catch (e: Exception) {
                     lastException = e
-                    
+
                     if (attempt == 0 && endpoint.videoId != null && endpoint.playlistId == null) {
                         endpoint = WatchEndpoint(
                             videoId = endpoint.videoId,
@@ -54,7 +51,7 @@ class YouTubeQueue(
     override suspend fun nextPage(): List<MediaItem> {
         return withContext(IO) {
             var lastException: Throwable? = null
-            
+
             for (attempt in 0..maxRetries) {
                 try {
                     val nextResult = YouTube.next(endpoint, continuation).getOrThrow()
@@ -66,7 +63,7 @@ class YouTubeQueue(
                     lastException = e
                     retryCount++
                     if (retryCount >= maxRetries) {
-                        continuation = null 
+                        continuation = null
                     }
                 }
             }
@@ -75,7 +72,7 @@ class YouTubeQueue(
     }
 
     companion object {
-        
+
         fun radio(song: MediaMetadata): YouTubeQueue {
             return YouTubeQueue(
                 WatchEndpoint(videoId = song.id),

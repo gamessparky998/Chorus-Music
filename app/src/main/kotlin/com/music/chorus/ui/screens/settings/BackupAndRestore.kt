@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.screens.settings
 
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -12,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -70,7 +67,6 @@ import androidx.compose.foundation.layout.padding
 
 enum class BackupSubScreen { MAIN, IMPORT }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BackupAndRestore(
     navController: NavController,
@@ -92,7 +88,6 @@ fun BackupAndRestore(
         mutableIntStateOf(0)
     }
 
-    
     var csvImportState by remember { mutableStateOf<CsvImportState?>(null) }
     var showCsvColumnMapping by rememberSaveable { mutableStateOf(false) }
     var showCsvImportProgress by rememberSaveable { mutableStateOf(false) }
@@ -223,7 +218,7 @@ fun BackupAndRestore(
                     )
                 }
             }
-        
+
         Spacer(Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Bottom)))
     }
     }
@@ -278,7 +273,6 @@ fun BackupAndRestore(
         value = progressPercentage,
     )
 
-    
     csvImportState?.let { state ->
         CsvColumnMappingDialog(
             isVisible = showCsvColumnMapping,
@@ -319,13 +313,12 @@ fun BackupAndRestore(
         )
     }
 
-    
     CsvImportProgressDialog(
         isVisible = showCsvImportProgress,
         progress = csvImportProgress,
         recentLogs = csvRecentLogs.toList(),
         onDismiss = {
-            
+
         },
     )
 }

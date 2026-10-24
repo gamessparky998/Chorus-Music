@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.screens.settings
 
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +18,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,7 +44,6 @@ import pushkar.chorus.music.utils.rememberPreference
 import pushkar.chorus.music.viewmodels.AccountSettingsViewModel
 import pushkar.chorus.music.viewmodels.HomeViewModel
 import pushkar.chorus.music.R
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AccountSettingsScreen(
     navController: NavController,
@@ -108,8 +107,8 @@ fun AccountSettingsScreen(
                 .verticalScroll(scrollState)
                 .padding(horizontal = 16.dp)
         ) {
-            
-            Material3SettingsGroup(scrollState = scrollState, 
+
+            Material3SettingsGroup(scrollState = scrollState,
                 title = stringResource(R.string.settings),
                 items = listOf(
                     Material3SettingsItem(
@@ -123,7 +122,7 @@ fun AccountSettingsScreen(
                                         contentScale = ContentScale.Crop,
                                         modifier = Modifier
                                             .size(40.dp)
-                                            .clip(CircleShape)
+                                            .clip(if (isFluidTheme()) ContinuousRoundedRectangle(12.dp) else CircleShape)
                                     )
                                     Spacer(modifier = Modifier.width(12.dp))
                                 }
@@ -136,13 +135,10 @@ fun AccountSettingsScreen(
                         },
                         trailingContent = if (isLoggedIn) ({
                             OutlinedButton(
-
-
-
-
                                 onClick = {
                                     showLogoutDialog = true
                                 },
+                                shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else ButtonDefaults.outlinedShape,
                                 colors = ButtonDefaults.outlinedButtonColors(
                                     containerColor = MaterialTheme.colorScheme.surfaceContainer,
                                     contentColor = MaterialTheme.colorScheme.onSurface
@@ -161,8 +157,7 @@ fun AccountSettingsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            
-            Material3SettingsGroup(scrollState = scrollState, 
+            Material3SettingsGroup(scrollState = scrollState,
                 title = stringResource(R.string.advanced_login),
                 items = listOf(
                     Material3SettingsItem(
@@ -188,9 +183,8 @@ fun AccountSettingsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            
             if (isLoggedIn) {
-                Material3SettingsGroup(scrollState = scrollState, 
+                Material3SettingsGroup(scrollState = scrollState,
                     title = stringResource(R.string.settings_section_player_content),
                     items = listOf(
                         Material3SettingsItem(
@@ -248,7 +242,7 @@ fun AccountSettingsScreen(
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            Material3SettingsGroup(scrollState = scrollState, 
+            Material3SettingsGroup(scrollState = scrollState,
                 title = stringResource(R.string.integrations),
                 items = listOf(
                     Material3SettingsItem(
@@ -300,7 +294,6 @@ fun AccountSettingsScreen(
                     )
                 )
             )
-
 
             Spacer(modifier = Modifier.height(16.dp))
         }
@@ -374,16 +367,18 @@ fun AccountSettingsScreen(
                                 showLogoutDialog = false
                                 navController.navigateUp()
                             },
+                            shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else ButtonDefaults.shape,
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(stringResource(R.string.logout_keep_data))
                         }
-                        
+
                         FilledTonalButton(
                             onClick = {
                                 accountSettingsViewModel.logoutAndClearSyncedContent(context, onInnerTubeCookieChange)
                                 showLogoutDialog = false
                             },
+                            shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else ButtonDefaults.filledTonalShape,
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.filledTonalButtonColors(contentColor = MaterialTheme.colorScheme.error)
                         ) {
@@ -392,6 +387,7 @@ fun AccountSettingsScreen(
 
                         TextButton(
                             onClick = { showLogoutDialog = false },
+                            shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else ButtonDefaults.textShape,
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(stringResource(android.R.string.cancel))
@@ -425,7 +421,7 @@ fun AccountSettingsScreen(
                 }
             )
         }
-        
+
         Spacer(Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Bottom)))
     }
 }

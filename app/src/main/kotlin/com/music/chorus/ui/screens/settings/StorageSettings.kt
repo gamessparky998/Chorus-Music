@@ -1,4 +1,4 @@
-
+@file:Suppress("OPT_IN_USAGE_ERROR", "OPT_IN_USAGE")
 
 package pushkar.chorus.music.ui.screens.settings
 
@@ -13,16 +13,18 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.AlertDialogDefaults
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import android.widget.Toast
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarScrollBehavior
+import android.widget.Toast
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -39,8 +41,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil3.SingletonImageLoader
-import coil3.annotation.DelicateCoilApi
-import coil3.annotation.ExperimentalCoilApi
 import coil3.imageLoader
 import pushkar.chorus.music.LocalDatabase
 import pushkar.chorus.music.LocalPlayerAwareWindowInsets
@@ -72,13 +72,13 @@ import androidx.core.net.toUri
 import pushkar.chorus.music.constants.ExportDirectoryUriKey
 import timber.log.Timber
 
-@OptIn(ExperimentalCoilApi::class, ExperimentalMaterial3Api::class, DelicateCoilApi::class)
 @Composable
 fun StorageSettings(
     navController: NavController,
-    scrollBehavior: TopAppBarScrollBehavior,
+    scrollBehavior: Any? = null,
     autoOpenExportPicker: Boolean = false,
-    highlightKey: String? = null) {
+    highlightKey: String? = null
+) {
     val scrollState = androidx.compose.foundation.rememberScrollState()
 
     val context = LocalContext.current
@@ -125,8 +125,6 @@ fun StorageSettings(
             Timber.d("OPEN_DOCUMENT_TREE supported: $supported (API ${Build.VERSION.SDK_INT})")
         }
     }
-
-
 
     val pickerNotAvailableMsg = stringResource(R.string.picker_not_available)
     val exportDirUnavailableMsg = stringResource(R.string.export_directory_unavailable)
@@ -179,12 +177,10 @@ fun StorageSettings(
     var clearCacheDialog by remember { mutableStateOf(false) }
     var clearImageCacheDialog by remember { mutableStateOf(false) }
 
-
     var showCacheWarningDialog by remember { mutableStateOf(false) }
     var cacheType by remember { mutableStateOf("") }
     var cacheUsage by remember { androidx.compose.runtime.mutableLongStateOf(0L) }
     var onConfirmAction by remember { mutableStateOf<() -> Unit>({}) }
-
 
     var imageCacheSize by remember {
         androidx.compose.runtime.mutableLongStateOf(imageDiskCache.size)
@@ -320,10 +316,10 @@ fun StorageSettings(
         )
     }
 
-
     if (showCacheWarningDialog) {
         AlertDialog(
             onDismissRequest = { showCacheWarningDialog = false },
+            shape = if (isFluidTheme()) ContinuousRoundedRectangle(26.dp) else AlertDialogDefaults.shape,
             title = { Text(stringResource(R.string.cache_size_warning_title)) },
             text = {
                 Text(
@@ -339,7 +335,8 @@ fun StorageSettings(
                     onClick = {
                         onConfirmAction()
                         showCacheWarningDialog = false
-                    }
+                    },
+                    shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else ButtonDefaults.textShape,
                 ) {
                     Text(
                         stringResource(R.string.cache_size_warning_confirm),
@@ -348,7 +345,10 @@ fun StorageSettings(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showCacheWarningDialog = false }) {
+                TextButton(
+                    onClick = { showCacheWarningDialog = false },
+                    shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else ButtonDefaults.textShape,
+                ) {
                     Text(stringResource(id = android.R.string.cancel))
                 }
             }
@@ -372,7 +372,8 @@ fun StorageSettings(
                 )
             )
         )
-        Material3SettingsGroup(scrollState = scrollState,
+        Material3SettingsGroup(
+            scrollState = scrollState,
             title = stringResource(R.string.storage),
             items = listOf(
                 Material3SettingsItem(
@@ -409,7 +410,8 @@ fun StorageSettings(
             )
         )
 
-        Material3SettingsGroup(scrollState = scrollState,
+        Material3SettingsGroup(
+            scrollState = scrollState,
             title = stringResource(R.string.song_cache),
             items = listOf(
                 Material3SettingsItem(
@@ -481,7 +483,8 @@ fun StorageSettings(
             )
         )
 
-        Material3SettingsGroup(scrollState = scrollState,
+        Material3SettingsGroup(
+            scrollState = scrollState,
             title = stringResource(R.string.image_cache),
             items = listOf(
                 Material3SettingsItem(

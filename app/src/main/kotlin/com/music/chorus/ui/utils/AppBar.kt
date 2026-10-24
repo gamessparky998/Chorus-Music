@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.utils
 
 import androidx.compose.animation.core.AnimationSpec
@@ -8,7 +6,6 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.rememberSplineBasedDecay
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.TopAppBarState
 import androidx.compose.material3.rememberTopAppBarState
@@ -17,7 +14,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun appBarScrollBehavior(
     state: TopAppBarState = rememberTopAppBarState(),
@@ -32,7 +28,6 @@ fun appBarScrollBehavior(
         canScroll = canScroll,
     )
 
-@ExperimentalMaterial3Api
 class AppBarScrollBehavior(
     override val state: TopAppBarState,
     override val snapAnimationSpec: AnimationSpec<Float>?,
@@ -51,8 +46,7 @@ class AppBarScrollBehavior(
                 state.contentOffset += consumed.y
                 if (state.heightOffset == 0f || state.heightOffset == state.heightOffsetLimit) {
                     if (consumed.y == 0f && available.y > 0f) {
-                        
-                        
+
                         state.contentOffset = 0f
                     }
                 }
@@ -62,7 +56,6 @@ class AppBarScrollBehavior(
         }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 suspend fun TopAppBarState.resetHeightOffset() {
     if (heightOffset != 0f) {
         animate(

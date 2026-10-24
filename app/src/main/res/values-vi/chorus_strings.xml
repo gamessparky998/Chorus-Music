@@ -185,7 +185,7 @@
     <string name="lyrics_romanize_kyrgyz">Lời bài hát tiếng Kyrgyz</string>
     <string name="lyrics_romanize_serbian">Lời bài hát tiếng Serbia</string>
     <string name="lyrics_romanize_bulgarian">Lời bài hát tiếng Bulgaria</string>
-    <string name="line_by_line_option_title">THỬ NGHIỆM: Phát hiện ngôn ngữ theo từng dòng</string>
+    <string name="line_by_line_option_title">Phát hiện ngôn ngữ theo từng dòng</string>
     <string name="line_by_line_option_desc">Ngôn ngữ Cyrillic sẽ được phát hiện theo từng dòng thay vì toàn bộ bài hát.</string>
     <string name="line_by_line_dialog_title">Bạn có chắc không?</string>
     <string name="line_by_line_dialog_desc">Đây là một tính năng thử nghiệm có thể thành công hoặc thất bại.\n\nTheo mặc định, ngôn ngữ được xác định dựa trên toàn bộ bài hát, nhưng khi bật tùy chọn này, ngôn ngữ sẽ được xác định theo từng dòng. Điều này cho phép các bài hát đa ngôn ngữ hoạt động NHƯNG ngôn ngữ có thể không phải lúc nào cũng chính xác (ví dụ: nếu lời bài hát tiếng Ukraine không chứa bất kỳ chữ cái nào đặc trưng của tiếng Ukraine, nó có thể được chuyển sang tiếng Nga).\n\nNếu bạn không gặp sự cố, bạn nên tắt tùy chọn này.</string>

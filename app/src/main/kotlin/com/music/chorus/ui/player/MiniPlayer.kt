@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.player
 
 import android.content.res.Configuration
@@ -46,6 +44,11 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.fluid.foundation.FluidTheme
+import pushkar.chorus.music.ui.fluid.foundation.GlassIntensity
+import pushkar.chorus.music.ui.fluid.foundation.fluidGlass
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -85,6 +88,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -113,7 +117,6 @@ import pushkar.chorus.music.constants.PureBlackMiniPlayerKey
 import pushkar.chorus.music.constants.SwipeSensitivityKey
 import pushkar.chorus.music.constants.SwipeThumbnailKey
 import pushkar.chorus.music.constants.ThumbnailCornerRadius
-import pushkar.chorus.music.constants.UseNewMiniPlayerDesignKey
 import pushkar.chorus.music.db.entities.ArtistEntity
 import pushkar.chorus.music.models.MediaMetadata
 import pushkar.chorus.music.playback.CastConnectionHandler
@@ -198,29 +201,13 @@ fun MiniPlayer(
     durationState: MutableLongState,
     modifier: Modifier = Modifier
 ) {
-    val useNewMiniPlayerDesign by rememberPreference(UseNewMiniPlayerDesignKey, true)
-    
-    
     val progressState = remember { ProgressState(positionState, durationState) }
 
-    if (useNewMiniPlayerDesign) {
-        NewMiniPlayer(
-            progressState = progressState,
-            modifier = modifier
-        )
-    } else {
-        Box(modifier = modifier.fillMaxWidth()) {
-            LegacyMiniPlayer(
-                progressState = progressState,
-                modifier = Modifier.align(Alignment.Center)
-            )
-        }
-    }
+    NewMiniPlayer(
+        progressState = progressState,
+        modifier = modifier
+    )
 }
-
-
-
-
 
 @Composable
 private fun NewMiniPlayer(
@@ -228,24 +215,24 @@ private fun NewMiniPlayer(
     modifier: Modifier = Modifier
 ) {
     val playerConnection = LocalPlayerConnection.current ?: return
-    
-    
+
     val pureBlack by rememberPreference(PureBlackMiniPlayerKey, defaultValue = false)
     val isSystemInDarkTheme = isSystemInDarkTheme()
     val darkTheme by rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
     val useDarkTheme = remember(darkTheme, isSystemInDarkTheme) {
         if (darkTheme == DarkMode.AUTO) isSystemInDarkTheme else darkTheme == DarkMode.ON
     }
-    
-    val miniPlayerBackground by rememberEnumPreference(MiniPlayerBackgroundStyleKey, defaultValue = PlayerBackgroundStyle.DEFAULT)
-    
-    
+
+    val miniPlayerBackground by rememberEnumPreference(
+        MiniPlayerBackgroundStyleKey,
+        defaultValue = PlayerBackgroundStyle.DEFAULT
+    )
+
     val playbackState by playerConnection.playbackState.collectAsState()
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
     val canSkipNext by playerConnection.canSkipNext.collectAsState()
     val canSkipPrevious by playerConnection.canSkipPrevious.collectAsState()
-    
-    
+
     val castHandler = remember(playerConnection) {
         try {
             playerConnection.service.castConnectionHandler
@@ -255,27 +242,24 @@ private fun NewMiniPlayer(
     }
     val isCasting by castHandler?.isCasting?.collectAsState() ?: remember { mutableStateOf(false) }
 
-    
     val context = LocalContext.current
     val isBluetoothConnected = isBluetoothHeadphoneConnected(context)
     var showAudioDeviceBottomSheet by remember { mutableStateOf(false) }
 
-    
     val swipeSensitivity by rememberPreference(SwipeSensitivityKey, 0.73f)
     val swipeThumbnailPref by rememberPreference(SwipeThumbnailKey, true)
-    
+
     val isListenTogetherGuest = false
     val swipeThumbnail = swipeThumbnailPref && !isListenTogetherGuest
-    
+
     val layoutDirection = LocalLayoutDirection.current
     val coroutineScope = rememberCoroutineScope()
-    
+
     val configuration = LocalConfiguration.current
     val isTabletLandscape = remember(configuration.screenWidthDp, configuration.orientation) {
         configuration.screenWidthDp >= 600 && configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     }
 
-    
     val offsetXAnimatable = remember { Animatable(0f) }
     var dragStartTime by remember { mutableLongStateOf(0L) }
     var totalDragDistance by remember { mutableFloatStateOf(0f) }
@@ -295,16 +279,15 @@ private fun NewMiniPlayer(
         miniPlayerBackground = miniPlayerBackground,
         onGradientColorsChange = onGradientColorsChange
     )
-    
-    
+
     val isDynamicBackground = miniPlayerBackground != PlayerBackgroundStyle.DEFAULT
-    
+
     val backgroundColor = if (pureBlack && useDarkTheme) {
         Color.Black
     } else {
         MaterialTheme.colorScheme.surfaceContainer
     }
-    
+
     val primaryColor = if (isDynamicBackground) Color.White else MaterialTheme.colorScheme.primary
     val onPrimaryColor = if (isDynamicBackground) Color.Black else MaterialTheme.colorScheme.onPrimary
     val outlineColor = if (isDynamicBackground) Color.White.copy(alpha = 0.5f) else MaterialTheme.colorScheme.outline
@@ -360,8 +343,9 @@ private fun NewMiniPlayer(
                                 val minDistanceThreshold = 50f
                                 val velocityThreshold = (swipeSensitivity * -8.25f) + 8.5f
 
-                                val shouldChangeSong = (kotlin.math.abs(currentOffset) > minDistanceThreshold && velocity > velocityThreshold) ||
-                                    (kotlin.math.abs(currentOffset) > autoSwipeThreshold)
+                                val shouldChangeSong =
+                                    (kotlin.math.abs(currentOffset) > minDistanceThreshold && velocity > velocityThreshold) ||
+                                            (kotlin.math.abs(currentOffset) > autoSwipeThreshold)
 
                                 if (shouldChangeSong) {
                                     if (currentOffset > 0 && canSkipPrevious) {
@@ -379,16 +363,36 @@ private fun NewMiniPlayer(
                 } else baseModifier
             }
     ) {
+        val isFluid = isFluidTheme()
+        val isDark = useDarkTheme
+        val effectiveMiniPlayerShape = if (isFluid) ContinuousRoundedRectangle(32.dp) else RoundedCornerShape(32.dp)
+        val miniRadiusPx = with(LocalDensity.current) { 32.dp.toPx() }
+
         Box(
             modifier = Modifier
-                .then(if (isTabletLandscape) Modifier.width(480.dp).align(Alignment.Center) else Modifier.fillMaxWidth())
+                .then(
+                    if (isTabletLandscape) Modifier.width(480.dp).align(Alignment.Center) else Modifier.fillMaxWidth()
+                )
                 .height(MiniPlayerHeight)
                 .offset { IntOffset(offsetXAnimatable.value.roundToInt(), 0) }
-                .clip(RoundedCornerShape(32.dp))
-                .background(color = backgroundColor)
-                .border(1.dp, outlineColor.copy(alpha = 0.3f), RoundedCornerShape(32.dp))
+                .then(
+                    if (isFluid) Modifier.miniContainerMorphSource() else Modifier
+                )
+                .clip(effectiveMiniPlayerShape)
+                .then(
+                    if (isFluid) {
+                        Modifier
+                            .fluidGlass(intensity = GlassIntensity.Standard)
+                            .background(if (isDark) Color(0xCC1C1C1E) else Color(0xCCF2F2F7))
+                            .border(1.dp, Color.White.copy(alpha = if (isDark) 0.12f else 0.25f), effectiveMiniPlayerShape)
+                    } else {
+                        Modifier
+                            .background(color = backgroundColor)
+                            .border(1.dp, outlineColor.copy(alpha = 0.3f), RoundedCornerShape(32.dp))
+                    }
+                )
         ) {
-            
+
             MiniPlayerBackgroundLayer(
                 style = miniPlayerBackground,
                 mediaMetadata = mediaMetadata,
@@ -399,7 +403,7 @@ private fun NewMiniPlayer(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 8.dp),
             ) {
-                
+
                 NewMiniPlayerThumbnail(
                     progressState = progressState,
                     mediaMetadata = mediaMetadata,
@@ -409,7 +413,6 @@ private fun NewMiniPlayer(
 
                 Spacer(modifier = Modifier.width(16.dp))
 
-                
                 NewMiniPlayerSongInfo(
                     mediaMetadata = mediaMetadata,
                     onSurfaceColor = onSurfaceColor,
@@ -418,8 +421,7 @@ private fun NewMiniPlayer(
                 )
 
                 Spacer(modifier = Modifier.width(4.dp))
-                
-                
+
                 if (isCasting) {
                     Icon(
                         painter = painterResource(R.drawable.cast_connected),
@@ -450,7 +452,6 @@ private fun NewMiniPlayer(
     }
 }
 
-
 @Composable
 private fun NewMiniPlayerThumbnail(
     progressState: ProgressState,
@@ -467,15 +468,14 @@ private fun NewMiniPlayerThumbnail(
             .size(48.dp)
             .drawWithContent {
                 drawContent()
-                
+
                 val progress = progressState.progress
                 val stroke = Stroke(width = strokeWidth.toPx(), cap = StrokeCap.Round)
                 val startAngle = -90f
                 val sweepAngle = 360f * progress
                 val diameter = size.minDimension
                 val topLeft = Offset((size.width - diameter) / 2, (size.height - diameter) / 2)
-                
-                
+
                 drawArc(
                     color = trackColor,
                     startAngle = 0f,
@@ -485,7 +485,7 @@ private fun NewMiniPlayerThumbnail(
                     size = Size(diameter, diameter),
                     style = stroke
                 )
-                
+
                 drawArc(
                     color = primaryColor,
                     startAngle = startAngle,
@@ -497,7 +497,7 @@ private fun NewMiniPlayerThumbnail(
                 )
             }
     ) {
-        
+
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
@@ -506,19 +506,24 @@ private fun NewMiniPlayerThumbnail(
                 .border(1.dp, outlineColor.copy(alpha = 0.3f), CircleShape)
         ) {
             mediaMetadata?.let { metadata ->
+                val thumbCornerPx = with(LocalDensity.current) { 20.dp.toPx() }
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(metadata.thumbnailUrl)
                         .build(),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize().clip(CircleShape)
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .then(
+                            if (isFluidTheme()) Modifier.miniArtworkMorphSource(cornerRadiusPx = thumbCornerPx) else Modifier
+                        )
+                        .clip(CircleShape)
                 )
             }
         }
     }
 }
-
 
 @Composable
 private fun NewMiniPlayerSongInfo(
@@ -528,7 +533,7 @@ private fun NewMiniPlayerSongInfo(
     modifier: Modifier = Modifier
 ) {
     val error by LocalPlayerConnection.current?.error?.collectAsState() ?: remember { mutableStateOf(null) }
-    
+
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.Center
@@ -573,338 +578,6 @@ private fun NewMiniPlayerSongInfo(
     }
 }
 
-
-
-
-
-@Composable
-private fun LegacyMiniPlayer(
-    progressState: ProgressState,
-    modifier: Modifier = Modifier
-) {
-    val playerConnection = LocalPlayerConnection.current ?: return
-    val pureBlack by rememberPreference(PureBlackMiniPlayerKey, defaultValue = false)
-    
-    val playbackState by playerConnection.playbackState.collectAsState()
-    val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
-    val canSkipNext by playerConnection.canSkipNext.collectAsState()
-    val canSkipPrevious by playerConnection.canSkipPrevious.collectAsState()
-    
-    val castHandler = remember(playerConnection) {
-        try {
-            playerConnection.service.castConnectionHandler
-        } catch (e: Exception) {
-            null
-        }
-    }
-    val isCasting by castHandler?.isCasting?.collectAsState() ?: remember { mutableStateOf(false) }
-
-    val swipeSensitivity by rememberPreference(SwipeSensitivityKey, 0.73f)
-    val swipeThumbnailPref by rememberPreference(SwipeThumbnailKey, true)
-    
-    val isListenTogetherGuest = false
-    val swipeThumbnail = swipeThumbnailPref && !isListenTogetherGuest
-
-    val layoutDirection = LocalLayoutDirection.current
-    val coroutineScope = rememberCoroutineScope()
-    
-    val configuration = LocalConfiguration.current
-    val isTabletLandscape = remember(configuration.screenWidthDp, configuration.orientation) {
-        configuration.screenWidthDp >= 600 && configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-    }
-
-    val offsetXAnimatable = remember { Animatable(0f) }
-    var dragStartTime by remember { mutableLongStateOf(0L) }
-    var totalDragDistance by remember { mutableFloatStateOf(0f) }
-
-    val animationSpec = remember {
-        spring<Float>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessLow)
-    }
-
-    val autoSwipeThreshold = remember(swipeSensitivity) {
-        (600 / (1f + kotlin.math.exp(-(-11.44748 * swipeSensitivity + 9.04945)))).roundToInt()
-    }
-    
-    val primaryColor = MaterialTheme.colorScheme.primary
-    val trackColor = MaterialTheme.colorScheme.surfaceVariant
-
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .wrapContentWidth(Alignment.CenterHorizontally)
-            .widthIn(max = 340.dp)
-            .height(MiniPlayerHeight)
-            .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
-            .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-            .background(
-                if (pureBlack && isSystemInDarkTheme()) Color.Black
-                else MaterialTheme.colorScheme.surfaceContainer
-            )
-            .let { baseModifier ->
-                if (swipeThumbnail) {
-                    baseModifier.pointerInput(Unit) {
-                        detectHorizontalDragGestures(
-                            onDragStart = {
-                                dragStartTime = System.currentTimeMillis()
-                                totalDragDistance = 0f
-                            },
-                            onDragCancel = {
-                                coroutineScope.launch { offsetXAnimatable.animateTo(0f, animationSpec) }
-                            },
-                            onHorizontalDrag = { _, dragAmount ->
-                                val adjustedDragAmount =
-                                    if (layoutDirection == LayoutDirection.Rtl) -dragAmount else dragAmount
-                                val canSkipPrevious = playerConnection.player.previousMediaItemIndex != -1
-                                val canSkipNext = playerConnection.player.nextMediaItemIndex != -1
-                                val tryingToSwipeRight = adjustedDragAmount > 0
-                                val tryingToSwipeLeft = adjustedDragAmount < 0
-                                val allowLeft = tryingToSwipeLeft && canSkipNext
-                                val allowRight = tryingToSwipeRight && canSkipPrevious
-
-                                val canReturnToCenter =
-                                    (tryingToSwipeRight && !canSkipPrevious && offsetXAnimatable.value < 0) ||
-                                            (tryingToSwipeLeft && !canSkipNext && offsetXAnimatable.value > 0)
-
-                                if (allowLeft || allowRight || canReturnToCenter) {
-                                    totalDragDistance += kotlin.math.abs(adjustedDragAmount)
-                                    coroutineScope.launch {
-                                        offsetXAnimatable.snapTo(offsetXAnimatable.value + adjustedDragAmount)
-                                    }
-                                }
-                            },
-                            onDragEnd = {
-                                val dragDuration = System.currentTimeMillis() - dragStartTime
-                                val velocity = if (dragDuration > 0) totalDragDistance / dragDuration else 0f
-                                val currentOffset = offsetXAnimatable.value
-                                val minDistanceThreshold = 50f
-                                val velocityThreshold = (swipeSensitivity * -8.25f) + 8.5f
-
-                                val shouldChangeSong = (kotlin.math.abs(currentOffset) > minDistanceThreshold && velocity > velocityThreshold) ||
-                                    (kotlin.math.abs(currentOffset) > autoSwipeThreshold)
-
-                                if (shouldChangeSong) {
-                                    if (currentOffset > 0 && canSkipPrevious) {
-                                        playerConnection.player.seekToPreviousMediaItem()
-                                    } else if (currentOffset <= 0 && canSkipNext) {
-                                        playerConnection.player.seekToNext()
-                                    }
-                                }
-                                coroutineScope.launch { offsetXAnimatable.animateTo(0f, animationSpec) }
-                            }
-                        )
-                    }
-                } else baseModifier
-            }
-    ) {
-        
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(2.dp)
-                .align(Alignment.BottomCenter)
-                .drawWithContent {
-                    val progress = progressState.progress
-                    drawRect(trackColor)
-                    drawRect(primaryColor, size = Size(size.width * progress, size.height))
-                }
-        )
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxSize()
-                .offset { IntOffset(offsetXAnimatable.value.roundToInt(), 0) }
-                .padding(end = 12.dp),
-        ) {
-            Box(Modifier.weight(1f)) {
-                mediaMetadata?.let {
-                    LegacyMiniMediaInfo(
-                        mediaMetadata = it,
-                        pureBlack = pureBlack,
-                        modifier = Modifier.padding(horizontal = 6.dp),
-                    )
-                }
-            }
-
-            LegacyPlayPauseButton(
-                playbackState = playbackState,
-                isCasting = isCasting,
-                castHandler = castHandler,
-                playerConnection = playerConnection
-            )
-
-            IconButton(
-                    enabled = canSkipNext && !isListenTogetherGuest,
-                    onClick = if (isListenTogetherGuest) ({}) else ({ playerConnection.seekToNext() }),
-            ) {
-                Icon(painter = painterResource(R.drawable.skip_next), contentDescription = null)
-            }
-        }
-
-        
-        if (offsetXAnimatable.value.absoluteValue > 50f) {
-            Box(
-                modifier = Modifier
-                    .align(if (offsetXAnimatable.value > 0) Alignment.CenterStart else Alignment.CenterEnd)
-                    .padding(horizontal = 16.dp)
-            ) {
-                Icon(
-                    painter = painterResource(
-                        if (offsetXAnimatable.value > 0) R.drawable.skip_previous else R.drawable.skip_next
-                    ),
-                    contentDescription = null,
-                    tint = primaryColor.copy(
-                        alpha = (offsetXAnimatable.value.absoluteValue / autoSwipeThreshold).coerceIn(0f, 1f)
-                    ),
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun LegacyPlayPauseButton(
-    playbackState: Int,
-    isCasting: Boolean,
-    castHandler: CastConnectionHandler?,
-    playerConnection: PlayerConnection,
-    tint: Color = androidx.compose.material3.LocalContentColor.current
-) {
-    val isPlaying by playerConnection.isPlaying.collectAsState()
-    val castIsPlaying by castHandler?.castIsPlaying?.collectAsState() ?: remember { mutableStateOf(false) }
-    val effectiveIsPlaying = if (isCasting) castIsPlaying else isPlaying
-    val isListenTogetherGuest = false
-    val isMuted by playerConnection.isMuted.collectAsState()
-
-
-    IconButton(
-        onClick = {
-            if (isListenTogetherGuest) {
-                playerConnection.toggleMute()
-                return@IconButton
-            }
-            if (isCasting) {
-                if (castIsPlaying) castHandler?.pause() else castHandler?.play()
-            } else if (playbackState == Player.STATE_ENDED) {
-                playerConnection.player.seekTo(0, 0)
-                playerConnection.player.playWhenReady = true
-            } else {
-                playerConnection.togglePlayPause()
-            }
-        },
-    ) {
-        if (playbackState == Player.STATE_BUFFERING && effectiveIsPlaying) {
-            androidx.compose.material3.CircularProgressIndicator(
-                color = tint,
-                modifier = Modifier.size(24.dp),
-                strokeWidth = 2.dp
-            )
-        } else {
-            Icon(
-                painter = painterResource(
-                    when {
-                        isListenTogetherGuest -> if (isMuted) R.drawable.volume_off else R.drawable.volume_up
-                        playbackState == Player.STATE_ENDED -> R.drawable.replay
-                        effectiveIsPlaying -> R.drawable.pause
-                        else -> R.drawable.play
-                    }
-                ),
-                contentDescription = null,
-                tint = tint,
-            )
-        }
-    }
-}
-
-@Composable
-private fun LegacyMiniMediaInfo(
-    mediaMetadata: MediaMetadata,
-    pureBlack: Boolean,
-    modifier: Modifier = Modifier,
-) {
-    val error by LocalPlayerConnection.current?.error?.collectAsState() ?: remember { mutableStateOf(null) }
-    val cropAlbumArt by rememberPreference(CropAlbumArtKey, true)
-    
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier,
-    ) {
-        Box(
-            modifier = Modifier
-                .padding(6.dp)
-                .size(48.dp)
-                .clip(RoundedCornerShape(ThumbnailCornerRadius))
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-            )
-
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(mediaMetadata.thumbnailUrl)
-                    .build(),
-                contentDescription = null,
-                contentScale = if (cropAlbumArt) ContentScale.Crop else ContentScale.Fit,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(RoundedCornerShape(ThumbnailCornerRadius)),
-            )
-
-            androidx.compose.animation.AnimatedVisibility(visible = error != null, enter = fadeIn(), exit = fadeOut()) {
-                Box(
-                    Modifier
-                        .fillMaxSize()
-                        .background(
-                            color = if (pureBlack) Color.Black else Color.Black.copy(alpha = 0.6f),
-                            shape = RoundedCornerShape(ThumbnailCornerRadius),
-                        ),
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.info),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.align(Alignment.Center),
-                    )
-                }
-            }
-        }
-
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 6.dp),
-        ) {
-            Text(
-                text = mediaMetadata.title,
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.basicMarquee(),
-            )
-
-            if (mediaMetadata.artists.any { it.name.isNotBlank() }) {
-                Text(
-                    text = mediaMetadata.artists.joinToString { it.name },
-                    color = MaterialTheme.colorScheme.secondary,
-                    fontSize = 12.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-        }
-    }
-}
-
-
-
-
-
-
 @Composable
 private fun FavoriteButton(
     songId: String,
@@ -916,7 +589,7 @@ private fun FavoriteButton(
     val playerConnection = LocalPlayerConnection.current ?: return
     val librarySong by database.song(songId).collectAsState(initial = null)
     val isLiked = librarySong?.song?.liked == true
-    
+
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
@@ -941,6 +614,7 @@ private fun FavoriteButton(
         )
     }
 }
+
 @Composable
 private fun MiniPlayerColorExtractor(
     mediaMetadata: MediaMetadata?,
@@ -1004,7 +678,7 @@ private fun MiniPlayerBackgroundLayer(
     gradientColors: List<Color>
 ) {
     val context = LocalContext.current
-    
+
     when (style) {
         PlayerBackgroundStyle.BLUR -> {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -1027,6 +701,7 @@ private fun MiniPlayerBackgroundLayer(
                 )
             }
         }
+
         PlayerBackgroundStyle.GRADIENT -> {
             if (gradientColors.isNotEmpty()) {
                 Box(
@@ -1037,6 +712,7 @@ private fun MiniPlayerBackgroundLayer(
                 )
             }
         }
+
         PlayerBackgroundStyle.GLOW_ANIMATED -> {
             if (gradientColors.isNotEmpty()) {
                 val infiniteTransition = rememberInfiniteTransition(label = "GlowAnimation")
@@ -1058,7 +734,7 @@ private fun MiniPlayerBackgroundLayer(
                             val p = progress.value
                             val width = size.width
                             val height = size.height
-                            
+
                             fun rotatedColorAt(index: Int): Color {
                                 val size = colors.size
                                 val idx = index.toFloat() + p * size
@@ -1091,7 +767,7 @@ private fun MiniPlayerBackgroundLayer(
                                 center = Offset(width * o2x, height * o2y),
                                 radius = width * 1.0f
                             )
-                            
+
                             drawRect(Color(0xFF050505))
                             drawRect(b1)
                             drawRect(b2)
@@ -1099,6 +775,7 @@ private fun MiniPlayerBackgroundLayer(
                 )
             }
         }
+
         PlayerBackgroundStyle.LIVE_MESH -> {
             val infiniteTransition = rememberInfiniteTransition(label = "liveMesh")
             val rotation = infiniteTransition.animateFloat(
@@ -1166,14 +843,22 @@ private fun MiniPlayerControls(
             onClick = if (isListenTogetherGuest) ({}) else ({ playerConnection.player.seekToPreviousMediaItem() }),
             modifier = Modifier.size(32.dp)
         ) {
-            Icon(painter = painterResource(R.drawable.skip_previous), contentDescription = null, tint = onSurfaceColor, modifier = Modifier.size(20.dp))
+            Icon(
+                painter = painterResource(R.drawable.skip_previous),
+                contentDescription = null,
+                tint = onSurfaceColor,
+                modifier = Modifier.size(20.dp)
+            )
         }
 
         Spacer(modifier = Modifier.width(12.dp))
 
         val cookieIndent by androidx.compose.animation.core.animateFloatAsState(
             targetValue = if (effectiveIsPlaying) 0.08f else 0f,
-            animationSpec = androidx.compose.animation.core.tween(durationMillis = 300, easing = androidx.compose.animation.core.LinearEasing),
+            animationSpec = androidx.compose.animation.core.tween(
+                durationMillis = 300,
+                easing = androidx.compose.animation.core.LinearEasing
+            ),
             label = "cookieIndent",
         )
 
@@ -1182,7 +867,10 @@ private fun MiniPlayerControls(
             initialValue = 0f,
             targetValue = 360f,
             animationSpec = androidx.compose.animation.core.infiniteRepeatable(
-                animation = androidx.compose.animation.core.tween(8000, easing = androidx.compose.animation.core.LinearEasing),
+                animation = androidx.compose.animation.core.tween(
+                    8000,
+                    easing = androidx.compose.animation.core.LinearEasing
+                ),
                 repeatMode = androidx.compose.animation.core.RepeatMode.Restart
             ),
             label = "rotation"
@@ -1192,6 +880,7 @@ private fun MiniPlayerControls(
             contentAlignment = Alignment.Center,
             modifier = Modifier
                 .size(48.dp)
+                .then(if (isFluidTheme()) Modifier.registerMiniControlsPlayRect() else Modifier)
                 .clip(CircleShape)
                 .clickable {
                     if (isListenTogetherGuest) {
@@ -1247,9 +936,16 @@ private fun MiniPlayerControls(
         IconButton(
             enabled = canSkipNext && !isListenTogetherGuest,
             onClick = if (isListenTogetherGuest) ({}) else ({ playerConnection.player.seekToNext() }),
-            modifier = Modifier.size(32.dp)
+            modifier = Modifier
+                .size(32.dp)
+                .then(if (isFluidTheme()) Modifier.registerMiniControlsNextRect() else Modifier)
         ) {
-            Icon(painter = painterResource(R.drawable.skip_next), contentDescription = null, tint = onSurfaceColor, modifier = Modifier.size(20.dp))
+            Icon(
+                painter = painterResource(R.drawable.skip_next),
+                contentDescription = null,
+                tint = onSurfaceColor,
+                modifier = Modifier.size(20.dp)
+            )
         }
     }
 }

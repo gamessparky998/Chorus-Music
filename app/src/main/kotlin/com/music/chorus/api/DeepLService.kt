@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.api
 
 import kotlinx.coroutines.Dispatchers
@@ -30,16 +28,14 @@ object DeepLService {
     ): Result<List<String>> = withContext(Dispatchers.IO) {
         onLog?.invoke("Starting DeepL translation...")
         var currentAttempt = 0
-        
-        
+
         if (text.isBlank()) {
             return@withContext Result.failure(Exception("Input text is empty"))
         }
-        
+
         val lines = text.lines()
         val lineCount = lines.size
-        
-        
+
         val deeplLangCode = when (targetLanguage.lowercase()) {
             "zh", "zh-cn", "zh-hans" -> "ZH"
             "zh-tw", "zh-hant" -> "ZH"
@@ -49,14 +45,13 @@ object DeepLService {
             "pt-br" -> "PT-BR"
             else -> targetLanguage.uppercase().take(2)
         }
-        
-        
+
         val baseUrl = if (apiKey.endsWith(":fx")) {
             "https://api-free.deepl.com/v2/translate"
         } else {
             "https://api.deepl.com/v2/translate"
         }
-        
+
         while (currentAttempt < maxRetries) {
             try {
                 val jsonBody = JSONObject().apply {
@@ -81,15 +76,15 @@ object DeepLService {
                 val response = client.newCall(request).execute()
                 val responseBody = response.body.string()
                 if (!response.isSuccessful) {
-                    
+
                     if (response.code >= 500) {
                         currentAttempt++
                         kotlinx.coroutines.delay(1000L * currentAttempt)
                         continue
                     }
-                    
+
                     val errorMsg = try {
-                        JSONObject(responseBody).optString("message") 
+                        JSONObject(responseBody).optString("message")
                             ?: "HTTP ${response.code}: ${response.message}"
                     } catch (e: Exception) {
                         "HTTP ${response.code}: ${response.message}"
@@ -108,7 +103,7 @@ object DeepLService {
                     val translatedLines = (0 until translations.length()).map { i ->
                         translations.getJSONObject(i).optString("text", "")
                     }
-                    
+
                     if (translatedLines.size == lineCount) {
                         onLog?.invoke("Successfully parsed ${translatedLines.size} lines")
                         return@withContext Result.success(translatedLines)

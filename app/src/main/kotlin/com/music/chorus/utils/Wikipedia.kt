@@ -13,8 +13,6 @@ import kotlinx.serialization.json.Json
 import timber.log.Timber
 import io.ktor.client.plugins.ResponseException
 
-
-
 object Wikipedia {
     private val client by lazy {
         HttpClient(OkHttp) {
@@ -46,9 +44,8 @@ object Wikipedia {
         }
     }.getOrNull()
 
-    
     suspend fun fetchAlbumInfo(albumTitle: String, artistName: String?): String? {
-        
+
         if (artistName != null) {
             val preciseQueries = listOf(
                 "$albumTitle ($artistName album)",
@@ -62,7 +59,6 @@ object Wikipedia {
             }
         }
 
-        
         val genericQueries = listOf(
             "$albumTitle (album)",
             albumTitle
@@ -71,8 +67,7 @@ object Wikipedia {
         for (query in genericQueries) {
             val summary = fetchPageSummary(query)
             if (summary != null && !summary.contains("may refer to", ignoreCase = true)) {
-                
-                
+
                 if (artistName != null) {
                     if (summary.contains(artistName, ignoreCase = true)) {
                         return summary

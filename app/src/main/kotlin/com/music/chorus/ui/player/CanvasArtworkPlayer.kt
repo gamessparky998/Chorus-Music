@@ -145,7 +145,7 @@ fun CanvasArtworkPlayer(
                         }
                     if (!next.isNullOrBlank()) {
                         currentUrl = next
-                        isVideoReady = false 
+                        isVideoReady = false
                     }
                 }
 
@@ -167,12 +167,11 @@ fun CanvasArtworkPlayer(
         val normalized = currentUrl.trim()
         val mimeType =
             when {
-                normalized.contains(".m3u8", ignoreCase = true) || 
+                normalized.contains(".m3u8", ignoreCase = true) ||
                 normalized.lowercase(Locale.ROOT).split('?').first().endsWith(".m3u8") -> MimeTypes.APPLICATION_M3U8
                 normalized.lowercase(Locale.ROOT).contains(".mp4") -> MimeTypes.VIDEO_MP4
                 primary != null && currentUrl == primary -> {
-                    
-                    
+
                     if (normalized.contains("apple.com") || normalized.contains("music.apple") || !normalized.contains(".mp4")) {
                         MimeTypes.APPLICATION_M3U8
                     } else {
@@ -213,7 +212,7 @@ fun CanvasArtworkPlayer(
             AspectRatioFrameLayout(viewContext).apply {
                 layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
                 resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
-                
+
                 val textureView = TextureView(viewContext).apply {
                     layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
                 }

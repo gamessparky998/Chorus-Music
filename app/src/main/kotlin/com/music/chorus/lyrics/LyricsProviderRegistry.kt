@@ -1,21 +1,23 @@
-
-
 package pushkar.chorus.music.lyrics
 
 import pushkar.chorus.music.constants.PreferredLyricsProvider
 
-
 object LyricsProviderRegistry {
     private val providerMap = mapOf(
+        "LrcRed"          to LrcRedLyricsProvider,
+        "BiniLyrics"      to BiniLyricsProvider,
         "YouLyPlus"       to YouLyPlusLyricsProvider,
         "Paxsenix"        to PaxSenixLyricsProvider,
         "BetterLyrics"    to BetterLyricsProvider,
         "Unison"          to UnisonLyricsProvider,
         "SimpMusic"       to SimpMusicLyricsProvider,
+        "Musixmatch"      to MusixmatchLyricsProvider,
         "LrcLib"          to LrcLibLyricsProvider,
         "Kugou"           to KuGouLyricsProvider,
         "YouTubeSubtitle" to YouTubeSubtitleLyricsProvider,
         "YouTubeMusic"    to YouTubeLyricsProvider,
+        "Megalobiz"       to MegalobizLyricsProvider,
+        "Genius"          to GeniusLyricsProvider,
     )
 
     val providerNames = providerMap.keys.toList()
@@ -31,21 +33,25 @@ object LyricsProviderRegistry {
         providers.filter { it in providerNames }.joinToString(",")
 
     fun getDefaultProviderOrder(): List<String> = listOf(
+        "LrcRed",
+        "BiniLyrics",
         "YouLyPlus",
         "Paxsenix",
         "Unison",
         "BetterLyrics",
         "SimpMusic",
+        "Musixmatch",
         "LrcLib",
         "Kugou",
         "YouTubeSubtitle",
         "YouTubeMusic",
+        "Megalobiz",
+        "Genius",
     )
 
     fun getOrderedProviders(orderString: String): List<LyricsProvider> =
         deserializeProviderOrder(orderString).mapNotNull { getProviderByName(it) }
 
-    
     fun getProviderNameForEnum(enum: PreferredLyricsProvider): String = when (enum) {
         PreferredLyricsProvider.LRCLIB        -> "LrcLib"
         PreferredLyricsProvider.KUGOU         -> "Kugou"
@@ -54,9 +60,13 @@ object LyricsProviderRegistry {
         PreferredLyricsProvider.YOULYPLUS     -> "YouLyPlus"
         PreferredLyricsProvider.PAXSENIX      -> "Paxsenix"
         PreferredLyricsProvider.UNISON        -> "Unison"
+        PreferredLyricsProvider.MUSIXMATCH    -> "Musixmatch"
+        PreferredLyricsProvider.LRC_RED       -> "LrcRed"
+        PreferredLyricsProvider.BINI_LYRICS   -> "BiniLyrics"
+        PreferredLyricsProvider.GENIUS        -> "Genius"
+        PreferredLyricsProvider.MEGALOBIZ     -> "Megalobiz"
     }
 
-    
     fun getDisplayName(name: String): String = when (name) {
         "YouLyPlus"       -> "YouLyPlus"
         "Paxsenix"        -> "PaxSenix"
@@ -67,6 +77,11 @@ object LyricsProviderRegistry {
         "Kugou"           -> "KuGou"
         "YouTubeSubtitle" -> "YouTube Subtitle"
         "YouTubeMusic"    -> "YouTube Music"
+        "Musixmatch"      -> "Musixmatch"
+        "LrcRed"          -> "lrc.red"
+        "BiniLyrics"      -> "BiniLyrics"
+        "Genius"          -> "Genius"
+        "Megalobiz"       -> "Megalobiz"
         else              -> name
     }
 }

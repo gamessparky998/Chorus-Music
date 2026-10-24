@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.menu
 
 import androidx.compose.foundation.layout.PaddingValues
@@ -77,18 +75,16 @@ fun YouTubeSelectionSongMenu(
         mutableStateOf(false)
     }
 
-    
     val allLiked by remember(songSelection) {
         mutableStateOf(
             songSelection.isNotEmpty() && songSelection.all { song ->
-                
+
                 val metadata = song.toMediaMetadata()
                 metadata.liked
             }
         )
     }
 
-    
     val allInLibrary by remember(songSelection) {
         mutableStateOf(
             songSelection.all { song ->
@@ -119,9 +115,9 @@ fun YouTubeSelectionSongMenu(
 
     AddToPlaylistDialogOnline(
         isVisible = showChoosePlaylistDialog,
-        songs = remember { 
+        songs = remember {
             songSelection.map { song ->
-                
+
                 val metadata = song.toMediaMetadata()
                 pushkar.chorus.music.db.entities.Song(
                     song = pushkar.chorus.music.db.entities.SongEntity(
@@ -148,7 +144,7 @@ fun YouTubeSelectionSongMenu(
                         pushkar.chorus.music.db.entities.AlbumEntity(
                             id = album.id,
                             title = album.title,
-                            thumbnailUrl = metadata.thumbnailUrl, 
+                            thumbnailUrl = metadata.thumbnailUrl,
                             songCount = 0,
                             duration = 0
                         )
@@ -289,7 +285,7 @@ fun YouTubeSelectionSongMenu(
                                     }
                                 }
                                 coroutineScope.launch {
-                                    
+
                                     songSelection.forEach { song ->
                                         YouTube.toggleSongLibrary(song.id, false)
                                     }
@@ -302,7 +298,7 @@ fun YouTubeSelectionSongMenu(
                                     }
                                 }
                                 coroutineScope.launch {
-                                    
+
                                     songSelection.filter { song ->
                                         song.toMediaMetadata().inLibrary == null
                                     }.forEach { song ->
@@ -333,6 +329,7 @@ fun YouTubeSelectionSongMenu(
                                 }
                             )
                         }
+
                         Download.STATE_QUEUED, Download.STATE_DOWNLOADING -> {
                             Material3MenuItemData(
                                 title = { Text(text = stringResource(R.string.downloading)) },
@@ -347,6 +344,7 @@ fun YouTubeSelectionSongMenu(
                                 }
                             )
                         }
+
                         else -> {
                             Material3MenuItemData(
                                 title = { Text(text = stringResource(R.string.action_download)) },
@@ -398,9 +396,9 @@ fun YouTubeSelectionSongMenu(
                                 songSelection.forEach { song ->
                                     val metadata = song.toMediaMetadata()
                                     if ((!allLiked && !metadata.liked) || allLiked) {
-                                        
+
                                         insert(metadata)
-                                        
+
                                         val songEntity = pushkar.chorus.music.db.entities.SongEntity(
                                             id = metadata.id,
                                             title = metadata.title,

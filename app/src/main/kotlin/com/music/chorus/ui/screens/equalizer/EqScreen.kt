@@ -23,7 +23,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -31,6 +30,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -54,7 +55,6 @@ import pushkar.chorus.music.R
 import pushkar.chorus.music.eq.data.SavedEQProfile
 import timber.log.Timber
 
-
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun EqScreen(
@@ -68,12 +68,10 @@ fun EqScreen(
 
     var showError by remember { mutableStateOf<String?>(null) }
 
-    
     val activityResultLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { }
 
-    
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
@@ -81,7 +79,6 @@ fun EqScreen(
             try {
                 val contentResolver = context.contentResolver
 
-                
                 var fileName = "custom_eq.txt"
                 contentResolver.query(uri, null, null, null, null)?.use { cursor ->
                     if (cursor.moveToFirst()) {
@@ -122,7 +119,7 @@ fun EqScreen(
         activeProfileId = state.activeProfileId,
         onProfileSelected = { viewModel.selectProfile(it) },
         onImportCustomEQ = {
-            
+
             filePickerLauncher.launch("text/plain")
         },
         onOpenSystemEqualizer = {
@@ -152,7 +149,6 @@ fun EqScreen(
         onDeleteProfile = { viewModel.deleteProfile(it) }
     )
 
-    
     if (showError != null) {
         AlertDialog(
             onDismissRequest = { showError = null },
@@ -170,7 +166,6 @@ fun EqScreen(
         )
     }
 
-    
     if (state.error != null) {
         AlertDialog(
             onDismissRequest = { viewModel.clearError() },
@@ -189,7 +184,6 @@ fun EqScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EqScreenContent(
     profiles: List<SavedEQProfile>,
@@ -201,16 +195,16 @@ private fun EqScreenContent(
     onDeleteProfile: (String) -> Unit
 ) {
     Surface(
-        shape = MaterialTheme.shapes.extraLarge,
+        shape = if (isFluidTheme()) ContinuousRoundedRectangle(28.dp) else MaterialTheme.shapes.extraLarge,
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
         tonalElevation = 6.dp,
         modifier = Modifier
             .fillMaxWidth(0.9f)
             .heightIn(max = 600.dp)
-            .padding(vertical = 24.dp) 
+            .padding(vertical = 24.dp)
     ) {
         Column {
-            
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -255,12 +249,11 @@ private fun EqScreenContent(
                 }
             }
 
-            
             LazyColumn(
                 modifier = Modifier.fillMaxWidth(),
                 contentPadding = PaddingValues(bottom = 16.dp)
             ) {
-                
+
                 item {
                     NoEqualizationItem(
                         isSelected = activeProfileId == null,
@@ -268,7 +261,6 @@ private fun EqScreenContent(
                     )
                 }
 
-                
                 val customProfiles = profiles.filter { it.isCustom }
 
                 if (customProfiles.isNotEmpty()) {
@@ -282,7 +274,6 @@ private fun EqScreenContent(
                     }
                 }
 
-                
                 if (customProfiles.isEmpty()) {
                     item {
                         Box(
@@ -323,8 +314,6 @@ private fun EqScreenContent(
     }
 }
 
-
-
 @Composable
 private fun NoEqualizationItem(
     isSelected: Boolean,
@@ -345,7 +334,7 @@ private fun NoEqualizationItem(
         },
         modifier = Modifier
             .clickable(onClick = onSelected)
-            .padding(horizontal = 8.dp) 
+            .padding(horizontal = 8.dp)
     )
 }
 
@@ -394,7 +383,6 @@ private fun EQProfileItem(
             .padding(horizontal = 8.dp)
     )
 
-    
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },

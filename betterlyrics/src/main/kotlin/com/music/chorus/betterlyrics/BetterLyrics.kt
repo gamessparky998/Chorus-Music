@@ -68,16 +68,15 @@ object BetterLyrics {
         duration: Int,
         album: String? = null,
     ) = runCatching {
-        
-        
+
         val ttml = fetchTTML(artist, title, duration, album)
             ?: throw IllegalStateException("Lyrics unavailable")
-        
+
         val parsedLines = TTMLParser.parseTTML(ttml)
         if (parsedLines.isEmpty()) {
             throw IllegalStateException("Failed to parse lyrics")
         }
-        
+
         TTMLParser.toLRC(parsedLines)
     }
 

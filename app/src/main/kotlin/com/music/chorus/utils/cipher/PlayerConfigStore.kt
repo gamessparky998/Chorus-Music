@@ -16,7 +16,6 @@ import timber.log.Timber
 import java.io.File
 import java.nio.charset.StandardCharsets
 
-
 object PlayerConfigStore {
     private const val TAG = "chorusmusic_CipherConfig"
     private const val ASSET_NAME = "player_configs.json"

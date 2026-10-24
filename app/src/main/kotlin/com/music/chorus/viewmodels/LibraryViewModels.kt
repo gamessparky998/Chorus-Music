@@ -1,7 +1,3 @@
-
-
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package pushkar.chorus.music.viewmodels
 
 import android.content.Context
@@ -51,10 +47,10 @@ import pushkar.chorus.music.utils.reportException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
@@ -90,13 +86,26 @@ constructor(
                 val (filter, sortType, descending) = filterSort
                 val (hideExplicit, hideVideoSongs) = hideConfig
                 when (filter) {
-                    SongFilter.LIBRARY -> database.songs(sortType, descending).map { it.filterExplicit(hideExplicit).filterVideoSongs(hideVideoSongs) }
-                    SongFilter.LIKED -> database.likedSongs(sortType, descending).map { it.filterExplicit(hideExplicit).filterVideoSongs(hideVideoSongs) }
-                    SongFilter.DOWNLOADED -> database.downloadedSongs(sortType, descending).map { it.filterExplicit(hideExplicit).filterVideoSongs(hideVideoSongs) }
-                    SongFilter.UPLOADED -> database.uploadedSongs(sortType, descending).map { it.filterExplicit(hideExplicit).filterVideoSongs(hideVideoSongs) }
+                    SongFilter.LIBRARY -> database.songs(sortType, descending)
+                        .map { it.filterExplicit(hideExplicit).filterVideoSongs(hideVideoSongs) }
+
+                    SongFilter.LIKED -> database.likedSongs(sortType, descending)
+                        .map { it.filterExplicit(hideExplicit).filterVideoSongs(hideVideoSongs) }
+
+                    SongFilter.DOWNLOADED -> database.downloadedSongs(sortType, descending)
+                        .map { it.filterExplicit(hideExplicit).filterVideoSongs(hideVideoSongs) }
+
+                    SongFilter.UPLOADED -> database.uploadedSongs(sortType, descending)
+                        .map { it.filterExplicit(hideExplicit).filterVideoSongs(hideVideoSongs) }
+
                     SongFilter.EXPORTED -> {
                         val ids = exportedSongIds.split(",").filter { it.isNotBlank() }
-                        database.getSongsByIdsFlow(ids).map { it.filterExplicit(hideExplicit).filterVideoSongs(hideVideoSongs) }
+                        combine(
+                            database.getSongsByIdsFlow(ids),
+                            database.importedPlaylistSongs()
+                        ) { exportedList, importedList ->
+                            (exportedList + importedList).distinctBy { it.id }
+                        }.map { it.filterExplicit(hideExplicit).filterVideoSongs(hideVideoSongs) }
                     }
                 }
             }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
@@ -187,9 +196,14 @@ constructor(
             .flatMapLatest { (filterSort, hideExplicit) ->
                 val (filter, sortType, descending) = filterSort
                 when (filter) {
-                    AlbumFilter.LIKED -> database.albumsLiked(sortType, descending).map { it.filterExplicitAlbums(hideExplicit) }
-                    AlbumFilter.LIBRARY -> database.albums(sortType, descending).map { it.filterExplicitAlbums(hideExplicit) }
-                    AlbumFilter.UPLOADED -> database.albumsUploaded(sortType, descending).map { it.filterExplicitAlbums(hideExplicit) }
+                    AlbumFilter.LIKED -> database.albumsLiked(sortType, descending)
+                        .map { it.filterExplicitAlbums(hideExplicit) }
+
+                    AlbumFilter.LIBRARY -> database.albums(sortType, descending)
+                        .map { it.filterExplicitAlbums(hideExplicit) }
+
+                    AlbumFilter.UPLOADED -> database.albumsUploaded(sortType, descending)
+                        .map { it.filterExplicitAlbums(hideExplicit) }
                 }
             }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
@@ -281,7 +295,8 @@ constructor(
             }.distinctUntilChanged()
             .flatMapLatest { (sortDesc, hideExplicit, hideVideoSongs) ->
                 val (sortType, descending) = sortDesc
-                database.artistSongs(artistId, sortType, descending).map { it.filterExplicit(hideExplicit).filterVideoSongs(hideVideoSongs) }
+                database.artistSongs(artistId, sortType, descending)
+                    .map { it.filterExplicit(hideExplicit).filterVideoSongs(hideVideoSongs) }
             }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 }
 
@@ -297,9 +312,9 @@ constructor(
     val isRefreshing = _isRefreshing.asStateFlow()
 
     val syncAllLibrary = {
-         viewModelScope.launch(Dispatchers.IO) {
-             syncUtils.tryAutoSync()
-         }
+        viewModelScope.launch(Dispatchers.IO) {
+            syncUtils.tryAutoSync()
+        }
     }
 
     fun refresh() {

@@ -22,6 +22,8 @@ import androidx.navigation.NavController
 import pushkar.chorus.music.R
 import pushkar.chorus.music.LocalPlayerAwareWindowInsets
 import androidx.compose.material3.TopAppBar
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -30,8 +32,8 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 
 data class ServiceStatus(
-    val name: String, 
-    val url: () -> String, 
+    val name: String,
+    val url: () -> String,
     val displayUrl: () -> String = url,
     var status: Status = Status.CHECKING,
     var latencyMs: Long? = null,
@@ -43,7 +45,6 @@ data class ServiceStatus(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UptimeScreen(
     navController: NavController,
@@ -70,15 +71,15 @@ highlightKey: String? = null) {
             ServiceStatus("Paxsenix", { "https://lyrics.paxsenix.org" }),
             ServiceStatus("KuGou", { "https://lyrics.kugou.com" }),
             ServiceStatus(
-                "YouLyPlus", 
+                "YouLyPlus",
                 { "https://lyricsplus.prjktla.my.id" },
-                fallbackUrls = { 
+                fallbackUrls = {
                     listOf(
                         "https://lyricsplus.atomix.one",
                         "https://lyricsplus.binimum.org",
                         "https://lyricsplus.prjktla.workers.dev",
                         "https://lyricsplus-seven.vercel.app"
-                    ) 
+                    )
                 }
             ),
             ServiceStatus("SimpMusic", { "https://api-lyrics.simpmusic.org" })
@@ -96,7 +97,7 @@ highlightKey: String? = null) {
             listOf(musicServices, canvasServices, lyricsServices, otherServices).forEach { list ->
                 list.forEachIndexed { index, service ->
                     list[index] = service.copy(status = ServiceStatus.Status.CHECKING, latencyMs = null)
-                    
+
                     var latency: Long? = null
                     val isOnline = withContext(Dispatchers.IO) {
                         try {
@@ -113,7 +114,7 @@ highlightKey: String? = null) {
                                         }
                                     }
                                 } catch (e: Exception) {
-                                    
+
                                 }
                                 if (success) break
                             }
@@ -128,7 +129,7 @@ highlightKey: String? = null) {
                     )
                 }
             }
-            delay(60_000L) 
+            delay(60_000L)
         }
     }
 
@@ -212,7 +213,7 @@ highlightKey: String? = null) {
 fun ServiceStatusCard(service: ServiceStatus) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
+        shape = if (isFluidTheme()) ContinuousRoundedRectangle(20.dp) else MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant,
         )
@@ -260,7 +261,7 @@ fun ServiceStatusCard(service: ServiceStatus) {
                         ServiceStatus.Status.OFFLINE -> stringResource(R.string.status_offline)
                         ServiceStatus.Status.CHECKING -> stringResource(R.string.status_checking)
                     }
-                    
+
                     AnimatedContent(
                         targetState = service.status,
                         transitionSpec = {

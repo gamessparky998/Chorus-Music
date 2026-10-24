@@ -236,7 +236,7 @@
     <string name="lyrics_romanize_kyrgyz">ถอดเสียงเนื้อเพลงภาษาคีร์กีซ</string>
     <string name="lyrics_romanize_serbian">ถอดเสียงเนื้อเพลงภาษาเซอร์เบีย</string>
     <string name="lyrics_romanize_bulgarian">ถอดเสียงเนื้อเพลงภาษาบัลแกเรีย</string>
-    <string name="line_by_line_option_title">ทดลองใช้: ตรวจจับภาษาทีละบรรทัด</string>
+    <string name="line_by_line_option_title">ตรวจจับภาษาทีละบรรทัด</string>
     <string name="line_by_line_option_desc">ตรวจจับภาษากลุ่มซีริลลิกแบบทีละบรรทัดแทนการตรวจทั้งเพลง</string>
     <string name="line_by_line_dialog_title">คุณแน่ใจหรือไม่?</string>
     <string name="line_by_line_dialog_desc">ฟีเจอร์นี้ยังอยู่ในขั้นทดลองและอาจทำงานได้ไม่สม่ำเสมอ\n\nโดยปกติ ระบบจะตรวจจับภาษาจากทั้งเพลง แต่เมื่อเปิดตัวเลือกนี้ จะตรวจจับทีละบรรทัดแทน ซึ่งช่วยให้เพลงหลายภาษาใช้งานได้ดีขึ้น อย่างไรก็ตาม ภาษาอาจตรวจจับไม่ถูกต้องเสมอไป (เช่น หากมีเนื้อเพลงภาษายูเครนที่ไม่มีตัวอักษรเฉพาะ ระบบอาจถอดเสียงเป็นภาษารัสเซียแทน)\n\nหากคุณไม่พบปัญหา แนะนำให้ปิดตัวเลือกนี้ไว้</string>

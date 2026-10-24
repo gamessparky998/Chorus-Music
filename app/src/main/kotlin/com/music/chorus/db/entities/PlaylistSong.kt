@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.db.entities
 
 import androidx.room.Embedded

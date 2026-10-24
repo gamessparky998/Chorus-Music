@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.screens
 
 import android.content.Intent
@@ -19,8 +17,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -48,13 +48,13 @@ import java.util.Date
 import java.util.Locale
 
 class CrashActivity : ComponentActivity() {
-    
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        
+
         val crashLog = intent.getStringExtra(CrashHandler.EXTRA_CRASH_LOG) ?: getString(R.string.crash_no_log)
-        
+
         setContent {
             val darkTheme = isSystemInDarkTheme()
             chorusmusicTheme(darkTheme = darkTheme) {
@@ -74,33 +74,31 @@ class CrashActivity : ComponentActivity() {
         cm.setPrimaryClip(clip)
         android.widget.Toast.makeText(this, R.string.copied_to_clipboard, android.widget.Toast.LENGTH_SHORT).show()
     }
-    
+
     private fun shareCrashLog(crashLog: String) {
         try {
-            
+
             val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
             val fileName = "chorusmusic_crash_$timestamp.txt"
             val crashFile = File(cacheDir, fileName)
             crashFile.writeText(crashLog)
-            
-            
+
             val uri = FileProvider.getUriForFile(
                 this,
                 "${packageName}.FileProvider",
                 crashFile
             )
-            
-            
+
             val shareIntent = Intent(Intent.ACTION_SEND).apply {
                 type = "text/plain"
                 putExtra(Intent.EXTRA_STREAM, uri)
                 putExtra(Intent.EXTRA_SUBJECT, getString(R.string.crash_report_subject))
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
-            
+
             startActivity(Intent.createChooser(shareIntent, getString(R.string.crash_share_title)))
         } catch (e: Exception) {
-            
+
             val shareIntent = Intent(Intent.ACTION_SEND).apply {
                 type = "text/plain"
                 putExtra(Intent.EXTRA_TEXT, crashLog)
@@ -111,7 +109,6 @@ class CrashActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CrashScreen(
     crashLog: String,
@@ -120,15 +117,15 @@ fun CrashScreen(
     onCopy: () -> Unit
 ) {
     val context = LocalContext.current
-    
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { 
+                title = {
                     Text(
                         text = stringResource(R.string.crash_title),
                         style = MaterialTheme.typography.headlineSmall
-                    ) 
+                    )
                 },
                 actions = {
                     IconButton(onClick = onCopy) {
@@ -159,6 +156,7 @@ fun CrashScreen(
                     )
                 },
                 text = { Text(stringResource(R.string.crash_share_logs)) },
+                shape = if (isFluidTheme()) ContinuousRoundedRectangle(24.dp) else FloatingActionButtonDefaults.extendedFabShape,
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer
             )
@@ -177,14 +175,13 @@ fun CrashScreen(
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
-            
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
+                    .clip(if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else RoundedCornerShape(16.dp))
                     .background(MaterialTheme.colorScheme.surfaceContainerHighest)
                     .padding(16.dp)
             ) {
@@ -199,8 +196,7 @@ fun CrashScreen(
                     modifier = Modifier.horizontalScroll(rememberScrollState())
                 )
             }
-            
-            
+
             Spacer(modifier = Modifier.height(88.dp))
         }
     }

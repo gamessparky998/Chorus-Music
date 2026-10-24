@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.viewmodels
 
 import android.content.Context
@@ -19,7 +17,6 @@ import pushkar.chorus.music.utils.dataStore
 import pushkar.chorus.music.utils.get
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -27,7 +24,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class OnlineSearchSuggestionViewModel
 @Inject
@@ -52,7 +48,7 @@ constructor(
                     } else {
                         val parsedUrl = YouTubeUrlParser.parse(query)
                         val parsedItem = if (parsedUrl != null) fetchParsedUrlItem(parsedUrl) else null
-                        
+
                         val result = if (parsedUrl != null) null else YouTube.searchSuggestions(query).getOrNull()
                         val hideExplicit = context.dataStore.get(HideExplicitKey, false)
                         val hideVideoSongs = context.dataStore.get(HideVideoSongsKey, false)

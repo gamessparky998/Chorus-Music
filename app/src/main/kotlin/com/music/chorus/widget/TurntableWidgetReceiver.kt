@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.widget
 
 import android.appwidget.AppWidgetManager
@@ -15,8 +13,7 @@ class TurntableWidgetReceiver : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray
     ) {
-        
-        
+
         if (MusicService.isRunning) {
             val intent = Intent(context, MusicService::class.java).apply {
                 action = ACTION_UPDATE_TURNTABLE_WIDGET
@@ -24,10 +21,10 @@ class TurntableWidgetReceiver : AppWidgetProvider() {
             try {
                 context.startService(intent)
             } catch (e: Exception) {
-                
+
             }
         }
-        
+
     }
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -35,8 +32,7 @@ class TurntableWidgetReceiver : AppWidgetProvider() {
 
         when (intent.action) {
             ACTION_TURNTABLE_PLAY_PAUSE, ACTION_TURNTABLE_NEXT, ACTION_TURNTABLE_PREVIOUS -> {
-                
-                
+
                 val serviceIntent = Intent(context, MusicService::class.java).apply {
                     action = when (intent.action) {
                         ACTION_TURNTABLE_PLAY_PAUSE -> MusicWidgetReceiver.ACTION_PLAY_PAUSE
@@ -49,7 +45,7 @@ class TurntableWidgetReceiver : AppWidgetProvider() {
                 try {
                     context.startService(serviceIntent)
                 } catch (e: Exception) {
-                    
+
                 }
             }
         }

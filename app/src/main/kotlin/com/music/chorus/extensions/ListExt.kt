@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.extensions
 
 import pushkar.chorus.music.db.entities.Album
@@ -39,14 +37,12 @@ fun <T : Any> List<T>.mergeNearbyElements(
     return mergedList
 }
 
-
 fun List<Song>.filterExplicit(enabled: Boolean = true) =
     if (enabled) {
         filter { !it.song.explicit }
     } else {
         this
     }
-
 
 fun List<Song>.filterVideoSongs(enabled: Boolean = true) =
     if (enabled) {
@@ -55,14 +51,12 @@ fun List<Song>.filterVideoSongs(enabled: Boolean = true) =
         this
     }
 
-
 fun List<Album>.filterExplicitAlbums(enabled: Boolean = true) =
     if (enabled) {
         filter { !it.album.explicit }
     } else {
         this
     }
-
 
 fun List<Playlist>.filterYoutubeShorts(enabled: Boolean = false) =
     if (enabled) {

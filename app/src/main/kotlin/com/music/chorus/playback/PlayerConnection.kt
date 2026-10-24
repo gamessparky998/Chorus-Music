@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.playback
 
 import android.content.Context
@@ -23,7 +21,6 @@ import pushkar.chorus.music.playback.MusicService.MusicBinder
 import pushkar.chorus.music.playback.queues.Queue
 import pushkar.chorus.music.utils.reportException
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -39,7 +36,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.Job
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class PlayerConnection(
     val context: Context,
     binder: MusicBinder,
@@ -48,13 +44,12 @@ class PlayerConnection(
 ) : Player.Listener {
     private companion object {
         private const val TAG = "PlayerConnection"
-        private const val PLAYER_INIT_TIMEOUT_MS = 5000L 
+        private const val PLAYER_INIT_TIMEOUT_MS = 5000L
     }
 
     val service = binder.service
     private val playerReadinessFlow = service.isPlayerReady
-    
-    
+
     private fun getPlayerSafe(): ExoPlayer {
         return try {
             if (!playerReadinessFlow.value) {
@@ -67,30 +62,27 @@ class PlayerConnection(
         }
     }
 
-    
     val player: ExoPlayer
         get() = getPlayerSafe()
 
-    
     private val isPlayerInitialized = MutableStateFlow(service.isPlayerReady.value)
 
     val playbackState: MutableStateFlow<Int>
     private val playWhenReady: MutableStateFlow<Boolean>
     val isPlaying: kotlinx.coroutines.flow.StateFlow<Boolean>
-    
+
     init {
         Timber.tag(TAG).d("PlayerConnection init: playerReady=${playerReadinessFlow.value}")
-        
-        
+
         val initialState = try {
             val initialPlayer = getPlayerSafe()
-            Triple(initialPlayer.playbackState, initialPlayer.playWhenReady, 
+            Triple(initialPlayer.playbackState, initialPlayer.playWhenReady,
                    initialPlayer.playWhenReady && initialPlayer.playbackState != STATE_ENDED)
         } catch (e: Exception) {
             Timber.tag(TAG).e(e, "Error during PlayerConnection initialization, using defaults")
             Triple(Player.STATE_IDLE, false, false)
         }
-        
+
         playbackState = MutableStateFlow(initialState.first)
         playWhenReady = MutableStateFlow(initialState.second)
         isPlaying = combine(playbackState, playWhenReady) { state, ready ->
@@ -100,8 +92,7 @@ class PlayerConnection(
             SharingStarted.Lazily,
             initialState.third
         )
-        
-        
+
         scope.launch {
             playerReadinessFlow.collect { ready ->
                 isPlayerInitialized.value = ready
@@ -110,11 +101,10 @@ class PlayerConnection(
                 }
             }
         }
-        
+
         Timber.tag(TAG).d("PlayerConnection state flows initialized successfully")
     }
-    
-    
+
     val isEffectivelyPlaying = combine(
         isPlaying,
         service.castConnectionHandler?.isCasting ?: MutableStateFlow(false),
@@ -126,7 +116,7 @@ class PlayerConnection(
         SharingStarted.Lazily,
         player.playbackState != STATE_ENDED && player.playWhenReady
     )
-    
+
     val mediaMetadata = MutableStateFlow(player.currentMetadata)
     val currentSong =
         mediaMetadata.flatMapLatest {
@@ -159,10 +149,8 @@ class PlayerConnection(
     val isAutomixing: kotlinx.coroutines.flow.StateFlow<Boolean> = service.isAutomixing
     val automixDebugInfo: kotlinx.coroutines.flow.StateFlow<MusicService.AutomixDebugInfo?> = service.automixDebugInfo
 
-    
     var shouldBlockPlaybackChanges: (() -> Boolean)? = null
-    
-    
+
     @Volatile
     var allowInternalSync: Boolean = false
 
@@ -170,14 +158,14 @@ class PlayerConnection(
     var onSkipNext: (() -> Unit)? = null
 
     private var attachedPlayer: Player? = null
-    
+
     private val sponsorBlockRepository = SponsorBlockRepository()
     private var sponsorBlockJob: Job? = null
     private val sponsorBlockSegments = MutableStateFlow<List<SponsorBlockSegment>>(emptyList())
 
     init {
         try {
-            
+
             scope.launch {
                 service.playerFlow.collect { newPlayer ->
                     if (newPlayer != null && newPlayer != attachedPlayer) {
@@ -185,8 +173,7 @@ class PlayerConnection(
                     }
                 }
             }
-            
-            
+
             if (attachedPlayer == null && service.isPlayerReady.value) {
                  updateAttachedPlayer(player)
             }
@@ -194,7 +181,7 @@ class PlayerConnection(
             Timber.tag(TAG).d("PlayerConnection flow observer registered")
         } catch (e: Exception) {
             Timber.tag(TAG).e(e, "Failed to initialize PlayerConnection listener or state")
-            
+
             throw e
         }
     }
@@ -203,8 +190,7 @@ class PlayerConnection(
         attachedPlayer?.removeListener(this)
         attachedPlayer = newPlayer
         newPlayer.addListener(this)
-        
-        
+
         playbackState.value = newPlayer.playbackState
         playWhenReady.value = newPlayer.playWhenReady
         mediaMetadata.value = newPlayer.currentMetadata
@@ -214,9 +200,9 @@ class PlayerConnection(
         currentMediaItemIndex.value = newPlayer.currentMediaItemIndex
         shuffleModeEnabled.value = newPlayer.shuffleModeEnabled
         repeatMode.value = newPlayer.repeatMode
-        
+
         Timber.tag(TAG).d("Attached to new player instance: $newPlayer")
-        
+
         startSponsorBlockPolling()
     }
 
@@ -233,7 +219,7 @@ class PlayerConnection(
     }
 
     fun startRadioSeamlessly() {
-        
+
         if (shouldBlockPlaybackChanges?.invoke() == true) {
             Timber.tag("PlayerConnection").d("startRadioSeamlessly blocked - Listen Together guest")
             return
@@ -252,7 +238,7 @@ class PlayerConnection(
     fun playNext(item: MediaItem) = playNext(listOf(item))
 
     fun playNext(items: List<MediaItem>) {
-        
+
         if (!allowInternalSync && shouldBlockPlaybackChanges?.invoke() == true) {
             Timber.tag("PlayerConnection").d("playNext blocked - Listen Together guest")
             return
@@ -268,7 +254,7 @@ class PlayerConnection(
     fun addToQueue(item: MediaItem) = addToQueue(listOf(item))
 
     fun addToQueue(items: List<MediaItem>) {
-        
+
         if (!allowInternalSync && shouldBlockPlaybackChanges?.invoke() == true) {
             Timber.tag("PlayerConnection").d("addToQueue blocked - Listen Together guest")
             return
@@ -305,7 +291,6 @@ class PlayerConnection(
         }
     }
 
-    
     fun togglePlayPause() {
         try {
             val castHandler = service.castConnectionHandler
@@ -322,8 +307,7 @@ class PlayerConnection(
             Timber.tag(TAG).e(e, "Error in togglePlayPause")
         }
     }
-    
-    
+
     fun play() {
         try {
             val castHandler = service.castConnectionHandler
@@ -339,8 +323,7 @@ class PlayerConnection(
             Timber.tag(TAG).e(e, "Error in play")
         }
     }
-    
-    
+
     fun pause() {
         try {
             val castHandler = service.castConnectionHandler
@@ -354,7 +337,6 @@ class PlayerConnection(
         }
     }
 
-    
     fun seekTo(position: Long) {
         try {
             val castHandler = service.castConnectionHandler
@@ -370,7 +352,7 @@ class PlayerConnection(
 
     fun seekToNext() {
         try {
-            
+
             val castHandler = service.castConnectionHandler
             if (castHandler?.isCasting?.value == true) {
                 castHandler.skipToNext()
@@ -391,15 +373,13 @@ class PlayerConnection(
 
     fun seekToPrevious() {
         try {
-            
+
             val castHandler = service.castConnectionHandler
             if (castHandler?.isCasting?.value == true) {
                 castHandler.skipToPrevious()
                 return
             }
 
-            
-            
             if (player.currentPosition > 3000 || !player.hasPreviousMediaItem()) {
                 player.seekTo(0)
                 if (player.playbackState == Player.STATE_IDLE || player.playbackState == Player.STATE_ENDED) {
@@ -408,7 +388,7 @@ class PlayerConnection(
                 player.playWhenReady = true
                 onRestartSong?.invoke()
             } else {
-                
+
                 player.seekToPreviousMediaItem()
                 if (player.playbackState == Player.STATE_IDLE || player.playbackState == Player.STATE_ENDED) {
                     player.prepare()

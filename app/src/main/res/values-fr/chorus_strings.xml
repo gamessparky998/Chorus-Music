@@ -770,7 +770,6 @@ est irréversible.
     <string name="monthly_listeners">Mensuel</string>
     <string name="unlock_queue">Débloquer la file d\'attente</string>
     <string name="lock_queue">Verrouiller la file d\'attente</string>
-<!--    //Members-->
 
     <!-- ShowMediaInfo -->
     <string name="song_info">Informations sur le titre</string>

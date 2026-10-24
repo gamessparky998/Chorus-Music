@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.screens.search.suggestions
 
 data class SuggestionTrack(

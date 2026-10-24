@@ -1,7 +1,4 @@
-
-
 package pushkar.chorus.music.chorusmusic.updater
-
 
 import android.content.Context
 import android.content.Intent
@@ -25,8 +22,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Error
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -127,7 +122,6 @@ sealed class ChorusUpdateStatus {
     data class Error(val message: String) : ChorusUpdateStatus()
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun UpdateScreen(navController: NavHostController) {
     val context = LocalContext.current
@@ -146,7 +140,6 @@ fun UpdateScreen(navController: NavHostController) {
         DownloadNotificationManager.initialize(context)
     }
 
-    
     LaunchedEffect(Unit) {
         WorkManager.getInstance(context)
             .getWorkInfosForUniqueWorkLiveData("update_download")
@@ -181,7 +174,6 @@ fun UpdateScreen(navController: NavHostController) {
             }
     }
 
-    
     LaunchedEffect(isDownloadComplete, downloadedFile) {
         if (isDownloadComplete && downloadedFile != null) {
             if (!downloadedFile!!.exists()) {
@@ -195,7 +187,7 @@ fun UpdateScreen(navController: NavHostController) {
     fun triggerUpdateCheck() {
         status = ChorusUpdateStatus.Checking
         scope.launch {
-            
+
             delay(1000L)
             checkForUpdate(
                 context = context,
@@ -336,7 +328,7 @@ fun UpdateScreen(navController: NavHostController) {
                                             }
                                         } else {
                                             val urlToDownload = currentStatus.apkUrl ?: "https://github.com/slice-of-fun/Chorus-Music/releases/download/${currentStatus.version}/chorusmusic.apk"
-                                            
+
                                             val constraints = Constraints.Builder()
                                                 .setRequiredNetworkType(NetworkType.CONNECTED)
                                                 .build()
@@ -489,7 +481,7 @@ fun UpdateScreen(navController: NavHostController) {
                                             modifier = Modifier.padding(bottom = 24.dp)
                                         )
                                     }
-                                    
+
                                     currentStatus.changelog.forEach { section ->
                                         Text(
                                             text = section.title,
@@ -511,7 +503,7 @@ fun UpdateScreen(navController: NavHostController) {
                                             }
                                         }
                                     }
-                                    
+
                                     if (currentStatus.changelog.isNotEmpty()) {
                                         Spacer(modifier = Modifier.height(24.dp))
                                     }
@@ -550,8 +542,6 @@ fun UpdateScreen(navController: NavHostController) {
         }
     }
 }
-
-
 
 const val PREFS_NAME = "settings"
 const val KEY_AUTO_UPDATE_CHECK = "auto_update_check"
@@ -620,15 +610,13 @@ private fun formatGitHubDate(githubDate: String): String = try {
     githubDate
 }
 
-
 fun isNewerVersion(latestVersion: String, currentVersion: String): Boolean {
     val latestVersionClean = latestVersion.removePrefix("b").removePrefix("v")
     val currentVersionClean = currentVersion.removePrefix("b").removePrefix("v")
 
     val latestParts = latestVersionClean.split(".").map { it.toIntOrNull() ?: 0 }
     val currentParts = currentVersionClean.split(".").map { it.toIntOrNull() ?: 0 }
-    
-    
+
     for (i in 0 until maxOf(latestParts.size, currentParts.size)) {
         val latest = latestParts.getOrElse(i) { 0 }
         val current = currentParts.getOrElse(i) { 0 }
@@ -637,18 +625,16 @@ fun isNewerVersion(latestVersion: String, currentVersion: String): Boolean {
             latest < current -> return false
         }
     }
-    
-    
+
     if (latestVersionClean == currentVersionClean) {
         val latestIsBeta = latestVersion.startsWith("b")
         val currentIsBeta = currentVersion.startsWith("b")
-        
+
         if (currentIsBeta && !latestIsBeta) return true
     }
-    
+
     return false
 }
-
 
 suspend fun checkForUpdate(
     context: Context,
@@ -660,7 +646,7 @@ suspend fun checkForUpdate(
             val url = URL("https://api.github.com/repos/slice-of-fun/Chorus-Music/releases/latest")
             val json = url.openStream().bufferedReader().use { it.readText() }
             val targetRelease = JSONObject(json)
-            
+
             val currentVersion = BuildConfig.VERSION_NAME
             val targetTagName = targetRelease.getString("tag_name")
             val currentClean = currentVersion.removePrefix("b").removePrefix("v").trim()
@@ -671,7 +657,6 @@ suspend fun checkForUpdate(
                 val tagWithPrefix = targetRelease.getString("tag_name")
                 val displayTag = tagWithPrefix
 
-                
                 val changelogList = mutableListOf<ChangelogSection>()
                 var description: String? = null
                 var imageUrl: String? = null
@@ -709,17 +694,17 @@ suspend fun checkForUpdate(
                             if (it == "null" || it.isBlank()) context.getString(R.string.no_changelog_available) else it
                         }
                     }
-                    
+
                     val imageRegex = Regex("!\\[(.*?)\\]\\((.*?)\\)")
                     val match = imageRegex.find(body)
                     if (match != null) {
                         imageUrl = match.groupValues[2]
                         body = body.replace(match.value, "").trim()
                     }
-                    
+
                     val items = mutableListOf<String>()
                     val remainingDescriptionLines = mutableListOf<String>()
-                    
+
                     body.lines().forEach { line ->
                         val trimmed = line.trim()
                         if (trimmed.startsWith("* ") || trimmed.startsWith("- ")) {
@@ -731,11 +716,11 @@ suspend fun checkForUpdate(
                             remainingDescriptionLines.add(line)
                         }
                     }
-                    
+
                     if (items.isNotEmpty()) {
                         changelogList.add(ChangelogSection("What's New", items))
                     }
-                    
+
                     val parsedDescription = remainingDescriptionLines.joinToString("\n").trim()
                     description = parsedDescription.takeIf { it.isNotEmpty() }
                 }
@@ -765,7 +750,6 @@ suspend fun checkForUpdate(
                 }
             }
 
-            
             withContext(Dispatchers.Main) {
                 onSuccess(currentVersion, false, emptyList(), "", "", null, null, null)
             }
@@ -785,7 +769,7 @@ fun String.extractUrls(): List<Pair<IntRange, String>> {
     while (matcher.find()) {
         val url = matcher.group(1)?.trim() ?: continue
         val range = IntRange(matcher.start(1), matcher.end(1) - 1)
-        
+
         val fullUrl = if (url.startsWith("http")) url else "https://$url"
         urlList.add(range to fullUrl)
     }

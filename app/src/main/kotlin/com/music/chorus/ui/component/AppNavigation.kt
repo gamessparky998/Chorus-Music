@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.component
 
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -40,8 +38,8 @@ private data class NavItemState(
 fun isRouteSelected(currentRoute: String?, screenRoute: String, navigationItems: List<Screens>): Boolean {
     if (currentRoute == null) return false
     if (currentRoute == screenRoute) return true
-    return navigationItems.any { it.route == screenRoute } && 
-           currentRoute.startsWith("$screenRoute/")
+    return navigationItems.any { it.route == screenRoute } &&
+            currentRoute.startsWith("$screenRoute/")
 }
 
 @Composable
@@ -55,13 +53,13 @@ fun AppNavigationRail(
     val containerColor = if (pureBlack) Color.Black else MaterialTheme.colorScheme.surfaceContainer
     val haptics = LocalHapticFeedback.current
     val viewConfiguration = LocalViewConfiguration.current
-    
+
     NavigationRail(
         modifier = modifier,
         containerColor = containerColor
     ) {
         Spacer(modifier = Modifier.weight(1f))
-        
+
         navigationItems.forEach { screen ->
             val isSelected = remember(currentRoute, screen.route) {
                 isRouteSelected(currentRoute, screen.route, navigationItems)
@@ -69,12 +67,12 @@ fun AppNavigationRail(
             val iconRes = remember(isSelected, screen) {
                 if (isSelected) screen.iconIdActive else screen.iconIdInactive
             }
-            
+
             val interactionSource = remember { MutableInteractionSource() }
-            
+
             NavigationRailItem(
                 selected = isSelected,
-                onClick = { 
+                onClick = {
                     onItemClick(screen, isSelected)
                 },
                 interactionSource = interactionSource,
@@ -86,7 +84,7 @@ fun AppNavigationRail(
                 }
             )
         }
-        
+
         Spacer(modifier = Modifier.weight(1f))
     }
 }
@@ -105,9 +103,9 @@ fun AppNavigationBar(
     val contentColor = if (pureBlack) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
     val haptics = LocalHapticFeedback.current
     val viewConfiguration = LocalViewConfiguration.current
-    
+
     val navModifier = modifier
-    
+
     NavigationBar(
         modifier = navModifier,
         containerColor = containerColor,
@@ -120,12 +118,12 @@ fun AppNavigationBar(
             val iconRes = remember(isSelected, screen) {
                 if (isSelected) screen.iconIdActive else screen.iconIdInactive
             }
-            
+
             val interactionSource = remember { MutableInteractionSource() }
-            
+
             NavigationBarItem(
                 selected = isSelected,
-                onClick = { 
+                onClick = {
                     onItemClick(screen, isSelected)
                 },
                 interactionSource = interactionSource,

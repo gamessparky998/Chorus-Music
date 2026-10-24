@@ -20,17 +20,12 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import java.net.Proxy
 import java.io.IOException
 import kotlinx.coroutines.delay
 import java.util.*
 import kotlin.io.encoding.Base64
-import kotlin.io.encoding.ExperimentalEncodingApi
-
-
-@OptIn(ExperimentalEncodingApi::class)
 class InnerTube {
     private var httpClient = createClient()
 
@@ -53,13 +48,12 @@ class InnerTube {
             httpClient.close()
             httpClient = createClient()
         }
-    
+
     var proxyAuth: String? = null
 
     var useLoginForBrowse: Boolean = false
     var ipVersion: com.music.innertube.models.IpVersion = com.music.innertube.models.IpVersion.AUTO
 
-    @OptIn(ExperimentalSerializationApi::class)
     private fun createClient() = HttpClient(OkHttp) {
         expectSuccess = true
 
@@ -76,43 +70,36 @@ class InnerTube {
             deflate(0.8F)
         }
 
-        
         engine {
             config {
-                
+
                 connectionPool(
                     okhttp3.ConnectionPool(
-                        10, 
-                        5, 
+                        10,
+                        5,
                         java.util.concurrent.TimeUnit.MINUTES
                     )
                 )
-                
-                
+
                 connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
                 readTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
                 writeTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
-                
-                
+
                 protocols(listOf(okhttp3.Protocol.HTTP_2, okhttp3.Protocol.HTTP_1_1))
-                
-                
+
                 retryOnConnectionFailure(true)
-                
-                
+
                 cache(
                     okhttp3.Cache(
                         directory = java.io.File(System.getProperty("java.io.tmpdir"), "http_cache"),
-                        maxSize = 50L * 1024L * 1024L 
+                        maxSize = 50L * 1024L * 1024L
                     )
                 )
-                
-                
+
                 this@InnerTube.proxy?.let { proxyConfig ->
                     proxy(proxyConfig)
                 }
-                
-                
+
                 this@InnerTube.proxyAuth?.let { auth ->
                     proxyAuthenticator { _, response ->
                         response.request.newBuilder()
@@ -123,7 +110,6 @@ class InnerTube {
             }
         }
 
-        
         install(HttpTimeout) {
             requestTimeoutMillis = 60000
             connectTimeoutMillis = 30000
@@ -133,8 +119,7 @@ class InnerTube {
         defaultRequest {
             url(YouTubeClient.API_URL_YOUTUBE_MUSIC)
             header("Accept", "application/json")
-            
-            
+
             header("Accept-Language", "${locale.hl},${locale.gl};q=0.9,en;q=0.8")
             header("Cache-Control", "no-cache")
         }
@@ -148,13 +133,7 @@ class InnerTube {
             append("X-YouTube-Client-Version", client.clientVersion)
             append("X-Origin", YouTubeClient.ORIGIN_YOUTUBE_MUSIC)
             append("Referer", YouTubeClient.REFERER_YOUTUBE_MUSIC)
-            
-            
-            
-            
-            
-            
-            
+
             visitorData?.let { append("X-Goog-Visitor-Id", it) }
             if (setLogin && client.loginSupported) {
                 cookie?.let { cookie ->
@@ -170,7 +149,6 @@ class InnerTube {
         parameter("prettyPrint", false)
     }
 
-    
     private suspend fun <T> withRetry(
         maxAttempts: Int = 3,
         initialDelay: Long = 500L,
@@ -198,10 +176,7 @@ class InnerTube {
         continuation: String? = null,
         setLogin: Boolean? = null,
     ) = withRetry {
-        
-        
-        
-        
+
         val effectiveLogin = (setLogin ?: useLoginForBrowse) && !cookie.isNullOrEmpty()
         httpClient.post("search") {
             ytClient(client, setLogin = effectiveLogin)
@@ -232,7 +207,7 @@ class InnerTube {
             ytClient(client, setLogin = true)
             setBody(
                 PlayerBody(
-                    
+
                     context = client.toContext(locale, visitorData, dataSyncId).let {
                         if (client.isEmbedded) {
                             it.copy(
@@ -615,7 +590,7 @@ class InnerTube {
             )
         }
     }
-    
+
     suspend fun getUploadCustomThumbnailLink(
         client: YouTubeClient,
         contentLength: Int
@@ -710,8 +685,6 @@ class InnerTube {
         }
     }
 
-
-    
     suspend fun initSongUpload(
         filename: String,
         contentLength: Long
@@ -737,7 +710,6 @@ class InnerTube {
         }
     }
 
-    
     suspend fun uploadSongData(
         uploadUrl: String,
         data: ByteArray,
@@ -767,7 +739,6 @@ class InnerTube {
         }
     }
 
-    
     suspend fun deletePrivatelyOwnedEntity(entityId: String) = withRetry {
         val context = YouTubeClient.WEB_REMIX.toContext(locale, visitorData, null)
         val requestBody = """{"context":${Json.encodeToString(context)},"entityId":"$entityId"}"""
@@ -860,6 +831,5 @@ class InnerTube {
             )
 
         }
-
 
 }

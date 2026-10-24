@@ -33,11 +33,11 @@ object AiPlaylistModifier {
         onLog: suspend (String) -> Unit
     ) = withContext(Dispatchers.IO) {
         val database = InternalDatabase.newInstance(context)
-        
+
         onLog("Connecting to AI Provider...")
 
         val aiProvider = context.dataStore.get(AiProviderKey, "OpenRouter")
-        
+
         val currentPlaylistJson = JSONArray().apply {
             currentSongs.forEach { playlistSong ->
                 put(JSONObject().apply {
@@ -55,13 +55,13 @@ object AiPlaylistModifier {
             $currentPlaylistJson
 
             You must output ONLY a valid JSON object containing exactly two arrays: "remove_ids" (list of internal IDs to remove) and "additions" (list of objects with "title" and "artist").
-            
+
             CRITICAL RULES:
             1. YOU MUST VERIFY THE RELEASE YEAR, MOVIE, AND ARTIST/ACTOR for EVERY SINGLE TRACK you add or remove.
             2. For removals, ONLY include the "id" from the CURRENT playlist that match the user's removal instruction.
             3. For additions, ONLY include songs that match the user's addition instruction.
             4. You MUST output ONLY raw JSON. Do NOT include any markdown formatting (like ```json), explanations, or conversational text.
-            
+
             Example format:
             {
               "remove_ids": [123, 456],
@@ -123,7 +123,7 @@ object AiPlaylistModifier {
 
         onLog("Parsing AI response...")
         val cleanJsonStr = jsonOutput.replace("```json", "").replace("```", "").trim()
-        
+
         val parsedJson = try {
             JSONObject(cleanJsonStr)
         } catch (e: Exception) {
@@ -170,8 +170,7 @@ object AiPlaylistModifier {
 
             if (resolvedSongs.isNotEmpty()) {
                 onLog("Adding ${resolvedSongs.size} songs to playlist...")
-                
-                
+
                 val maxPosition = currentSongs.maxOfOrNull { it.map.position } ?: -1
 
                 resolvedSongs.forEachIndexed { index, songItem ->

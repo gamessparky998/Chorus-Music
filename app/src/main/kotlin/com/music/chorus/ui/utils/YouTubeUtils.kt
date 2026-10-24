@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.utils
 
 fun String.resize(
@@ -8,10 +6,6 @@ fun String.resize(
 ): String {
     if (width == null && height == null) return this
 
-    
-    
-    
-    
     if (this.contains("i.ytimg.com")) {
         val targetQuality = if (width != null && width >= 1200) "maxresdefault.jpg" else "hqdefault.jpg"
         return this.replace(

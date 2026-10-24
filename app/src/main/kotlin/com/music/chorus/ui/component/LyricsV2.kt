@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.component
 
 import androidx.compose.animation.core.animateFloatAsState
@@ -7,7 +5,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -37,7 +34,6 @@ import pushkar.chorus.music.lyrics.WordTimestamp
 import kotlin.math.PI
 import kotlin.math.sin
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun LyricsLineV2(
     entry: LyricsEntry,
@@ -65,8 +61,8 @@ fun LyricsLineV2(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = arrangement,
             verticalArrangement = Arrangement.spacedBy(
-                
-                with(LocalDensity.current) { (baseFontSize * ( (lineHeight / baseFontSize).coerceAtMost(1.3f) - 1f)).sp.toDp() }
+
+                with(LocalDensity.current) { (baseFontSize * ((lineHeight / baseFontSize).coerceAtMost(1.3f) - 1f)).sp.toDp() }
             )
         ) {
             words.forEachIndexed { wordIndex, word ->
@@ -91,7 +87,7 @@ fun LyricsLineV2(
             }
         }
     } else {
-        
+
         Text(
             text = entry.text,
             style = MaterialTheme.typography.headlineMedium.copy(
@@ -106,7 +102,6 @@ fun LyricsLineV2(
         )
     }
 
-    
     if (showTranslated) {
         val translatedText by entry.translatedTextFlow.collectAsState()
         translatedText?.let { translated ->
@@ -142,17 +137,15 @@ fun AnimatedWordV2(
     val isWordComplete = isLinePast || effectivePlaybackPosition >= wordEndMs
     val isWordActive = isLineActive && effectivePlaybackPosition in wordStartMs until wordEndMs
 
-    
     val progress = when {
         isWordComplete -> 1f
         !isLineActive || effectivePlaybackPosition <= wordStartMs -> 0f
         else -> ((effectivePlaybackPosition - wordStartMs).toFloat() / wordDuration).coerceIn(0f, 1f)
     }
 
-    
     val sinProgress = sin(progress * PI).toFloat()
     val wordScale = 1f + (0.015f * sinProgress)
-    
+
     val targetFloat = if (isWordActive) -4f * sinProgress else 0f
     val floatOffset by animateFloatAsState(
         targetValue = targetFloat,
@@ -163,7 +156,6 @@ fun AnimatedWordV2(
         label = "WordFloatOffset"
     )
 
-    
     val glowProgress = (progress * 2f).coerceAtMost(1f)
     val glowAlpha = if (isWordActive) glowProgress * 0.45f else 0f
     val glowRadius = if (isWordActive) glowProgress * 12f else 0f
@@ -179,7 +171,7 @@ fun AnimatedWordV2(
                 scaleY = wordScale
             }
     ) {
-        
+
         Text(
             text = word.text,
             style = MaterialTheme.typography.headlineMedium.copy(
@@ -191,7 +183,6 @@ fun AnimatedWordV2(
             color = expressiveAccent.copy(alpha = if (isBackground) inactiveAlpha * 0.7f else inactiveAlpha),
         )
 
-        
         if (isWordComplete || isWordActive) {
             Text(
                 text = word.text,

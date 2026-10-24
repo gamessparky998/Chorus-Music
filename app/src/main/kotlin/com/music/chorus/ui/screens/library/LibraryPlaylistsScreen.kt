@@ -1,8 +1,5 @@
-
-
 package pushkar.chorus.music.ui.screens.library
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,8 +21,6 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ButtonGroupDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -94,7 +89,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material3.IconButton
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun LibraryPlaylistsScreen(
     navController: NavController,
@@ -163,7 +157,7 @@ fun LibraryPlaylistsScreen(
             songCount = 0,
             songThumbnails = emptyList(),
         )
-        
+
     val uploadedPlaylist =
         Playlist(
             playlist = PlaylistEntity(
@@ -179,7 +173,6 @@ fun LibraryPlaylistsScreen(
     val (showExported) = rememberPreference(ShowExportedPlaylistKey, true)
     val (showTop) = rememberPreference(ShowTopPlaylistKey, true)
     val (showCached) = rememberPreference(ShowCachedPlaylistKey, true)
-
 
     val lazyListState = rememberLazyListState()
     val lazyGridState = rememberLazyGridState()

@@ -135,7 +135,7 @@ class NewPipeUtils(
                 url,
             )
         } catch (e: Exception) {
-            
+
             null
         }
 }
@@ -172,13 +172,9 @@ object NewPipeExtractor {
 
     fun newPipePlayer(videoId: String): List<Pair<Int, String>> {
         init()
-        
-        
-        
-        
-        
+
         val streamsList = mutableListOf<org.schabi.newpipe.extractor.stream.Stream>()
-        
+
         try {
             val streamInfo = StreamInfo.getInfo(
                 NewPipe.getService(0),
@@ -186,11 +182,7 @@ object NewPipeExtractor {
             )
             streamsList.addAll(streamInfo.audioStreams + streamInfo.videoStreams + streamInfo.videoOnlyStreams)
         } catch (e: Exception) {
-            
-            
-            
-            
-            
+
             e.printStackTrace()
         }
 

@@ -1,3 +1,5 @@
+@file:Suppress("OPT_IN_USAGE_ERROR", "OPT_IN_USAGE")
+
 package pushkar.chorus.music.ui.screens.search.suggestions
 
 import androidx.compose.animation.core.animateDpAsState
@@ -10,6 +12,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Search
@@ -24,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import pushkar.chorus.music.constants.SuggestionRegionSlugToName
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SuggestionRegionSheet(
     currentRegionSlug: String,
@@ -32,10 +35,10 @@ fun SuggestionRegionSheet(
     onDismiss: () -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    
+
     val filteredRegions = remember(searchQuery) {
         SuggestionRegionSlugToName.toList()
-            .filter { it.first != "system" } 
+            .filter { it.first != "system" }
             .filter { it.second.contains(searchQuery, ignoreCase = true) }
     }
 
@@ -45,14 +48,15 @@ fun SuggestionRegionSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = bottomSheetState
+        sheetState = bottomSheetState,
+        shape = if (isFluidTheme()) ContinuousRoundedRectangle(topStart = 28.dp, topEnd = 28.dp) else BottomSheetDefaults.ExpandedShape,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = "Choose Suggestions Region",
                 style = MaterialTheme.typography.labelLarge
             )
-            
+
             DockedSearchBar(
                 inputField = {
                     SearchBarDefaults.InputField(
@@ -76,15 +80,15 @@ fun SuggestionRegionSheet(
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {}
-            
+
             LazyColumn(
                 state = listState,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
-                    .clip(RoundedCornerShape(24.dp))
+                    .clip(if (isFluidTheme()) ContinuousRoundedRectangle(24.dp) else RoundedCornerShape(24.dp))
             ) {
-                
+
                 item {
                     Text(
                         text = "System",
@@ -109,7 +113,7 @@ fun SuggestionRegionSheet(
                         }
                     )
                 }
-                
+
                 item {
                     Spacer(Modifier.height(12.dp))
                 }
@@ -151,7 +155,7 @@ fun SuggestionRegionSheet(
             }
         }
     }
-    
+
     LaunchedEffect(searchQuery) {
         if (filteredRegions.isNotEmpty()) {
             listState.scrollToItem(0)
@@ -209,7 +213,12 @@ fun RegionListItem(
         modifier = Modifier
             .clip(
                 if (selected) CircleShape
-                else RoundedCornerShape(
+                else if (isFluidTheme()) ContinuousRoundedRectangle(
+                    topStart = top,
+                    topEnd = top,
+                    bottomStart = bottom,
+                    bottomEnd = bottom
+                ) else RoundedCornerShape(
                     topStart = top,
                     topEnd = top,
                     bottomStart = bottom,

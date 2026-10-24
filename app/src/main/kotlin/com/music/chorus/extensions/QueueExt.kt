@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.extensions
 
 import pushkar.chorus.music.models.MediaMetadata
@@ -27,7 +25,7 @@ fun Queue.toPersistQueue(
             queueType = QueueType.LIST
         )
         is YouTubeQueue -> {
-            
+
             val endpoint = "youtube_queue"
             PersistQueue(
                 title = title,
@@ -39,7 +37,7 @@ fun Queue.toPersistQueue(
             )
         }
         is YouTubeAlbumRadio -> {
-            
+
             PersistQueue(
                 title = title,
                 items = items,
@@ -52,7 +50,7 @@ fun Queue.toPersistQueue(
             )
         }
         is LocalAlbumRadio -> {
-            
+
             PersistQueue(
                 title = title,
                 items = items,
@@ -84,7 +82,7 @@ fun PersistQueue.toQueue(): Queue {
             position = position
         )
         is QueueType.YOUTUBE -> {
-            
+
             ListQueue(
                 title = title,
                 items = items.map { it.toMediaItem() },
@@ -93,7 +91,7 @@ fun PersistQueue.toQueue(): Queue {
             )
         }
         is QueueType.YOUTUBE_ALBUM_RADIO -> {
-            
+
             ListQueue(
                 title = title,
                 items = items.map { it.toMediaItem() },
@@ -102,7 +100,7 @@ fun PersistQueue.toQueue(): Queue {
             )
         }
         is QueueType.LOCAL_ALBUM_RADIO -> {
-            
+
             ListQueue(
                 title = title,
                 items = items.map { it.toMediaItem() },

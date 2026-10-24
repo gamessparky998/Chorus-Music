@@ -30,8 +30,8 @@ class UpdateDownloadWorker(private val context: Context, workerParams: WorkerPar
             val startingNotification = DownloadNotificationManager.getDownloadStartingNotification(version, fileSize)
             val foregroundInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 ForegroundInfo(
-                    DownloadNotificationManager.NOTIFICATION_ID, 
-                    startingNotification, 
+                    DownloadNotificationManager.NOTIFICATION_ID,
+                    startingNotification,
                     ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
                 )
             } else {
@@ -39,7 +39,7 @@ class UpdateDownloadWorker(private val context: Context, workerParams: WorkerPar
             }
             setForeground(foregroundInfo)
         } catch (e: Exception) {
-            
+
         }
 
         try {
@@ -99,15 +99,15 @@ class UpdateDownloadWorker(private val context: Context, workerParams: WorkerPar
                 if (fileLength > 0) {
                     val progress = (totalBytesRead.toFloat() / fileLength.toFloat() * 100).toInt()
                     val currentTime = System.currentTimeMillis()
-                    
+
                     if (progress > lastProgress && currentTime - lastNotificationTime >= 1000) {
                         lastProgress = progress
                         lastNotificationTime = currentTime
-                        
+
                         val progressNotification = DownloadNotificationManager.getDownloadProgressNotification(progress, version)
                         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
                         notificationManager.notify(DownloadNotificationManager.NOTIFICATION_ID, progressNotification)
-                        
+
                         setProgress(workDataOf("progress" to progress.toFloat() / 100f))
                     }
                 }

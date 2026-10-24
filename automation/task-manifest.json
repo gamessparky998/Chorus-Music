@@ -1,0 +1,34 @@
+{
+  "project": "Chorus Music",
+  "applicationId": "pushkar.chorus.music",
+  "version": "1.0.0",
+  "testSuites": [
+    {
+      "name": "ThemeEngineVerification",
+      "priority": "HIGH",
+      "targetEngines": ["MaterialUI", "FluidUI"],
+      "enabled": true
+    },
+    {
+      "name": "ArtistHeroParallaxTest",
+      "priority": "HIGH",
+      "enabled": true
+    },
+    {
+      "name": "SyllableLyricsAnimationBenchmark",
+      "priority": "MEDIUM",
+      "targetEngine": "LyricsV2",
+      "enabled": true
+    },
+    {
+      "name": "AiDjHarmonicTransitions",
+      "priority": "MEDIUM",
+      "enabled": true
+    }
+  ],
+  "remediation": {
+    "autoCompileCheck": true,
+    "maxAttemptsPerIssue": 3,
+    "gradleVerifyTask": ":app:compileDebugKotlin"
+  }
+}

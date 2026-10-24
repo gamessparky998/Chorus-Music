@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.menu
 
 import android.content.Intent
@@ -13,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -42,8 +39,6 @@ import pushkar.chorus.music.ui.component.YouTubeListItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
-
-@OptIn(ExperimentalMaterial3Api::class)
 
 @Composable
 fun YouTubeArtistMenu(
@@ -162,7 +157,11 @@ fun YouTubeArtistMenu(
                 items = listOf(
                     Material3MenuItemData(
                         title = {
-                            Text(text = if (libraryArtist?.artist?.bookmarkedAt != null) stringResource(R.string.subscribed) else stringResource(R.string.subscribe))
+                            Text(
+                                text = if (libraryArtist?.artist?.bookmarkedAt != null) stringResource(R.string.subscribed) else stringResource(
+                                    R.string.subscribe
+                                )
+                            )
                         },
                         icon = {
                             Icon(

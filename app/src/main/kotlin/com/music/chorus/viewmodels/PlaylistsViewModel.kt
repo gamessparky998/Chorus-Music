@@ -1,7 +1,3 @@
-
-
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package pushkar.chorus.music.viewmodels
 
 import android.content.Context
@@ -16,7 +12,6 @@ import pushkar.chorus.music.utils.SyncUtils
 import pushkar.chorus.music.utils.dataStore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
@@ -42,7 +37,6 @@ constructor(
                 database.playlists(sortType, descending)
             }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    
     suspend fun sync() {
         syncUtils.syncSavedPlaylists()
     }

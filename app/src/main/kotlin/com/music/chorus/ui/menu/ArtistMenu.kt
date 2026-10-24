@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.menu
 
 import android.content.Intent
@@ -198,7 +196,7 @@ fun ArtistMenu(
                                 text = stringResource(R.string.share),
                                 onClick = {
                                     onDismiss()
-                                val intent = Intent().apply {
+                                    val intent = Intent().apply {
                                         action = Intent.ACTION_SEND
                                         type = "text/plain"
                                         putExtra(
@@ -222,7 +220,11 @@ fun ArtistMenu(
                 items = listOf(
                     Material3MenuItemData(
                         title = {
-                            Text(text = if (artist.artist.bookmarkedAt != null) stringResource(R.string.subscribed) else stringResource(R.string.subscribe))
+                            Text(
+                                text = if (artist.artist.bookmarkedAt != null) stringResource(R.string.subscribed) else stringResource(
+                                    R.string.subscribe
+                                )
+                            )
                         },
                         icon = {
                             Icon(

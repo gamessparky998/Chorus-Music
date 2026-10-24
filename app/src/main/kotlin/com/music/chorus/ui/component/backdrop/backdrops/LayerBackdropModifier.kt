@@ -1,8 +1,8 @@
-
 package pushkar.chorus.music.ui.component.backdrop.backdrops
 
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
+import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.node.DrawModifierNode
 import androidx.compose.ui.node.GlobalPositionAwareModifierNode
@@ -11,15 +11,18 @@ import androidx.compose.ui.node.invalidateDraw
 import androidx.compose.ui.platform.InspectorInfo
 import pushkar.chorus.music.ui.component.backdrop.internal.recordLayer
 
-fun Modifier.layerBackdrop(backdrop: LayerBackdrop): Modifier =
-    this then LayerBackdropElement(backdrop)
+fun Modifier.layerBackdrop(
+    backdrop: LayerBackdrop,
+    frozen: () -> Boolean = { false }
+): Modifier = this then LayerBackdropElement(backdrop, frozen)
 
 private class LayerBackdropElement(
-    val backdrop: LayerBackdrop
+    val backdrop: LayerBackdrop,
+    val frozen: () -> Boolean
 ) : ModifierNodeElement<LayerBackdropNode>() {
 
     override fun create(): LayerBackdropNode {
-        return LayerBackdropNode(backdrop)
+        return LayerBackdropNode(backdrop, frozen)
     }
 
     override fun update(node: LayerBackdropNode) {
@@ -27,6 +30,7 @@ private class LayerBackdropElement(
             node.backdrop.layerCoordinates = null
             node.backdrop = backdrop
         }
+        node.frozen = frozen
         node.invalidateDraw()
     }
 
@@ -40,26 +44,32 @@ private class LayerBackdropElement(
         if (other !is LayerBackdropElement) return false
 
         if (backdrop != other.backdrop) return false
+        if (frozen != other.frozen) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        return backdrop.hashCode()
+        return 31 * backdrop.hashCode() + frozen.hashCode()
     }
 }
 
 private class LayerBackdropNode(
-    var backdrop: LayerBackdrop
+    var backdrop: LayerBackdrop,
+    var frozen: () -> Boolean
 ) : DrawModifierNode, GlobalPositionAwareModifierNode, Modifier.Node() {
 
     override fun ContentDrawScope.draw() {
-        drawContent()
+        backdrop.staticRegions.clear()
+
         recordLayer(this@LayerBackdropNode, backdrop.graphicsLayer) { backdrop.onDraw(this@draw) }
+        drawLayer(backdrop.graphicsLayer)
+        backdrop.contentRecorded()
     }
 
     override fun onGloballyPositioned(coordinates: LayoutCoordinates) {
         if (coordinates.isAttached) {
+            if (backdrop.layerCoordinates !== coordinates) backdrop.geometryChanged()
             backdrop.layerCoordinates = coordinates
         }
     }

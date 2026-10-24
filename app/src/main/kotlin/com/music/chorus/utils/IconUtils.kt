@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.utils
 
 import android.content.ComponentName

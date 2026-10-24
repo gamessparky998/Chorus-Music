@@ -16,7 +16,7 @@ data class SpeedDialItem(
     val title: String,
     val subtitle: String? = null,
     val thumbnailUrl: String? = null,
-    val type: String, 
+    val type: String,
     val explicit: Boolean = false,
     val createDate: Long = System.currentTimeMillis()
 ) {

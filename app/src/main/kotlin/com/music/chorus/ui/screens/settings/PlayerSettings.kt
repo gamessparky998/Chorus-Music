@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.screens.settings
 
 import androidx.compose.foundation.layout.Column
@@ -12,7 +10,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
@@ -84,7 +81,6 @@ import kotlin.math.roundToInt
 import android.content.Intent
 import android.net.Uri
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlayerSettings(
     navController: NavController,
@@ -138,7 +134,6 @@ highlightKey: String? = null) {
         key = AudioOffload,
         defaultValue = false
     )
-
 
     val (preloadNextSongEnabled, onPreloadNextSongEnabledChange) = rememberPreference(
         key = PreloadNextSongEnabledKey,
@@ -237,7 +232,6 @@ highlightKey: String? = null) {
     var showAudioQualityDialog by remember { mutableStateOf(false) }
     var showDownloadQualityDialog by remember { mutableStateOf(false) }
 
-
     val (downloadQuality, onDownloadQualityChange) = rememberEnumPreference(
         pushkar.chorus.music.constants.DownloadQualityKey,
         defaultValue = pushkar.chorus.music.constants.DownloadQuality.YOUTUBE
@@ -314,14 +308,6 @@ highlightKey: String? = null) {
             }
         }
 
-
-
-
-
-
-
-
-
         Spacer(
             Modifier.windowInsetsPadding(
                 LocalPlayerAwareWindowInsets.current.only(
@@ -359,7 +345,7 @@ highlightKey: String? = null) {
             }
         )
 
-        Material3SettingsGroup(scrollState = scrollState, 
+        Material3SettingsGroup(scrollState = scrollState,
             title = stringResource(R.string.player),
             items = buildList {
                 add(Material3SettingsItem(
@@ -375,7 +361,7 @@ highlightKey: String? = null) {
                     },
                     onClick = { showAudioQualityDialog = true }
                 ))
-                
+
                 add(Material3SettingsItem(
     isHighlighted = (highlightKey == stringResource(R.string.download_quality_title)),
                     icon = painterResource(R.drawable.download),
@@ -389,7 +375,6 @@ highlightKey: String? = null) {
                     },
                     onClick = { showDownloadQualityDialog = true }
                 ))
-
 
                 add(Material3SettingsItem(
     isHighlighted = (highlightKey == stringResource(R.string.crossfade)),
@@ -622,7 +607,6 @@ highlightKey: String? = null) {
                     },
                     onClick = { if (!crossfadeEnabled) onAudioOffloadChange(!audioOffload) }
                 ))
-                
 
                 add(Material3SettingsItem(
     isHighlighted = (highlightKey == "Preload Next Song"),
@@ -664,7 +648,7 @@ highlightKey: String? = null) {
                             Text(text = preloadNextSongLimit.toString())
                         }
                     ))
-                    
+
                     add(Material3SettingsItem(
     isHighlighted = (highlightKey == "Preload Lyrics"),
                         icon = painterResource(R.drawable.queue_music),
@@ -688,7 +672,7 @@ highlightKey: String? = null) {
                         onClick = { onPreloadLyricsEnabledChange(!preloadLyricsEnabled) }
                     ))
                 }
-                
+
                 if (BuildConfig.CAST_AVAILABLE) {
                     add(Material3SettingsItem(
     isHighlighted = (highlightKey == stringResource(R.string.google_cast)),
@@ -747,7 +731,7 @@ highlightKey: String? = null) {
 
         Spacer(modifier = Modifier.height(27.dp))
 
-        Material3SettingsGroup(scrollState = scrollState, 
+        Material3SettingsGroup(scrollState = scrollState,
             title = stringResource(R.string.queue),
             items = listOf(
                 Material3SettingsItem(
@@ -975,7 +959,7 @@ highlightKey: String? = null) {
 
         Spacer(modifier = Modifier.height(27.dp))
 
-        Material3SettingsGroup(scrollState = scrollState, 
+        Material3SettingsGroup(scrollState = scrollState,
             title = stringResource(R.string.misc),
             items = listOf(
                 Material3SettingsItem(
@@ -1094,7 +1078,7 @@ highlightKey: String? = null) {
             )
         )
         Spacer(modifier = Modifier.height(16.dp))
-    
+
         Spacer(Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Bottom)))
     }
 

@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.viewmodels
 
 import android.content.Context
@@ -99,7 +97,7 @@ constructor(
 
     init {
         viewModelScope.launch {
-            
+
             playlist.first { it != null }?.playlist?.browseId?.let { browseId ->
                 syncUtils.syncPlaylist(browseId, playlistId)
             }

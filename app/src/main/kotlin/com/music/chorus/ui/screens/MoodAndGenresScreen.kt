@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.screens
 
 import android.content.res.Configuration.ORIENTATION_LANDSCAPE
@@ -14,7 +12,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -42,7 +41,6 @@ import pushkar.chorus.music.ui.component.shimmer.ShimmerHost
 import pushkar.chorus.music.ui.utils.backToMain
 import pushkar.chorus.music.viewmodels.MoodAndGenresViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MoodAndGenresScreen(
     navController: NavController,
@@ -132,8 +130,8 @@ fun MoodAndGenresButton(
         androidx.compose.ui.graphics.Color(0xFF009688), androidx.compose.ui.graphics.Color(0xFF4CAF50), androidx.compose.ui.graphics.Color(0xFFFF9800),
         androidx.compose.ui.graphics.Color(0xFFFF5722), androidx.compose.ui.graphics.Color(0xFF795548), androidx.compose.ui.graphics.Color(0xFF607D8B)
     )
-    val backgroundColor = androidx.compose.runtime.remember(title) { 
-        colors[kotlin.math.abs(title.hashCode()) % colors.size] 
+    val backgroundColor = androidx.compose.runtime.remember(title) {
+        colors[kotlin.math.abs(title.hashCode()) % colors.size]
     }
 
     Box(
@@ -141,7 +139,7 @@ fun MoodAndGenresButton(
         modifier =
         modifier
             .height(MoodAndGenresButtonHeight)
-            .clip(RoundedCornerShape(6.dp))
+            .clip(if (isFluidTheme()) ContinuousRoundedRectangle(12.dp) else RoundedCornerShape(6.dp))
             .background(backgroundColor)
             .clickable(onClick = onClick)
             .padding(horizontal = 12.dp),

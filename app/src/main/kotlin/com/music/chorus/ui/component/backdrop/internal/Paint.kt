@@ -1,5 +1,3 @@
-﻿@file:Suppress("DEPRECATION")
-
 package pushkar.chorus.music.ui.component.backdrop.internal
 
 import android.graphics.BlurMaskFilter

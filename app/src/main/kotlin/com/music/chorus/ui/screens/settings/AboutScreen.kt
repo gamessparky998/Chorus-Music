@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
-
 package pushkar.chorus.music.ui.screens.settings
 
 import androidx.compose.animation.core.Spring
@@ -15,6 +13,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.material3.*
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
@@ -54,7 +54,6 @@ import android.provider.Settings
 import android.os.Build
 import android.widget.Toast
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutScreen(
     navController: NavController,
@@ -143,9 +142,10 @@ highlightKey: String? = null) {
 
 @Composable
 private fun AboutAppCard() {
+    val isFluid = isFluidTheme()
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(28.dp),
+        shape = if (isFluid) ContinuousRoundedRectangle(28.dp) else RoundedCornerShape(28.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         ),
@@ -159,7 +159,7 @@ private fun AboutAppCard() {
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
-            
+
             var isEasterEggActive by remember { mutableStateOf(false) }
             val rotation by animateFloatAsState(
                 targetValue = if (isEasterEggActive) 180f else 0f,
@@ -169,7 +169,7 @@ private fun AboutAppCard() {
                 ),
                 label = "flip"
             )
-            
+
             val interactionSource = remember { MutableInteractionSource() }
             val isPressed by interactionSource.collectIsPressedAsState()
             val scale by animateFloatAsState(
@@ -212,14 +212,14 @@ private fun AboutAppCard() {
                         contentDescription = null,
                         modifier = Modifier
                             .fillMaxSize()
-                            .graphicsLayer { rotationY = 180f }, 
+                            .graphicsLayer { rotationY = 180f },
                         contentScale = androidx.compose.ui.layout.ContentScale.Crop
                     )
                 }
             }
-            
+
             Spacer(Modifier.height(4.dp))
-            
+
             Text(
                 text = if (rotation <= 90f) "Chorus Music" else "Developed by pushkar",
                 style = MaterialTheme.typography.titleLarge,
@@ -231,7 +231,7 @@ private fun AboutAppCard() {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Surface(
-                    shape = RoundedCornerShape(8.dp),
+                    shape = if (isFluid) ContinuousRoundedRectangle(8.dp) else RoundedCornerShape(8.dp),
                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f),
                 ) {
                     Text(
@@ -244,7 +244,7 @@ private fun AboutAppCard() {
                 }
                 if (BuildConfig.DEBUG) {
                     Surface(
-                        shape = RoundedCornerShape(8.dp),
+                        shape = if (isFluid) ContinuousRoundedRectangle(8.dp) else RoundedCornerShape(8.dp),
                         color = MaterialTheme.colorScheme.error.copy(alpha = 0.10f),
                     ) {
                         Text(
@@ -257,7 +257,7 @@ private fun AboutAppCard() {
                     }
                 } else {
                     Surface(
-                        shape = RoundedCornerShape(8.dp),
+                        shape = if (isFluid) ContinuousRoundedRectangle(8.dp) else RoundedCornerShape(8.dp),
                         color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.10f),
                     ) {
                         Text(
@@ -289,7 +289,7 @@ private fun AboutSectionCard(
         )
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(28.dp),
+            shape = if (isFluidTheme()) ContinuousRoundedRectangle(28.dp) else RoundedCornerShape(28.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
             ),
@@ -310,6 +310,7 @@ private fun AboutActionRow(
     subtitle: String? = null,
     onClick: () -> Unit,
 ) {
+    val isFluid = isFluidTheme()
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
@@ -324,7 +325,7 @@ private fun AboutActionRow(
             .fillMaxWidth()
             .padding(horizontal = 6.dp, vertical = 2.dp)
             .graphicsLayer { scaleX = scale; scaleY = scale }
-            .clip(RoundedCornerShape(22.dp))
+            .clip(if (isFluid) ContinuousRoundedRectangle(22.dp) else RoundedCornerShape(22.dp))
             .clickable(
                 interactionSource = interactionSource,
                 indication = ripple(),
@@ -338,7 +339,7 @@ private fun AboutActionRow(
         ) {
             Surface(
                 modifier = Modifier.size(42.dp),
-                shape = RoundedCornerShape(14.dp),
+                shape = if (isFluid) ContinuousRoundedRectangle(14.dp) else RoundedCornerShape(14.dp),
                 color = tint.copy(alpha = 0.10f),
             ) {
                 Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {

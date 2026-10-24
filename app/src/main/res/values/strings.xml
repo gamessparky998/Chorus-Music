@@ -453,37 +453,6 @@
     <string name="hours_label">Hours</string>
     <string name="minutes_label">Minutes</string>
     <string name="seconds_label">Seconds</string>
-
-    <!-- Liquid Glass Effects -->
-    <string name="liquid_glass">Liquid Glass (Beta)</string>
-    <string name="player_background_liquid_glass">Liquid Glass</string>
-    <string name="liquid_glass_settings">Liquid Glass (Beta)</string>
-    <string name="liquid_glass_global_enabled">Enable Liquid Glass</string>
-    <string name="liquid_glass_effects">Effects</string>
-    <string name="liquid_glass_appearance">Appearance</string>
-    <string name="liquid_glass_per_component">Per Component</string>
-    <string name="liquid_glass_vibrancy">Vibrancy</string>
-    <string name="liquid_glass_vibrancy_desc">Boost saturation of the glass backdrop</string>
-    <string name="liquid_glass_blur_radius">Blur Radius</string>
-    <string name="liquid_glass_blur_radius_desc">Amount of blur on the glass surface</string>
-    <string name="liquid_glass_lens_height">Lens Refraction Height</string>
-    <string name="liquid_glass_lens_amount">Lens Refraction Amount</string>
-    <string name="liquid_glass_chromatic_aberration">Chromatic Aberration</string>
-    <string name="liquid_glass_depth_effect">Depth Effect</string>
-    <string name="liquid_glass_surface_opacity">Surface Opacity</string>
-    <string name="liquid_glass_surface_opacity_desc">Opacity of the glass tint overlay for readability</string>
-    <string name="liquid_glass_surface_tint">Surface Tint</string>
-    <string name="liquid_glass_surface_tint_desc">Tint color applied to the glass surface</string>
-    <string name="liquid_glass_text_color">Glass Text Color</string>
-    <string name="liquid_glass_text_color_desc">Text color used on glass surfaces</string>
-    <string name="liquid_glass_player">Glass Player</string>
-    <string name="liquid_glass_mini_player">Glass Mini Player</string>
-    <string name="liquid_glass_nav_bar">Glass Navigation Bar</string>
-    <string name="nav_bar_style">Navigation Bar Style</string>
-    <string name="floating_nav_bar">Floating navigation bar</string>
-    <string name="floating_nav_bar_desc">iOS style floating tab bar that shrinks while scrolling</string>
-    <string name="liquid_glass_performance_warning">Rendering liquid glass is performance heavy and may reduce smoothness and battery life on some devices</string>
-    <string name="liquid_glass_requires_floating_nav_bar">Requires the floating navigation bar to be enabled</string>
     <string name="color_picker_hex">Hex</string>
     <string name="color_white">White</string>
     <string name="color_light_gray">Light Gray</string>
@@ -494,6 +463,11 @@
     <string name="ai_recommendations">AI Recommendations</string>
     <string name="ai_recommendations_desc">Daily update of a custom playlist based on your taste</string>
     <string name="ai_recommendations_refresh">Refresh Recommendations</string>
+    <string name="theme_ui_style">UI Style</string>
+    <string name="theme_material_ui">Material UI</string>
+    <string name="theme_material_ui_desc">Material 3 with dynamic Monet coloring and AMOLED mode</string>
+    <string name="theme_fluid_ui">Fluid UI</string>
+    <string name="theme_fluid_ui_desc">Apple Cupertino HIG styling with liquid glass shaders &amp; motion</string>
     <string name="update_available">Update Available</string>
     <string name="update_available_msg">A new version (%s) of Chorus Music is available. Would you like to update?</string>
 </resources>

@@ -68,7 +68,7 @@ object CipherDeobfuscator {
     suspend fun onStreamRejected(): Boolean = PlayerConfigStore.refreshAfterStreamRejection()
 
     private suspend fun deobfuscateInternal(signatureCipher: String, videoId: String, isRetry: Boolean): String? {
-        
+
         val params = parseQueryParams(signatureCipher)
         val obfuscatedSig = params["s"]
         val sigParam = params["sp"] ?: "signature"
@@ -84,10 +84,8 @@ object CipherDeobfuscator {
         val webView = getOrCreateWebView(forceRefresh = isRetry)
             ?: return null
 
-        
         val deobfuscatedSig = webView.deobfuscateSignature(obfuscatedSig)
 
-        
         val separator = if ("?" in baseUrl) "&" else "?"
         val finalUrl = "$baseUrl${separator}${sigParam}=${Uri.encode(deobfuscatedSig)}"
 
@@ -95,7 +93,6 @@ object CipherDeobfuscator {
         return finalUrl
     }
 
-    
     suspend fun transformNParamInUrl(url: String): String {
         return try {
             transformNInternal(url)
@@ -111,7 +108,7 @@ object CipherDeobfuscator {
     }
 
     private suspend fun transformNInternal(url: String): String {
-        
+
         val nMatch = Regex("[?&]n=([^&]+)").find(url)
         if (nMatch == null) {
             Timber.tag(TAG).d("No 'n' parameter found in URL, skipping transform")
@@ -131,7 +128,6 @@ object CipherDeobfuscator {
         rendererRecoveryPolicy.onSuccess()
         Timber.tag(TAG).d("N-param transformed: $nValue -> $transformedN")
 
-        
         return url.replaceFirst(
             Regex("([?&])n=[^&]+"),
             "$1n=${Uri.encode(transformedN)}"
@@ -162,12 +158,10 @@ object CipherDeobfuscator {
 
         var builtEpoch = epochAtStart
 
-        
         if (cipherWebView != null) {
             closeWebView()
         }
 
-        
         val result = PlayerJsFetcher.getPlayerJs(forceRefresh = forceRefresh)
         if (result == null) {
             Timber.tag(TAG).e("Failed to get player JS")

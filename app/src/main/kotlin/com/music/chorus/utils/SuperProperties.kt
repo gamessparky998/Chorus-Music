@@ -7,12 +7,11 @@ import java.util.Locale
 import java.util.UUID
 
 object SuperProperties {
-    
+
     private const val CLIENT_VERSION = "314.13 - Stable"
     private const val CLIENT_BUILD_NUMBER = 314013
     private const val RELEASE_CHANNEL = "googleRelease"
-    
-    
+
     val superProperties: JSONObject by lazy {
         JSONObject().apply {
             put("os", "Android")

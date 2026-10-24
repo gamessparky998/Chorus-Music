@@ -1,4 +1,4 @@
-
+@file:Suppress("OPT_IN_USAGE_ERROR", "OPT_IN_USAGE")
 
 package pushkar.chorus.music.ui.component
 
@@ -9,7 +9,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,7 +21,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -45,7 +43,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.ToggleButtonDefaults
-
+import androidx.compose.ui.draw.clip
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.fluid.foundation.BounceIndication
+import pushkar.chorus.music.ui.fluid.foundation.GlassIntensity
+import pushkar.chorus.music.ui.fluid.foundation.fluidGlass
+import pushkar.chorus.music.ui.theme.isFluidTheme
 
 @Composable
 fun NewActionButton(
@@ -57,12 +60,21 @@ fun NewActionButton(
     backgroundColor: Color = MaterialTheme.colorScheme.surfaceVariant,
     contentColor: Color = MaterialTheme.colorScheme.onSurfaceVariant
 ) {
+    val isFluid = isFluidTheme()
+    val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+
+    val targetBg = if (isFluid && backgroundColor == MaterialTheme.colorScheme.surfaceVariant) {
+        if (isDark) Color(0xCC2C2C2E) else Color(0xCCF2F2F7)
+    } else {
+        backgroundColor
+    }
+
     val animatedBackground by animateColorAsState(
-        targetValue = if (enabled) backgroundColor else backgroundColor.copy(alpha = 0.5f),
+        targetValue = if (enabled) targetBg else targetBg.copy(alpha = 0.5f),
         animationSpec = tween(200),
         label = "background"
     )
-    
+
     val animatedContent by animateColorAsState(
         targetValue = if (enabled) contentColor else contentColor.copy(alpha = 0.5f),
         animationSpec = tween(200),
@@ -78,15 +90,30 @@ fun NewActionButton(
         }
     }
 
+    val shape = if (isFluid) ContinuousRoundedRectangle(16.dp) else RoundedCornerShape(16.dp)
+    val interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+
     Card(
         modifier = modifier
-            .clickable(enabled = enabled) { performAction = true },
+            .let { mod ->
+                if (isFluid) mod.clip(shape).fluidGlass(intensity = GlassIntensity.Subtle) else mod
+            }
+            .let { mod ->
+                if (isFluid) {
+                    mod.clickable(
+                        enabled = enabled,
+                        interactionSource = interactionSource,
+                        indication = BounceIndication
+                    ) { performAction = true }
+                } else {
+                    mod.clickable(enabled = enabled) { performAction = true }
+                }
+            },
         colors = CardDefaults.cardColors(
             containerColor = animatedBackground
         ),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(
-        )
+        shape = shape,
+        elevation = CardDefaults.cardElevation()
     ) {
         Column(
             modifier = Modifier
@@ -101,9 +128,9 @@ fun NewActionButton(
             ) {
                 icon()
             }
-            
+
             Spacer(modifier = Modifier.height(6.dp))
-            
+
             Text(
                 text = text,
                 style = MaterialTheme.typography.labelMedium,
@@ -117,7 +144,6 @@ fun NewActionButton(
     }
 }
 
-
 @Composable
 fun NewMenuItem(
     headlineContent: @Composable () -> Unit,
@@ -128,18 +154,33 @@ fun NewMenuItem(
     enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
+    val isFluid = isFluidTheme()
+    val interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+
     androidx.compose.material3.ListItem(
         headlineContent = headlineContent,
         leadingContent = leadingContent,
         trailingContent = trailingContent,
         supportingContent = supportingContent,
         modifier = modifier
-            .clickable(enabled = enabled) { onClick?.invoke() }
+            .let { mod ->
+                if (onClick != null) {
+                    if (isFluid) {
+                        mod.clickable(
+                            enabled = enabled,
+                            interactionSource = interactionSource,
+                            indication = BounceIndication,
+                            onClick = onClick
+                        )
+                    } else {
+                        mod.clickable(enabled = enabled, onClick = onClick)
+                    }
+                } else mod
+            }
             .padding(horizontal = 4.dp),
         tonalElevation = 0.dp
     )
 }
-
 
 @Composable
 fun NewMenuSectionHeader(
@@ -157,8 +198,6 @@ fun NewMenuSectionHeader(
     )
 }
 
-
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun NewActionGrid(
     actions: List<NewAction>,
@@ -186,8 +225,10 @@ fun NewActionGrid(
                         }
                     }
 
-                    val bgColor = if (action.backgroundColor != Color.Unspecified) action.backgroundColor else MaterialTheme.colorScheme.surfaceVariant
-                    val contentCol = if (action.contentColor != Color.Unspecified) action.contentColor else MaterialTheme.colorScheme.onSurfaceVariant
+                    val bgColor =
+                        if (action.backgroundColor != Color.Unspecified) action.backgroundColor else MaterialTheme.colorScheme.surfaceVariant
+                    val contentCol =
+                        if (action.contentColor != Color.Unspecified) action.contentColor else MaterialTheme.colorScheme.onSurfaceVariant
 
                     ToggleButton(
                         checked = false,
@@ -224,7 +265,6 @@ fun NewActionGrid(
     }
 }
 
-
 data class NewAction(
     val icon: @Composable () -> Unit,
     val text: String,
@@ -233,7 +273,6 @@ data class NewAction(
     val backgroundColor: Color = Color.Unspecified,
     val contentColor: Color = Color.Unspecified
 )
-
 
 @Composable
 fun NewMenuContent(
@@ -246,25 +285,21 @@ fun NewMenuContent(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        
+
         headerContent?.invoke()
-        
-        
+
         actionGrid?.invoke()
-        
-        
+
         if (headerContent != null && actionGrid != null) {
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 16.dp),
                 color = MaterialTheme.colorScheme.outlineVariant
             )
         }
-        
-        
+
         menuItems?.invoke()
     }
 }
-
 
 @Composable
 fun NewIconButton(
@@ -280,7 +315,7 @@ fun NewIconButton(
         animationSpec = tween(200),
         label = "background"
     )
-    
+
     val animatedContent by animateColorAsState(
         targetValue = if (enabled) contentColor else contentColor.copy(alpha = 0.5f),
         animationSpec = tween(200),
@@ -308,7 +343,6 @@ fun NewIconButton(
         }
     }
 }
-
 
 @Composable
 fun NewMenuContainer(

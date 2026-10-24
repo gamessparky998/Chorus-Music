@@ -44,7 +44,7 @@ fun RingtoneProgressDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 if (!isComplete) {
                     LinearProgressIndicator(
                         progress = { progress },

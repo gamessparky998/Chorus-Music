@@ -196,7 +196,7 @@
     <string name="discord_use_details">Usar detalhes em vez de estado</string>
     <string name="discord_use_details_description">Mostrar titulo da música proeminentemente em vez de nome do artista</string>
     <string name="lyrics_romanization_cyrillic">Cirílica</string>
-    <string name="line_by_line_option_title">EXPERIMENTAL: Detetar língua linha por linha</string>
+    <string name="line_by_line_option_title">Detetar língua linha por linha</string>
     <string name="line_by_line_dialog_title">Tens a certeza?</string>
     <string name="line_by_line_dialog_enable">Habilitar</string>
     <string name="settings_section_ui">Interface</string>
@@ -269,7 +269,7 @@
     <string name="lyrics_romanize_serbian">Romanizar letras em sérvio</string>
     <string name="lyrics_romanize_bulgarian">Romanizar letras em búlgaro</string>
     <string name="line_by_line_option_desc">O idioma cirílico será detetado linha por linha, em vez de toda a música.</string>
-    <string name="line_by_line_dialog_desc">Esta é uma funcionalidade experimental que pode funcionar ou não. \n\nPor predefinição, o idioma é determinado a partir da música inteira, mas com esta opção ativada, ele será determinado linha por linha. Isso permitirá que músicas em vários idiomas funcionem, MAS o idioma pode nem sempre estar correto (por exemplo, se houver uma letra em ucraniano que não contenha letras específicas do ucraniano, ela pode ser romanizada como russo). \n\nSe não tiver problemas, recomenda-se manter esta opção desativada.</string>
+    <string name="line_by_line_dialog_desc">Por predefinição, o idioma é determinado a partir da música inteira, mas com esta opção ativada, ele será determinado linha por linha. Isso permitirá que músicas em vários idiomas funcionem, MAS o idioma pode nem sempre estar correto (por exemplo, se houver uma letra em ucraniano que não contenha letras específicas do ucraniano, ela pode ser romanizada como russo). \n\nSe não tiver problemas, recomenda-se manter esta opção desativada.</string>
     <string name="romanize_current_track">Romanizar a faixa atual</string>
     <string name="update_channel_name">Atualizações da aplicação</string>
     <string name="audio_offload">Habilitar descarregamento</string>

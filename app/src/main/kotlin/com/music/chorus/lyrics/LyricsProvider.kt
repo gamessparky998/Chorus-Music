@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.lyrics
 
 import android.content.Context

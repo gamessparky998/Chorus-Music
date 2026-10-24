@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.menu
 
 import android.content.Intent
@@ -152,10 +150,10 @@ fun PlaylistMenu(
             title = { Text(text = stringResource(R.string.edit_playlist)) },
             onDismiss = { showEditDialog = false },
             initialTextFieldValue =
-            TextFieldValue(
-                playlist.playlist.name,
-                TextRange(playlist.playlist.name.length),
-            ),
+                TextFieldValue(
+                    playlist.playlist.name,
+                    TextRange(playlist.playlist.name.length),
+                ),
             onDone = { name ->
                 onDismiss()
                 database.query {
@@ -246,12 +244,12 @@ fun PlaylistMenu(
                         showDeletePlaylistDialog = false
                         onDismiss()
                         database.transaction {
-                            
+
                             if (playlist.playlist.bookmarkedAt != null) {
-                                
+
                                 update(playlist.playlist.toggleLike())
                             }
-                            
+
                             delete(playlist.playlist)
                         }
 
@@ -368,7 +366,10 @@ fun PlaylistMenu(
                             val intent = Intent().apply {
                                 action = Intent.ACTION_SEND
                                 type = "text/plain"
-                                putExtra(Intent.EXTRA_TEXT, "https://music.youtube.com/playlist?list=${dbPlaylist?.playlist?.browseId}")
+                                putExtra(
+                                    Intent.EXTRA_TEXT,
+                                    "https://music.youtube.com/playlist?list=${dbPlaylist?.playlist?.browseId}"
+                                )
                             }
                             context.startActivity(Intent.createChooser(intent, null))
                         }
@@ -478,7 +479,9 @@ fun PlaylistMenu(
                         Material3MenuItemData(
                             title = {
                                 Text(
-                                    text = if (playlist.playlist.isPinned) stringResource(R.string.unpin_playlist) else stringResource(R.string.pin_playlist)
+                                    text = if (playlist.playlist.isPinned) stringResource(R.string.unpin_playlist) else stringResource(
+                                        R.string.pin_playlist
+                                    )
                                 )
                             },
                             icon = {
@@ -497,10 +500,10 @@ fun PlaylistMenu(
                     )
                     add(
                         Material3MenuItemData(
-                            title = { 
+                            title = {
                                 Text(
-                                    text = if (isPinned) "Unpin from Speed dial" else "Pin to Speed dial" 
-                                ) 
+                                    text = if (isPinned) "Unpin from Speed dial" else "Pin to Speed dial"
+                                )
                             },
                             icon = {
                                 Icon(
@@ -549,6 +552,7 @@ fun PlaylistMenu(
                                         }
                                     )
                                 }
+
                                 Download.STATE_QUEUED, Download.STATE_DOWNLOADING -> {
                                     Material3MenuItemData(
                                         title = { Text(text = stringResource(R.string.downloading)) },
@@ -563,6 +567,7 @@ fun PlaylistMenu(
                                         }
                                     )
                                 }
+
                                 else -> {
                                     Material3MenuItemData(
                                         title = { Text(text = stringResource(R.string.action_download)) },
@@ -663,13 +668,20 @@ fun PlaylistMenu(
                                                     if (successCount == songs.size) {
                                                         Toast.makeText(
                                                             context,
-                                                            context.getString(R.string.sync_completed_success, songs.size),
+                                                            context.getString(
+                                                                R.string.sync_completed_success,
+                                                                songs.size
+                                                            ),
                                                             Toast.LENGTH_SHORT
                                                         ).show()
                                                     } else {
                                                         Toast.makeText(
                                                             context,
-                                                            context.getString(R.string.sync_completed_partial, successCount, songs.size),
+                                                            context.getString(
+                                                                R.string.sync_completed_partial,
+                                                                successCount,
+                                                                songs.size
+                                                            ),
                                                             Toast.LENGTH_LONG
                                                         ).show()
                                                     }
@@ -678,7 +690,11 @@ fun PlaylistMenu(
                                             }
                                         } catch (e: Exception) {
                                             kotlinx.coroutines.withContext(Dispatchers.Main) {
-                                                Toast.makeText(context, e.message ?: "Failed to sync", Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(
+                                                    context,
+                                                    e.message ?: "Failed to sync",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
                                                 isSyncing = false
                                             }
                                         }

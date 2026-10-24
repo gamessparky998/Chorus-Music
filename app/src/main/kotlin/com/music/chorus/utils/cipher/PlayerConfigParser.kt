@@ -3,7 +3,6 @@ package pushkar.chorus.music.utils.cipher
 import org.json.JSONException
 import org.json.JSONObject
 
-
 object PlayerConfigParser {
     const val SUPPORTED_SCHEMA_VERSION = 1
 
@@ -56,7 +55,7 @@ object PlayerConfigParser {
                 continue
             }
             val (config, aliases) = entry
-            
+
             val keys = listOf(hash) + aliases
             val duplicate = keys.firstOrNull { it in configs }
                 ?: keys.groupingBy { it }.eachCount().entries.firstOrNull { it.value > 1 }?.key

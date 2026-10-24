@@ -1,3 +1,5 @@
+@file:Suppress("OPT_IN_USAGE_ERROR", "OPT_IN_USAGE")
+
 package pushkar.chorus.music.ui.screens.search
 
 import androidx.compose.foundation.background
@@ -27,7 +29,8 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -159,7 +162,6 @@ fun MoodThumbnail(title: String, modifier: Modifier = Modifier) {
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
     navController: NavController,
@@ -187,7 +189,6 @@ fun SearchScreen(
 
     LaunchedEffect(searchActive) {
         if (searchActive) {
-
 
             kotlinx.coroutines.delay(100)
             showSearchContent = true
@@ -438,7 +439,7 @@ fun SearchScreen(
                                         modifier = Modifier
                                             .width(32.dp)
                                             .height(3.dp)
-                                            .clip(RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp))
+                                            .clip(if (isFluidTheme()) ContinuousRoundedRectangle(topStart = 3.dp, topEnd = 3.dp) else RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp))
                                             .background(MaterialTheme.colorScheme.primary)
                                     )
                                 }
@@ -491,7 +492,6 @@ fun SearchScreen(
         }
     }
 
-
     DisposableEffect(lifecycleOwner, isPlayerExpanded) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
@@ -521,7 +521,6 @@ fun SearchScreen(
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
-
 
         if (isPlayerExpanded) {
             keyboardController?.hide()
@@ -568,7 +567,7 @@ fun ExploreTabContent(
                             modifier = Modifier
                                 .weight(1f)
                                 .aspectRatio(1.5f)
-                                .clip(RoundedCornerShape(8.dp))
+                                .clip(if (isFluidTheme()) ContinuousRoundedRectangle(12.dp) else RoundedCornerShape(8.dp))
                                 .background(
                                     brush = androidx.compose.ui.graphics.Brush.linearGradient(
                                         colors = listOf(
@@ -601,7 +600,7 @@ fun ExploreTabContent(
                                     .offset(x = 16.dp, y = 16.dp)
                                     .size(64.dp)
                                     .graphicsLayer { rotationZ = 25f }
-                                    .clip(RoundedCornerShape(8.dp))
+                                    .clip(if (isFluidTheme()) ContinuousRoundedRectangle(12.dp) else RoundedCornerShape(8.dp))
                                     .background(androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.3f))
                             )
                         }

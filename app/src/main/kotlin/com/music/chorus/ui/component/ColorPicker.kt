@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.component
 
 import androidx.compose.foundation.Canvas
@@ -45,10 +43,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import pushkar.chorus.music.R
 
-
 object ColorPickerConversions {
 
-    
     fun hsvToColor(hue: Float, saturation: Float, value: Float): Color {
         val h = ((hue % 360f) + 360f) % 360f
         val s = saturation.coerceIn(0f, 1f)
@@ -69,7 +65,6 @@ object ColorPickerConversions {
         return Color(r + m, g + m, b + m)
     }
 
-    
     fun colorToHsv(color: Color): Triple<Float, Float, Float> {
         val r = color.red
         val g = color.green
@@ -88,13 +83,11 @@ object ColorPickerConversions {
         return Triple(hue, saturation, max)
     }
 
-    
     fun colorToHex(color: Color): String {
         val argb = color.toArgb()
         return "%06X".format(argb and 0xFFFFFF)
     }
 
-    
     fun parseHexColor(hex: String): Color? {
         val cleaned = hex.trim().removePrefix("#")
         if (cleaned.length != 6) return null
@@ -117,7 +110,6 @@ private val presetColors = listOf(
     Color(0xFFBA68C8),
     Color(0xFFF06292),
 )
-
 
 @Composable
 fun ColorPickerDialog(

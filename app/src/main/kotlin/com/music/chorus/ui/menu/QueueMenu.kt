@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.menu
 
 import android.content.Intent
@@ -195,7 +193,6 @@ fun QueueMenu(
         }
     }
 
-    
     MediaMetadataListItem(
         mediaMetadata = mediaMetadata,
         shape = MaterialTheme.shapes.large,
@@ -248,7 +245,7 @@ fun QueueMenu(
             bottom = 8.dp + WindowInsets.systemBars.asPaddingValues().calculateBottomPadding(),
         ),
     ) {
-        
+
         item {
             NewActionGrid(
                 actions = listOf(
@@ -308,7 +305,7 @@ fun QueueMenu(
                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 16.dp)
             )
         }
-        
+
         item {
             Material3MenuGroup(
                 items = listOf(
@@ -354,7 +351,6 @@ fun QueueMenu(
 
         item { Spacer(modifier = Modifier.height(12.dp)) }
 
-        
         item {
             Material3MenuGroup(
                 items = listOf(
@@ -439,7 +435,6 @@ fun QueueMenu(
 
         item { Spacer(modifier = Modifier.height(12.dp)) }
 
-        
         item {
             Material3MenuGroup(
                 items = buildList {
@@ -505,7 +500,6 @@ fun QueueMenu(
 
         item { Spacer(modifier = Modifier.height(12.dp)) }
 
-        
         item {
             Material3MenuGroup(
                 items = buildList {
@@ -522,8 +516,16 @@ fun QueueMenu(
                             },
                             onClick = {
                                 refetchIconDegree -= 360
-                                androidx.media3.exoplayer.offline.DownloadService.sendRemoveDownload(context, pushkar.chorus.music.playback.ExoDownloadService::class.java, mediaMetadata.id, false)
-                                val intent = android.content.Intent(context, pushkar.chorus.music.playback.MusicService::class.java).apply {
+                                androidx.media3.exoplayer.offline.DownloadService.sendRemoveDownload(
+                                    context,
+                                    pushkar.chorus.music.playback.ExoDownloadService::class.java,
+                                    mediaMetadata.id,
+                                    false
+                                )
+                                val intent = android.content.Intent(
+                                    context,
+                                    pushkar.chorus.music.playback.MusicService::class.java
+                                ).apply {
                                     action = "pushkar.chorus.music.ACTION_CLEAR_SONG_CACHE"
                                     putExtra("songId", mediaMetadata.id)
                                 }

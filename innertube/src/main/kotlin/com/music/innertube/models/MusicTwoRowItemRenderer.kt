@@ -6,7 +6,6 @@ import com.music.innertube.models.BrowseEndpoint.BrowseEndpointContextSupportedC
 import com.music.innertube.models.BrowseEndpoint.BrowseEndpointContextSupportedConfigs.BrowseEndpointContextMusicConfig.Companion.MUSIC_PAGE_TYPE_PLAYLIST
 import kotlinx.serialization.Serializable
 
-
 @Serializable
 data class MusicTwoRowItemRenderer(
     val title: Runs,

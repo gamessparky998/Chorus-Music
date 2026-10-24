@@ -1,3 +1,5 @@
+@file:Suppress("OPT_IN_USAGE_ERROR", "OPT_IN_USAGE")
+
 package pushkar.chorus.music.ui.screens.equalizer.axion
 
 import androidx.compose.animation.*
@@ -37,7 +39,6 @@ import pushkar.chorus.music.ui.utils.backToMain
 import kotlin.math.abs
 import racra.compose.smooth_corner_rect_library.AbsoluteSmoothCornerShape
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AxionEqScreen(
     onBackClick: () -> Unit,
@@ -175,13 +176,13 @@ private fun SimpleEqMode(
     isDirty: Boolean,
     onSaveClick: () -> Unit
 ) {
-    
+
     var bass by remember { mutableFloatStateOf(0f) }
     var mid by remember { mutableFloatStateOf(0f) }
     var treble by remember { mutableFloatStateOf(0f) }
 
     fun syncFromBands() {
-        
+
         bass = bandGains[1] / 50f
         mid = (bandGains[4] + bandGains[5]) / 2f / 50f
         treble = bandGains[8] / 50f
@@ -192,8 +193,7 @@ private fun SimpleEqMode(
         val mv = (mid * 50f).coerceIn(-600f, 600f)
         val tv = (treble * 50f).coerceIn(-600f, 600f)
         val newGains = FloatArray(10)
-        
-        
+
         newGains[0] = bv * 1.1f
         newGains[1] = bv * 1.0f
         newGains[2] = bv * 0.7f + mv * 0.3f
@@ -203,8 +203,8 @@ private fun SimpleEqMode(
         newGains[6] = mv * 0.8f + tv * 0.2f
         newGains[7] = mv * 0.3f + tv * 0.7f
         newGains[8] = tv * 1.0f
-        newGains[9] = tv * 1.15f 
-        
+        newGains[9] = tv * 1.15f
+
         viewModel.setBandsGains(newGains, fromUser = true)
     }
 
@@ -255,7 +255,7 @@ private fun SimpleEqMode(
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp), 
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         CircularEqControl(
             bass = bass, mid = mid, treble = treble,
@@ -320,7 +320,6 @@ private fun SimpleEqMode(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun PresetSection(
     title: String,
@@ -347,7 +346,7 @@ private fun PresetSection(
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)
                 )
-                
+
                 if (onEditClick != null && enabled) {
                     androidx.compose.material3.IconButton(
                         onClick = onEditClick,
@@ -371,7 +370,7 @@ private fun PresetSection(
             presets.forEachIndexed { index, (nameRes, bands) ->
                 val name = presetNames?.getOrNull(index) ?: stringResource(nameRes)
                 val isSelected = remember(bandGains) {
-                    bandGains.size == bands.size && 
+                    bandGains.size == bands.size &&
                     bandGains.zip(bands).all { (g, b) -> abs(g - b) < 10f }
                 }
 
@@ -398,14 +397,13 @@ private fun PresetSection(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SavePresetDialog(
     onDismiss: () -> Unit,
     onSave: (String) -> Unit
 ) {
     var name by remember { mutableStateOf("") }
-    
+
     val cardShape = AbsoluteSmoothCornerShape(30.dp, 60)
     val blockShape = AbsoluteSmoothCornerShape(22.dp, 60)
     val actionShape = AbsoluteSmoothCornerShape(18.dp, 60)
@@ -431,14 +429,14 @@ private fun SavePresetDialog(
                         modifier = Modifier.padding(14.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
-                        
+
                         Text(
                             text = stringResource(R.string.eq_save_dialog_title),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(top = 4.dp)
                         )
-                        
+
                         OutlinedTextField(
                             value = name,
                             onValueChange = { name = it },
@@ -465,7 +463,7 @@ private fun SavePresetDialog(
                     ) {
                         Text(text = stringResource(R.string.cancel))
                     }
-                    
+
                     OutlinedButton(
                         onClick = { if (name.isNotBlank()) onSave(name) },
                         enabled = name.isNotBlank(),
@@ -587,7 +585,6 @@ private fun EqBandSlider(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ManagePresetsDialog(
     customProfiles: List<SavedEQProfile>,
@@ -595,7 +592,7 @@ private fun ManagePresetsDialog(
     onDeleteSelected: (List<String>) -> Unit
 ) {
     val selectedIds = remember { mutableStateListOf<String>() }
-    
+
     val cardShape = AbsoluteSmoothCornerShape(30.dp, 60)
     val blockShape = AbsoluteSmoothCornerShape(22.dp, 60)
     val actionShape = AbsoluteSmoothCornerShape(18.dp, 60)
@@ -626,7 +623,7 @@ private fun ManagePresetsDialog(
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                         )
-                        
+
                         HorizontalDivider(
                             modifier = Modifier.padding(vertical = 4.dp),
                             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
@@ -688,7 +685,7 @@ private fun ManagePresetsDialog(
                     TextButton(onClick = onDismiss, shape = actionShape) {
                         Text(text = stringResource(R.string.cancel))
                     }
-                    
+
                     if (selectedIds.isNotEmpty()) {
                         OutlinedButton(
                             onClick = { onDeleteSelected(selectedIds.toList()) },

@@ -227,7 +227,7 @@ data class SearchSummaryPage(
             val listRun = (secondaryLine + thirdLine).clean()
             return when {
                 renderer.isSong -> {
-                    
+
                     val libraryTokens = PageHelper.extractLibraryTokensFromMenuItems(renderer.menu?.menuRenderer?.items)
 
                     SongItem(

@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.constants
 
 import android.os.Bundle

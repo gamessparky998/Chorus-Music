@@ -1,7 +1,3 @@
-
-
-@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
-
 package pushkar.chorus.music.ui.screens.settings
 
 import android.content.Intent
@@ -15,6 +11,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -72,8 +70,6 @@ private val DiscordActivityStatusOptions = listOf("online", "dnd", "idle", "stre
 private val DiscordPlatformOptions = listOf("desktop", "xbox", "samsung", "ios", "android", "embedded", "ps4", "ps5")
 private val DiscordActivityTypeOptions = listOf("PLAYING", "STREAMING", "LISTENING", "WATCHING", "COMPETING")
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiscordSettings(
     navController: NavController,
@@ -183,8 +179,6 @@ fun DiscordSettings(
         authorizationMessage = null
         authorizationUiModeName = DiscordAuthorizationUiMode.Waiting.name
     }
-
-
 
     LaunchedEffect(authorizationUiMode) {
         if (authorizationUiMode == DiscordAuthorizationUiMode.Success ||
@@ -305,7 +299,6 @@ fun DiscordSettings(
         defaultValue = false,
     )
 
-
     LaunchedEffect(
         listOf(
             activityStatusSelection,
@@ -374,14 +367,14 @@ fun DiscordSettings(
                         onDismissRequest = { threeDotMenuExpanded = false },
                     ) {
                         DropdownMenuItem(
-                            text = { Text(stringResource(R.string.experiment_settings)) },
+                            text = { Text(stringResource(R.string.discord_button_settings)) },
                             onClick = {
                                 threeDotMenuExpanded = false
-                                navController.navigate("settings/discord/experimental")
+                                navController.navigate("settings/discord/buttons")
                             },
                             leadingIcon = {
                                 Icon(
-                                    painter = painterResource(R.drawable.bug_report),
+                                    painter = painterResource(R.drawable.link),
                                     contentDescription = null,
                                 )
                             },
@@ -393,7 +386,7 @@ fun DiscordSettings(
                         containerColor = MaterialTheme.colorScheme.surface,
                         scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
                     ),
-                scrollBehavior = scrollBehavior,
+                scrollBehavior = scrollBehavior
             )
         },
     ) { innerPadding ->
@@ -478,7 +471,7 @@ fun DiscordSettings(
                                                 )
                                             }
                                         },
-                                        shapes = ButtonDefaults.shapes(),
+                                        shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else ButtonDefaults.shape,
                                     ) {
                                         Text(stringResource(R.string.refresh))
                                     }
@@ -591,7 +584,6 @@ fun DiscordSettings(
                         )
                     }
 
-
                     item {
                         ListPreference(
                             title = { Text(stringResource(R.string.small_image)) },
@@ -663,7 +655,7 @@ fun DiscordSettings(
                             authorizationSession = DiscordOAuthRepository.createAuthorizationSession()
                             showLogoutConfirm = false
                         },
-                        shapes = ButtonDefaults.shapes(),
+                        shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else ButtonDefaults.shape,
                     ) {
                         Text(stringResource(R.string.logout_confirm_yes))
                     }
@@ -671,11 +663,11 @@ fun DiscordSettings(
                 dismissButton = {
                     TextButton(
                         onClick = { showLogoutConfirm = false },
-                        shapes = ButtonDefaults.shapes(),
+                        shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else ButtonDefaults.shape,
                     ) {
                         Text(stringResource(R.string.logout_confirm_no))
                     }
-                },
+                }
             )
         }
 
@@ -694,7 +686,7 @@ fun DiscordSettings(
                             discordToken = token
                             authorizationMessage = context.getString(R.string.discord_authorization_success)
                             authorizationUiModeName = DiscordAuthorizationUiMode.Success.name
-                            
+
                         }
                     )
                 }
@@ -805,10 +797,10 @@ private fun DiscordAccountGroupCard(
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.extraLarge,
+        shape = if (isFluidTheme()) ContinuousRoundedRectangle(28.dp) else MaterialTheme.shapes.extraLarge,
         colors =
             CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
             ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
@@ -818,7 +810,7 @@ private fun DiscordAccountGroupCard(
         ) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(
                     modifier =
@@ -826,7 +818,7 @@ private fun DiscordAccountGroupCard(
                             .size(88.dp)
                             .shadow(
                                 elevation = 30.dp,
-                                shape = CircleShape,
+                                shape = if (isFluidTheme()) ContinuousRoundedRectangle(24.dp) else CircleShape,
                                 clip = false,
                                 ambientColor = avatarGlowColor.copy(alpha = 0.56f),
                                 spotColor = avatarGlowColor.copy(alpha = 0.74f),
@@ -834,7 +826,7 @@ private fun DiscordAccountGroupCard(
                 ) {
                     Surface(
                         modifier = Modifier.fillMaxSize(),
-                        shape = CircleShape,
+                        shape = if (isFluidTheme()) ContinuousRoundedRectangle(24.dp) else CircleShape,
                         color = MaterialTheme.colorScheme.secondaryContainer,
                     ) {
                         Box(contentAlignment = Alignment.Center) {
@@ -852,7 +844,7 @@ private fun DiscordAccountGroupCard(
                                     modifier =
                                         Modifier
                                             .fillMaxSize()
-                                            .clip(CircleShape),
+                                            .clip(if (isFluidTheme()) ContinuousRoundedRectangle(24.dp) else CircleShape),
                                 )
                             }
                         }
@@ -883,11 +875,11 @@ private fun DiscordAccountGroupCard(
             AnimatedVisibility(
                 visible =
                     authorizationUiMode != DiscordAuthorizationUiMode.Idle ||
-                        (isLoggedIn && !isAccessTokenExpired),
+                        (isLoggedIn && !isAccessTokenExpired)
             ) {
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.large,
+                    shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else MaterialTheme.shapes.large,
                     color = sessionContainerColor,
                 ) {
                     Row(
@@ -927,13 +919,13 @@ private fun DiscordAccountGroupCard(
 
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.large,
+                shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else MaterialTheme.shapes.large,
                 color =
                     if (discordRpcEnabled && isLoggedIn) {
                         MaterialTheme.colorScheme.primaryContainer
                     } else {
                         MaterialTheme.colorScheme.surfaceContainerHighest
-                    },
+                    }
             ) {
                 Row(
                     modifier =
@@ -944,7 +936,7 @@ private fun DiscordAccountGroupCard(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Surface(
-                        shape = MaterialTheme.shapes.medium,
+                        shape = if (isFluidTheme()) ContinuousRoundedRectangle(12.dp) else MaterialTheme.shapes.medium,
                         color = MaterialTheme.colorScheme.surface,
                     ) {
                         Box(
@@ -988,7 +980,7 @@ private fun DiscordAccountGroupCard(
                         Modifier
                             .fillMaxWidth()
                             .heightIn(min = 56.dp),
-                    shapes = ButtonDefaults.shapes(),
+                    shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else ButtonDefaults.shape,
                 ) {
                     Text(stringResource(R.string.action_logout))
                 }
@@ -1000,14 +992,14 @@ private fun DiscordAccountGroupCard(
                         Modifier
                             .fillMaxWidth()
                             .heightIn(min = 56.dp),
-                    shapes = ButtonDefaults.shapes(),
+                    shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else ButtonDefaults.shape,
                 ) {
                     Text(stringResource(R.string.discord_open_authorization))
                 }
             }
 
             AnimatedVisibility(
-                visible = isAccessTokenExpired && authorizationUiMode == DiscordAuthorizationUiMode.Idle,
+                visible = isAccessTokenExpired && authorizationUiMode == DiscordAuthorizationUiMode.Idle
             ) {
                 DiscordReauthorizeWarningRow(
                     onReauthorize = onReauthorize,
@@ -1026,7 +1018,7 @@ private fun DiscordReauthorizeWarningRow(
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large,
+        shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else MaterialTheme.shapes.large,
         color = MaterialTheme.colorScheme.errorContainer,
     ) {
         ListItem(
@@ -1053,7 +1045,7 @@ private fun DiscordReauthorizeWarningRow(
                         ButtonDefaults.textButtonColors(
                             contentColor = MaterialTheme.colorScheme.onErrorContainer,
                         ),
-                    shapes = ButtonDefaults.shapes(),
+                    shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else ButtonDefaults.shape,
                 ) {
                     Text(stringResource(R.string.discord_reauthorize_action))
                 }
@@ -1125,7 +1117,6 @@ private fun discordImageTypeLabel(value: String): String =
         else -> value
     }
 
-
 @Composable
 fun EditablePreference(
     title: String,
@@ -1141,7 +1132,10 @@ fun EditablePreference(
         description = description ?: if (value.isEmpty()) defaultValue else value,
         icon = { Icon(painterResource(iconRes), null) },
         trailingContent = {
-            TextButton(onClick = { showDialog = true }, shapes = ButtonDefaults.shapes()) { Text("Edit") }
+            TextButton(
+                onClick = { showDialog = true },
+                shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else ButtonDefaults.shape
+            ) { Text("Edit") }
         },
     )
     if (showDialog) {
@@ -1152,10 +1146,10 @@ fun EditablePreference(
                 TextButton(onClick = {
                     onValueChange(if (text.isBlank()) "" else text)
                     showDialog = false
-                }, shapes = ButtonDefaults.shapes()) { Text("Save") }
+                }, shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else ButtonDefaults.shape) { Text("Save") }
             },
             dismissButton = {
-                TextButton(onClick = { showDialog = false }, shapes = ButtonDefaults.shapes()) { Text("Cancel") }
+                TextButton(onClick = { showDialog = false }, shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else ButtonDefaults.shape) { Text("Cancel") }
             },
             title = { Text("Edit $title") },
             text = {
@@ -1258,15 +1252,15 @@ fun RichPresence(
             Text(
                 text = stringResource(R.string.preview),
                 style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.padding(bottom = 16.dp),
+                modifier = Modifier.padding(bottom = 16.dp)
             )
         },
         content = {
             Surface(
                 color = MaterialTheme.colorScheme.surfaceContainer,
-                shape = MaterialTheme.shapes.medium,
+                shape = if (isFluidTheme()) ContinuousRoundedRectangle(20.dp) else MaterialTheme.shapes.medium,
                 shadowElevation = 6.dp,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -1299,14 +1293,14 @@ fun RichPresence(
                                 modifier =
                                     Modifier
                                         .size(96.dp)
-                                        .clip(RoundedCornerShape(12.dp))
+                                        .clip(if (isFluidTheme()) ContinuousRoundedRectangle(12.dp) else RoundedCornerShape(12.dp))
                                         .align(Alignment.TopStart)
                                         .run {
                                             if (song == null) {
                                                 border(
                                                     2.dp,
                                                     MaterialTheme.colorScheme.onSurface,
-                                                    RoundedCornerShape(12.dp),
+                                                    if (isFluidTheme()) ContinuousRoundedRectangle(12.dp) else RoundedCornerShape(12.dp),
                                                 )
                                             } else {
                                                 this
@@ -1404,7 +1398,7 @@ fun RichPresence(
                                 }
                             },
                             modifier = Modifier.fillMaxWidth(),
-                            shapes = ButtonDefaults.shapes(),
+                            shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else ButtonDefaults.shape,
                         ) {
                             Text(button1Label)
                         }
@@ -1419,7 +1413,7 @@ fun RichPresence(
                                 }
                             },
                             modifier = Modifier.fillMaxWidth(),
-                            shapes = ButtonDefaults.shapes(),
+                            shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else ButtonDefaults.shape,
                         ) {
                             Text(button2Label)
                         }
@@ -1466,20 +1460,20 @@ fun SongProgressBar(
                 Modifier
                     .fillMaxWidth()
                     .height(6.dp)
-                    .clip(RoundedCornerShape(3.dp)),
+                    .clip(if (isFluidTheme()) ContinuousRoundedRectangle(3.dp) else RoundedCornerShape(3.dp)),
         )
         Row(modifier = Modifier.fillMaxWidth()) {
             Text(
                 text = makeTimeString(displayedTime),
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Start,
-                style = MaterialTheme.typography.labelSmall,
+                style = MaterialTheme.typography.labelSmall
             )
             Text(
                 text = makeTimeString(durationMillis),
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.End,
-                style = MaterialTheme.typography.labelSmall,
+                style = MaterialTheme.typography.labelSmall
             )
         }
     }

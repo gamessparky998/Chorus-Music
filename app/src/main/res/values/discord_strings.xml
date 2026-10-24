@@ -44,8 +44,7 @@
     <string name="discord_url_source_artist">Artist</string>
     <string name="discord_url_source_album">Album</string>
     <string name="discord_url_source_custom">Custom</string>
-    <string name="experiment_settings">Experimental Settings</string>
-    <string name="experiment">Experiment</string>
+    <string name="discord_button_settings">Activity Buttons</string>
     <string name="refresh">Refresh</string>
     <string name="description_refresh">Refresh Discord Presence</string>
     <string name="discord_refresh_success">Successfully refreshed Discord presence!</string>

@@ -45,9 +45,9 @@ fun CircularEqControl(
     val textMeasurer = rememberTextMeasurer()
     val primary = MaterialTheme.colorScheme.primary
     val primaryContainer = MaterialTheme.colorScheme.primaryContainer
-    val outline = MaterialTheme.colorScheme.outline 
+    val outline = MaterialTheme.colorScheme.outline
     val onSurface = MaterialTheme.colorScheme.onSurface
-    val surfaceContainer = MaterialTheme.colorScheme.surfaceContainerLow 
+    val surfaceContainer = MaterialTheme.colorScheme.surfaceContainerLow
     val labelStyle = TextStyle(fontSize = 11.sp, color = onSurface)
     val valueStyle = TextStyle(fontSize = 13.sp, color = onSurface)
 
@@ -115,7 +115,7 @@ fun CircularEqControl(
                         val change = event.changes.firstOrNull() ?: break
                         if (!change.pressed) break
                         change.consume()
-                        
+
                         val dragV = calcValueForAxis(change.position, size.width.toFloat(), size.height.toFloat(), axis)
                         dispatchToAxis(axis, dragV)
                     }

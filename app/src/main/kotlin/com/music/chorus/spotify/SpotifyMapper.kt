@@ -1,14 +1,10 @@
-
-
 package pushkar.chorus.music.spotify
 
 import pushkar.chorus.music.spotify.models.SpotifyPlaylist
 import pushkar.chorus.music.spotify.models.SpotifyTrack
 
-
 object SpotifyMapper {
 
-    
     private val FEAT_PATTERN = Regex("\\(feat\\..*?\\)")
     private val FT_PATTERN = Regex("\\(ft\\..*?\\)")
     private val BRACKET_PATTERN = Regex("\\[.*?]")
@@ -20,7 +16,6 @@ object SpotifyMapper {
     private const val NORM_CACHE_MAX_SIZE = 256
     private const val EARLY_EXIT_THRESHOLD = 0.95
 
-    
     private val normalizeCache = object : LinkedHashMap<String, String>(
         NORM_CACHE_MAX_SIZE, 0.75f, true
     ) {
@@ -28,7 +23,6 @@ object SpotifyMapper {
             size > NORM_CACHE_MAX_SIZE
     }
 
-    
     private val bigramCache = object : LinkedHashMap<String, Set<String>>(
         NORM_CACHE_MAX_SIZE, 0.75f, true
     ) {
@@ -36,7 +30,6 @@ object SpotifyMapper {
             size > NORM_CACHE_MAX_SIZE
     }
 
-    
     data class PrecomputedTrack(
         val normalizedTitle: String,
         val titleBigrams: Set<String>,
@@ -45,23 +38,20 @@ object SpotifyMapper {
         val durationMs: Int,
     )
 
-    
     fun buildSearchQuery(track: SpotifyTrack): String {
         val artist = track.artists.firstOrNull()?.name.orEmpty()
         val title = track.name
         return if (artist.isEmpty()) title else "$artist $title"
     }
 
-    
     fun getPlaylistThumbnail(playlist: SpotifyPlaylist): String? {
         return playlist.images.let { images ->
-            
+
             images.firstOrNull { it.width in 200..400 }?.url
                 ?: images.firstOrNull()?.url
         }
     }
 
-    
     fun getTrackThumbnail(track: SpotifyTrack): String? {
         return track.album?.images?.let { images ->
             images.firstOrNull { it.width in 200..400 }?.url
@@ -69,7 +59,6 @@ object SpotifyMapper {
         }
     }
 
-    
     fun precompute(
         title: String,
         artist: String,
@@ -86,7 +75,6 @@ object SpotifyMapper {
         )
     }
 
-    
     fun matchScore(
         spotifyTitle: String,
         spotifyArtist: String,
@@ -113,7 +101,6 @@ object SpotifyMapper {
         return titleScore * 0.45 + artistScore * 0.35 + durationScore * 0.20
     }
 
-    
     fun matchScorePrecomputed(
         precomputed: PrecomputedTrack,
         candidateTitle: String,
@@ -136,7 +123,6 @@ object SpotifyMapper {
         return titleScore * 0.45 + artistScore * 0.35 + durationScore * 0.20
     }
 
-    
     fun earlyExitThreshold(): Double = EARLY_EXIT_THRESHOLD
 
     private fun durationScore(spotifyDurationMs: Int, candidateDurationSec: Int?): Double {
@@ -151,7 +137,6 @@ object SpotifyMapper {
         }
     }
 
-    
     private fun cachedNormalize(title: String): String {
         normalizeCache[title]?.let { return it }
         val normalized = normalizeTitle(title)
@@ -159,7 +144,6 @@ object SpotifyMapper {
         return normalized
     }
 
-    
     private fun cachedBigrams(normalized: String): Set<String> {
         bigramCache[normalized]?.let { return it }
         val bigrams = if (normalized.length < 2) emptySet() else normalized.windowed(2).toSet()
@@ -179,7 +163,6 @@ object SpotifyMapper {
             .trim()
     }
 
-    
     private fun bigramSimilarity(
         a: String, bigramsA: Set<String>,
         b: String, bigramsB: Set<String>,

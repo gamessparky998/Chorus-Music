@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.menu
 
 import android.content.Context
@@ -110,10 +108,20 @@ fun PlayerMenu(
     val context = LocalContext.current
     val database = LocalDatabase.current
     val playerConnection = LocalPlayerConnection.current ?: return
-    
+
     val audioManager = remember { context.getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager }
-    var systemVolume by remember { androidx.compose.runtime.mutableFloatStateOf(audioManager.getStreamVolume(android.media.AudioManager.STREAM_MUSIC).toFloat()) }
-    var maxSystemVolume by remember { androidx.compose.runtime.mutableFloatStateOf(audioManager.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC).toFloat()) }
+    var systemVolume by remember {
+        androidx.compose.runtime.mutableFloatStateOf(
+            audioManager.getStreamVolume(android.media.AudioManager.STREAM_MUSIC).toFloat()
+        )
+    }
+    var maxSystemVolume by remember {
+        androidx.compose.runtime.mutableFloatStateOf(
+            audioManager.getStreamMaxVolume(
+                android.media.AudioManager.STREAM_MUSIC
+            ).toFloat()
+        )
+    }
 
     androidx.compose.runtime.DisposableEffect(context) {
         val volumeChangeReceiver = object : android.content.BroadcastReceiver() {
@@ -122,7 +130,8 @@ fun PlayerMenu(
                     val streamType = intent.getIntExtra("android.media.EXTRA_VOLUME_STREAM_TYPE", -1)
                     if (streamType == android.media.AudioManager.STREAM_MUSIC) {
                         systemVolume = audioManager.getStreamVolume(android.media.AudioManager.STREAM_MUSIC).toFloat()
-                        maxSystemVolume = audioManager.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC).toFloat()
+                        maxSystemVolume =
+                            audioManager.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC).toFloat()
                     }
                 }
             }
@@ -135,7 +144,7 @@ fun PlayerMenu(
             context.unregisterReceiver(volumeChangeReceiver)
         }
     }
-    
+
     val castHandler = remember(playerConnection) {
         try {
             playerConnection.service.castConnectionHandler
@@ -146,14 +155,12 @@ fun PlayerMenu(
     val isCasting by castHandler?.isCasting?.collectAsState() ?: remember { mutableStateOf(false) }
     val castVolume by castHandler?.castVolume?.collectAsState() ?: remember { mutableFloatStateOf(1f) }
     val castDeviceName by castHandler?.castDeviceName?.collectAsState() ?: remember { mutableStateOf<String?>(null) }
-    
+
     val librarySong by database.song(mediaMetadata.id).collectAsState(initial = null)
     val coroutineScope = rememberCoroutineScope()
 
     val download by LocalDownloadUtil.current.getDownload(mediaMetadata.id)
         .collectAsState(initial = null)
-
-
 
     val artists =
         remember(mediaMetadata.artists) {
@@ -163,14 +170,16 @@ fun PlayerMenu(
     var showChoosePlaylistDialog by rememberSaveable {
         mutableStateOf(false)
     }
-    
+
     val (enableExportAsMp3) = rememberPreference(key = EnableExportAsMp3Key, defaultValue = false)
     val (exportDirectoryUri) = rememberPreference(key = ExportDirectoryUriKey, defaultValue = "")
     val (exportingSongIds) = rememberPreference(key = ExportingSongIdsKey, defaultValue = "")
     val (exportedSongIds) = rememberPreference(key = ExportedSongIdsKey, defaultValue = "")
 
-    val isExporting = remember(exportingSongIds, mediaMetadata.id) { exportingSongIds.split(",").contains(mediaMetadata.id) }
-    val isExported = remember(exportedSongIds, mediaMetadata.id) { exportedSongIds.split(",").contains(mediaMetadata.id) }
+    val isExporting =
+        remember(exportingSongIds, mediaMetadata.id) { exportingSongIds.split(",").contains(mediaMetadata.id) }
+    val isExported =
+        remember(exportedSongIds, mediaMetadata.id) { exportedSongIds.split(",").contains(mediaMetadata.id) }
     val ringtoneViewModel = pushkar.chorus.music.LocalRingtoneViewModel.current
     val isListenTogetherGuest = false
 
@@ -202,16 +211,16 @@ fun PlayerMenu(
                 Box(
                     contentAlignment = Alignment.CenterStart,
                     modifier =
-                    Modifier
-                        .fillParentMaxWidth()
-                        .height(ListItemHeight)
-                        .clickable {
-                            navController.navigate("artist/${artist.id}")
-                            showSelectArtistDialog = false
-                            playerBottomSheetState.collapseSoft()
-                            onDismiss()
-                        }
-                        .padding(horizontal = 24.dp),
+                        Modifier
+                            .fillParentMaxWidth()
+                            .height(ListItemHeight)
+                            .clickable {
+                                navController.navigate("artist/${artist.id}")
+                                showSelectArtistDialog = false
+                                playerBottomSheetState.collapseSoft()
+                                onDismiss()
+                            }
+                            .padding(horizontal = 24.dp),
                 ) {
                     Text(
                         text = artist.name,
@@ -266,7 +275,6 @@ fun PlayerMenu(
             }
         }
     }
-
 
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
@@ -401,11 +409,11 @@ fun PlayerMenu(
                             )
                         )
                     }
-                    
+
                     val isInLibrary = librarySong?.song?.inLibrary != null
                     add(
                         Material3MenuItemData(
-                            title = { 
+                            title = {
                                 Text(
                                     text = stringResource(
                                         if (isInLibrary) R.string.remove_from_library
@@ -436,7 +444,7 @@ fun PlayerMenu(
                             }
                         )
                     )
-                    
+
                     add(
                         Material3MenuItemData(
                             title = { Text(text = "Ambient Mode") },
@@ -559,6 +567,7 @@ fun PlayerMenu(
                                 },
                                 onClick = {}
                             )
+
                             isExported -> Material3MenuItemData(
                                 title = { Text(text = stringResource(R.string.action_exported)) },
                                 icon = {
@@ -569,6 +578,7 @@ fun PlayerMenu(
                                 },
                                 onClick = {}
                             )
+
                             else -> Material3MenuItemData(
                                 title = { Text(text = stringResource(R.string.action_export)) },
                                 description = { Text(text = stringResource(R.string.export_desc)) },
@@ -580,7 +590,11 @@ fun PlayerMenu(
                                 },
                                 onClick = {
                                     if (exportDirectoryUri.isBlank()) {
-                                        android.widget.Toast.makeText(context, context.getString(R.string.export_directory_not_set), android.widget.Toast.LENGTH_SHORT).show()
+                                        android.widget.Toast.makeText(
+                                            context,
+                                            context.getString(R.string.export_directory_not_set),
+                                            android.widget.Toast.LENGTH_SHORT
+                                        ).show()
                                         onDismiss()
                                     } else {
                                         onDismiss()

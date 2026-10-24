@@ -18,7 +18,6 @@ import kotlin.math.roundToLong
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-
 object BeatAnalyzer {
 
     data class Result(
@@ -27,7 +26,7 @@ object BeatAnalyzer {
         val confidence: Float,
         val mixInPointMs: Long? = null,
         val mixOutPointMs: Long? = null,
-        
+
         val keyPitchClass: Int? = null,
         val keyIsMinor: Boolean? = null,
     )
@@ -39,21 +38,17 @@ object BeatAnalyzer {
     private const val MIN_BPM = 60f
     private const val MAX_BPM = 180f
 
-    
     private const val WINDOW_US = 18_000_000L
 
-    
     private const val HEAD_WINDOW_US = 16_000_000L
     private const val TAIL_WINDOW_US = 24_000_000L
 
-    
     private const val MIN_CANONICAL_BPM = 70f
     private const val MAX_CANONICAL_BPM = 140f
     private const val ENERGY_BLOCK_MS = 500
     private const val MAX_INTRO_SKIP_MS = 20_000L
     private const val MAX_OUTRO_CUT_MS = 45_000L
 
-    
     private const val MAX_FETCH_BYTES = 5L * 1024 * 1024
 
     fun analyzeUri(
@@ -63,10 +58,8 @@ object BeatAnalyzer {
     ): Result? =
         analyze(shouldCancel) { extractor -> extractor.setDataSource(context, uri, null) }
 
-    
     class CachedAnalysis(val result: Result?, val complete: Boolean)
 
-    
     @UnstableApi
     fun analyzeStream(
         dataSourceFactory: androidx.media3.datasource.DataSource.Factory,
@@ -172,8 +165,7 @@ object BeatAnalyzer {
 
             var periodMs = periodFrames / frameRate * 1000f
             var bpm = 60_000f / periodMs
-            
-            
+
             while (bpm < MIN_CANONICAL_BPM) {
                 bpm *= 2f
                 periodMs /= 2f
@@ -184,12 +176,10 @@ object BeatAnalyzer {
             }
             val windowStartMs = actualStartUs / 1000
             val anchorMs = windowStartMs + (phaseFrames / frameRate * 1000f).roundToLong()
-            
+
             val firstBeatOffsetMs = (anchorMs % periodMs.roundToLong() + periodMs.roundToLong()) %
                 periodMs.roundToLong()
 
-            
-            
             var mixInPointMs: Long? = null
             if (durationUs > HEAD_WINDOW_US) {
                 extractor.seekTo(0, MediaExtractor.SEEK_TO_PREVIOUS_SYNC)
@@ -202,8 +192,6 @@ object BeatAnalyzer {
                 }
             }
 
-            
-            
             var mixOutPointMs: Long? = null
             val durationMs = durationUs / 1000
             if (durationUs > TAIL_WINDOW_US) {
@@ -312,7 +300,6 @@ object BeatAnalyzer {
         return MonoPcm(samples, sampleRate)
     }
 
-    
     private fun energyEnvelope(samples: FloatArray, sampleRate: Int): FloatArray {
         val blockSize = (sampleRate * ENERGY_BLOCK_MS / 1000).coerceAtLeast(1)
         val numBlocks = samples.size / blockSize
@@ -335,7 +322,6 @@ object BeatAnalyzer {
         return sorted[((sorted.size - 1) * p).roundToInt().coerceIn(0, sorted.size - 1)]
     }
 
-    
     private fun detectMixIn(env: FloatArray, firstBeatOffsetMs: Long, periodMs: Float): Long? {
         if (env.size < 8) return null
         val ref = percentile(env, 0.75f)
@@ -352,17 +338,15 @@ object BeatAnalyzer {
                 break
             }
         }
-        if (candidateBlock <= 0) return null 
+        if (candidateBlock <= 0) return null
 
         val candidateMs = candidateBlock.toLong() * ENERGY_BLOCK_MS
         if (candidateMs > MAX_INTRO_SKIP_MS) return null
 
-        
         val k = kotlin.math.ceil((candidateMs - firstBeatOffsetMs) / periodMs.toDouble()).toLong()
         return (firstBeatOffsetMs + max(0L, k) * periodMs.toDouble()).roundToLong()
     }
 
-    
     private fun detectMixOut(env: FloatArray, windowStartMs: Long, durationMs: Long): Long? {
         if (env.size < 8 || durationMs <= 0) return null
         val ref = percentile(env, 0.75f)
@@ -378,13 +362,12 @@ object BeatAnalyzer {
         if (lastLoudBlock < 0) return null
 
         val mixOutMs = windowStartMs + (lastLoudBlock + 1).toLong() * ENERGY_BLOCK_MS
-        
+
         if (durationMs - mixOutMs < 3_000) return null
-        
+
         return max(mixOutMs, durationMs - MAX_OUTRO_CUT_MS)
     }
 
-    
     private fun spectralFlux(samples: FloatArray): FloatArray {
         val window = FloatArray(FFT_SIZE) { 0.5f - 0.5f * cos(2.0 * Math.PI * it / FFT_SIZE).toFloat() }
         val numFrames = (samples.size - FFT_SIZE) / HOP_SIZE
@@ -411,7 +394,6 @@ object BeatAnalyzer {
             flux[frame] = sum
         }
 
-        
         val meanWindow = (0.5f * FFT_SIZE / HOP_SIZE * 8).roundToInt().coerceAtLeast(8)
         val detrended = FloatArray(numFrames)
         for (i in 0 until numFrames) {
@@ -425,7 +407,6 @@ object BeatAnalyzer {
         return detrended
     }
 
-    
     private fun estimateTempoPeriod(flux: FloatArray, frameRate: Float): Pair<Float, Float>? {
         val minLag = (frameRate * 60f / MAX_BPM).roundToInt()
         val maxLag = (frameRate * 60f / MIN_BPM).roundToInt()
@@ -448,7 +429,7 @@ object BeatAnalyzer {
         for (lag in minLag..maxLag) {
             if (lag > minLag && lag < maxLag && (ac[lag] < ac[lag - 1] || ac[lag] < ac[lag + 1])) continue
             var score = ac[lag]
-            
+
             val doubleLag = lag * 2
             if (doubleLag <= maxLag) score += 0.5f * ac[doubleLag]
             if (score > bestScore) {
@@ -458,7 +439,6 @@ object BeatAnalyzer {
         }
         if (bestLag < 0) return null
 
-        
         val refined = if (bestLag in minLag + 1 until maxLag) {
             val y0 = ac[bestLag - 1]
             val y1 = ac[bestLag]
@@ -467,19 +447,15 @@ object BeatAnalyzer {
             if (denom != 0f) bestLag + 0.5f * (y0 - y2) / denom else bestLag.toFloat()
         } else bestLag.toFloat()
 
-        
-        
         val sortedAc = ac.copyOfRange(minLag, maxLag + 1).sorted()
         val median = sortedAc[sortedAc.size / 2]
         val confidence = if (ac[bestLag] > 0f) ((ac[bestLag] - median) / ac[bestLag]).coerceIn(0f, 1f) else 0f
         return refined to confidence
     }
 
-    
     private val MAJOR_PROFILE = floatArrayOf(6.35f, 2.23f, 3.48f, 2.33f, 4.38f, 4.09f, 2.52f, 5.19f, 2.39f, 3.66f, 2.29f, 2.88f)
     private val MINOR_PROFILE = floatArrayOf(6.33f, 2.68f, 3.52f, 5.38f, 2.60f, 3.53f, 2.54f, 4.75f, 3.98f, 2.69f, 3.34f, 3.17f)
 
-    
     private fun estimateKey(samples: FloatArray, sampleRate: Int): Pair<Int, Boolean>? {
         if (samples.size < FFT_SIZE * 4) return null
         val window = FloatArray(FFT_SIZE) { 0.5f - 0.5f * cos(2.0 * Math.PI * it / FFT_SIZE).toFloat() }
@@ -491,7 +467,7 @@ object BeatAnalyzer {
         val re = FloatArray(FFT_SIZE)
         val im = FloatArray(FFT_SIZE)
         val binHz = sampleRate.toFloat() / FFT_SIZE
-        
+
         val minBin = (65f / binHz).toInt().coerceAtLeast(1)
         val maxBin = (2000f / binHz).toInt().coerceAtMost(FFT_SIZE / 2 - 1)
 
@@ -538,7 +514,6 @@ object BeatAnalyzer {
         return sum
     }
 
-    
     private fun estimateBeatPhase(flux: FloatArray, periodFrames: Float): Float {
         val period = periodFrames.roundToInt().coerceAtLeast(1)
         var bestPhase = 0
@@ -558,7 +533,6 @@ object BeatAnalyzer {
         return bestPhase.toFloat()
     }
 
-    
     private fun fft(re: FloatArray, im: FloatArray) {
         val n = re.size
         var j = 0

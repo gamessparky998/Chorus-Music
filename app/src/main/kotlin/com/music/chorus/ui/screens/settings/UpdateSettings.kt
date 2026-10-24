@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -55,14 +54,6 @@ import pushkar.chorus.music.chorusmusic.updater.autoClearOldApks
 import androidx.compose.material3.MaterialTheme
 import pushkar.chorus.music.BuildConfig
 
-
-
-
-
-
-
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UpdateSettings(
     navController: NavController,
@@ -93,7 +84,7 @@ fun UpdateSettings(
             .padding(horizontal = 16.dp),
     ) {
         Spacer(Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top)))
-        Material3SettingsGroup(scrollState = scrollState, 
+        Material3SettingsGroup(scrollState = scrollState,
             title = stringResource(R.string.app_updates_title),
             items = listOf(
                 Material3SettingsItem(
@@ -126,7 +117,7 @@ fun UpdateSettings(
                         Text("$arch - $variant")
                     }
                 ),
-                
+
                 Material3SettingsItem(
     isHighlighted = (highlightKey == stringResource(R.string.auto_update_check)),
                     icon = painterResource(R.drawable.update),
@@ -232,18 +223,11 @@ fun UpdateSettings(
                     }
                 )
 
-
-
-
-
-
-
             )
         )
-        
 
         Spacer(modifier = Modifier.height(16.dp))
-    
+
         Spacer(Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Bottom)))
     }
 

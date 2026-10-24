@@ -66,7 +66,7 @@ data class ArtistPage(
         }
 
         private fun fromMusicResponsiveListItemRenderer(renderer: MusicResponsiveListItemRenderer): SongItem? {
-            
+
             val secondaryLineRuns = renderer.flexColumns
                 .getOrNull(1)
                 ?.musicResponsiveListItemFlexColumnRenderer
@@ -74,7 +74,6 @@ data class ArtistPage(
                 ?.runs
                 ?.splitBySeparator()
 
-            
             val artists = secondaryLineRuns?.firstOrNull()?.oddElements()?.map {
                 Artist(
                     name = it.text,
@@ -82,7 +81,6 @@ data class ArtistPage(
                 )
             }
 
-            
             val album = renderer.flexColumns.lastOrNull()
                 ?.musicResponsiveListItemFlexColumnRenderer?.text?.runs
                 ?.firstOrNull()?.let {
@@ -94,7 +92,6 @@ data class ArtistPage(
                     } else null
                 }
 
-            
             val libraryTokens = PageHelper.extractLibraryTokensFromMenuItems(renderer.menu?.menuRenderer?.items)
 
             return SongItem(
@@ -132,7 +129,7 @@ data class ArtistPage(
                     SongItem(
                         id = renderer.navigationEndpoint.watchEndpoint?.videoId ?: return null,
                         title = renderer.title.runs?.firstOrNull()?.text ?: return null,
-                        artists = subtitleRuns.filter { 
+                        artists = subtitleRuns.filter {
                             it.navigationEndpoint?.browseEndpoint?.browseId?.startsWith("UC") == true ||
                             it.navigationEndpoint?.browseEndpoint != null
                         }.map {
@@ -141,8 +138,8 @@ data class ArtistPage(
                                 id = it.navigationEndpoint?.browseEndpoint?.browseId
                             )
                         }.ifEmpty {
-                            subtitleRuns.firstOrNull()?.let { 
-                                listOf(Artist(name = it.text, id = null)) 
+                            subtitleRuns.firstOrNull()?.let {
+                                listOf(Artist(name = it.text, id = null))
                             } ?: emptyList()
                         },
                         album = null,
@@ -172,7 +169,7 @@ data class ArtistPage(
                 }
 
                 renderer.isPlaylist -> {
-                    
+
                     PlaylistItem(
                         id = renderer.navigationEndpoint.browseEndpoint?.browseId?.removePrefix("VL") ?: return null,
                         title = renderer.title.runs?.firstOrNull()?.text ?: return null,

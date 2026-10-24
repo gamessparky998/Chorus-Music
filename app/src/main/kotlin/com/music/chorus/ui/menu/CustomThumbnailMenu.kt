@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.menu
 
 import androidx.compose.foundation.clickable
@@ -8,7 +6,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
@@ -19,7 +16,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import pushkar.chorus.music.R
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomThumbnailMenu(
     onEdit: () -> Unit,
@@ -36,8 +32,8 @@ fun CustomThumbnailMenu(
     ) {
         item {
             ListItem(
-                headlineContent = { 
-                    Text(text = stringResource(R.string.choose_from_library)) 
+                headlineContent = {
+                    Text(text = stringResource(R.string.choose_from_library))
                 },
                 leadingContent = {
                     Icon(
@@ -53,8 +49,8 @@ fun CustomThumbnailMenu(
         }
         item {
             ListItem(
-                headlineContent = { 
-                    Text(text = stringResource(R.string.remove_custom_image)) 
+                headlineContent = {
+                    Text(text = stringResource(R.string.remove_custom_image))
                 },
                 leadingContent = {
                     Icon(

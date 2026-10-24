@@ -1,8 +1,5 @@
-
-
 package pushkar.chorus.music.ui.screens.library
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -16,7 +13,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -63,7 +61,6 @@ import pushkar.chorus.music.utils.rememberEnumPreference
 import pushkar.chorus.music.utils.rememberPreference
 import pushkar.chorus.music.viewmodels.LibrarySongsViewModel
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun LibrarySongsScreen(
     navController: NavController,
@@ -137,7 +134,7 @@ fun LibrarySongsScreen(
                         selected = true,
                         colors = FilterChipDefaults.filterChipColors(containerColor = MaterialTheme.colorScheme.surface),
                         onClick = onDeselect,
-                        shape = RoundedCornerShape(16.dp),
+                        shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else RoundedCornerShape(16.dp),
                         leadingIcon = {
                             Icon(
                                 painter = painterResource(R.drawable.close),

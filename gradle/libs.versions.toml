@@ -16,9 +16,14 @@ castFramework = "22.2.0"
 room = "2.8.4"
 hilt = "2.59.1"
 ktor = "3.4.0"
-ksp = "2.3.5"
+ksp = "2.3.6"
 jsoup = "1.22.1"
 coil = "3.3.0"
+higBackdrop = "2.0.1"
+higCapsule = "2.1.4"
+accompanist-lyrics-ui = "1.0.19"
+accompanist-lyrics-core = "0.4.7"
+quickjs-kt = "1.0.5"
 ucrop = "2.2.11"
 guava = "33.5.0-jre"
 coroutinesGuava = "1.10.2"
@@ -153,6 +158,13 @@ play-services-auth = { module = "com.google.android.gms:play-services-auth", ver
 google-api-client-android = { module = "com.google.api-client:google-api-client-android", version.ref = "googleApiClient" }
 google-api-services-drive = { module = "com.google.apis:google-api-services-drive", version.ref = "googleDriveApi" }
 androidx-browser = { group = "androidx.browser", name = "browser", version.ref = "browser" }
+hig-backdrop = { module = "io.github.kyant0:backdrop", version.ref = "higBackdrop" }
+hig-capsule = { module = "zone.ien.capsule:capsule", version.ref = "higCapsule" }
+accompanist-lyrics-ui = { module = "com.mocharealm.accompanist:lyrics-ui", version.ref = "accompanist-lyrics-ui" }
+accompanist-lyrics-core = { module = "com.mocharealm.accompanist:lyrics-core", version.ref = "accompanist-lyrics-core" }
+quickjs-kt = { module = "io.github.dokar3:quickjs-kt-android", version = "1.0.5" }
+kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version = "0.33.0" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.8.0" }
 
 [plugins]
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

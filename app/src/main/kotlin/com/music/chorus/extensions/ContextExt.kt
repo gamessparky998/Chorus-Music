@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.extensions
 
 import android.content.Context

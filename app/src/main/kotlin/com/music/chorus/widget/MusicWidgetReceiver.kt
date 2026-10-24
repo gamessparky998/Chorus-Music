@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.widget
 
 import android.appwidget.AppWidgetManager
@@ -17,8 +15,7 @@ class MusicWidgetReceiver : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray
     ) {
-        
-        
+
         if (MusicService.isRunning) {
             val intent = Intent(context, MusicService::class.java).apply {
                 action = ACTION_UPDATE_WIDGET
@@ -26,10 +23,10 @@ class MusicWidgetReceiver : AppWidgetProvider() {
             try {
                 context.startService(intent)
             } catch (e: Exception) {
-                
+
             }
         }
-        
+
     }
 
     override fun onAppWidgetOptionsChanged(
@@ -39,7 +36,7 @@ class MusicWidgetReceiver : AppWidgetProvider() {
         newOptions: Bundle
     ) {
         super.onAppWidgetOptionsChanged(context, appWidgetManager, appWidgetId, newOptions)
-        
+
         if (MusicService.isRunning) {
             val intent = Intent(context, MusicService::class.java).apply {
                 action = ACTION_UPDATE_WIDGET
@@ -47,7 +44,7 @@ class MusicWidgetReceiver : AppWidgetProvider() {
             try {
                 context.startService(intent)
             } catch (e: Exception) {
-                
+
             }
         }
     }
@@ -57,8 +54,7 @@ class MusicWidgetReceiver : AppWidgetProvider() {
 
         when (intent.action) {
             ACTION_PLAY_PAUSE, ACTION_LIKE, ACTION_NEXT, ACTION_PREVIOUS -> {
-                
-                
+
                 val serviceIntent = Intent(context, MusicService::class.java).apply {
                     action = intent.action
                     putExtras(intent)
@@ -70,7 +66,7 @@ class MusicWidgetReceiver : AppWidgetProvider() {
                         context.startService(serviceIntent)
                     }
                 } catch (e: Exception) {
-                    
+
                 }
             }
         }

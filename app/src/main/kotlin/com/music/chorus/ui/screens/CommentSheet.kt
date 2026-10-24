@@ -1,3 +1,5 @@
+@file:Suppress("OPT_IN_USAGE_ERROR", "OPT_IN_USAGE")
+
 package pushkar.chorus.music.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
@@ -16,13 +18,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -49,7 +51,6 @@ import com.music.innertube.models.comment.CommentThreadRenderer
 import pushkar.chorus.music.R
 import kotlinx.coroutines.launch
 
-import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.layout.AnimatedPane
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
@@ -60,7 +61,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun CommentSheet(
     videoId: String,
@@ -93,10 +93,11 @@ fun CommentSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         dragHandle = { BottomSheetDefaults.DragHandle() },
+        shape = if (isFluidTheme()) ContinuousRoundedRectangle(topStart = 28.dp, topEnd = 28.dp) else BottomSheetDefaults.ExpandedShape,
         containerColor = MaterialTheme.colorScheme.surfaceContainer
     ) {
         Column(modifier = Modifier.fillMaxHeight()) {
-            
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -299,7 +300,7 @@ fun CommentItem(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                
+
                 val replyCount = renderer.replyCount ?: 0
                 if (replyCount > 0 && onShowReplies != null) {
                     Spacer(modifier = Modifier.width(16.dp))
@@ -329,7 +330,6 @@ fun CommentItem(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun CommentDetailPane(
     thread: CommentThreadRenderer,
@@ -346,7 +346,6 @@ fun CommentDetailPane(
             ?.continuationEndpoint?.continuationCommand?.token
             ?: thread.replies?.commentRepliesRenderer?.viewReplies?.buttonRenderer?.command?.continuationCommand?.token
             ?: thread.replies?.commentRepliesRenderer?.viewReplies?.buttonRenderer?.navigationEndpoint?.continuationCommand?.token
-        
 
         if (initialToken != null) {
             isLoadingReplies = true
@@ -403,7 +402,7 @@ fun CommentDetailPane(
                     CommentItem(renderer = replyRenderer, isReply = true)
                 }
             }
-            
+
             if (repliesNextToken != null) {
                 item(key = "replies_pagination") {
                     Box(
@@ -417,10 +416,9 @@ fun CommentDetailPane(
 
                     LaunchedEffect(repliesNextToken) {
                         if (isLoadingReplies) return@LaunchedEffect
-                        
-                        
+
                         kotlinx.coroutines.delay(500L)
-                        
+
                         isLoadingReplies = true
                         YouTube.commentReplies(repliesNextToken!!).onSuccess { (newReplies, token) ->
                             replies = (replies + newReplies).distinctBy { it.commentId ?: it.hashCode() }

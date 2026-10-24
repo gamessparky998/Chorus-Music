@@ -76,7 +76,6 @@ interface DatabaseDao {
     @Query("SELECT * FROM song WHERE inLibrary IS NOT NULL ORDER BY totalPlayTime")
     fun songsByPlayTimeAsc(): Flow<List<Song>>
 
-
     @Transaction
     @Query("SELECT * FROM song ORDER BY totalPlayTime DESC LIMIT :limit")
     fun topSongs(limit: Int): Flow<List<Song>>
@@ -230,6 +229,10 @@ interface DatabaseDao {
     @Transaction
     @Query("SELECT * FROM playlist_song_map WHERE playlistId = :playlistId ORDER BY position")
     fun playlistSongs(playlistId: String): Flow<List<PlaylistSong>>
+
+    @Transaction
+    @Query("SELECT DISTINCT song.* FROM song JOIN playlist_song_map ON song.id = playlist_song_map.songId WHERE playlist_song_map.playlistId LIKE 'SPOTIFY_%' OR playlist_song_map.playlistId LIKE 'UNIVERSAL_%'")
+    fun importedPlaylistSongs(): Flow<List<Song>>
 
     @Transaction
     @Query(
@@ -620,7 +623,6 @@ interface DatabaseDao {
     @Query("SELECT * FROM song WHERE id IN (:songIds)")
     fun getSongsByIdsFlow(songIds: List<String>): Flow<List<Song>>
 
-
     @Transaction
     @Query("SELECT * FROM song_artist_map WHERE songId = :songId")
     fun songArtistMap(songId: String): List<SongArtistMap>
@@ -754,7 +756,7 @@ interface DatabaseDao {
             ArtistSortType.PLAY_TIME -> artistsByPlayTimeAsc()
         }.map { artists ->
             artists
-                .filter { it.artist.isYouTubeArtist || it.artist.isLocal } 
+                .filter { it.artist.isYouTubeArtist || it.artist.isLocal }
                 .reversed(descending)
         }
 
@@ -766,7 +768,7 @@ interface DatabaseDao {
             ArtistSortType.PLAY_TIME -> artistsBookmarkedByPlayTimeAsc()
         }.map { artists ->
             artists
-                .filter { it.artist.isYouTubeArtist || it.artist.isLocal } 
+                .filter { it.artist.isYouTubeArtist || it.artist.isLocal }
                 .reversed(descending)
         }
 
@@ -1181,14 +1183,12 @@ interface DatabaseDao {
     @Query("DELETE FROM search_history")
     fun clearSearchHistory()
 
-
     @Query("UPDATE song SET totalPlayTime = totalPlayTime + :playTime WHERE id = :songId")
     fun incrementTotalPlayTime(songId: String, playTime: Long)
 
     @Query("UPDATE playCount SET count = count + 1 WHERE song = :songId AND year = :year AND month = :month")
     fun incrementPlayCount(songId: String, year: Int, month: Int)
 
-    
     fun incrementPlayCount(songId: String) {
         val time = LocalDateTime.now().atOffset(ZoneOffset.UTC)
         var oldCount: Int
@@ -1196,7 +1196,6 @@ interface DatabaseDao {
             oldCount = getPlayCountByMonth(songId, time.year, time.monthValue).first()
         }
 
-        
         if (oldCount <= 0) {
             insert(PlayCountEntity(songId, time.year, time.monthValue, 0))
         }
@@ -1491,7 +1490,7 @@ interface DatabaseDao {
             }.forEach(::upsert)
 
         albumPage.album.artists?.let { artists ->
-            
+
             albumArtistMaps(album.id).forEach(::delete)
             artists
                 .map { artist ->

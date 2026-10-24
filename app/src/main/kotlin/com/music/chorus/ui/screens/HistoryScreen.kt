@@ -1,9 +1,6 @@
-
-
 package pushkar.chorus.music.ui.screens
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
@@ -21,7 +18,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -85,7 +81,6 @@ import pushkar.chorus.music.viewmodels.DateAgo
 import pushkar.chorus.music.viewmodels.HistoryViewModel
 import java.time.format.DateTimeFormatter
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun HistoryScreen(
     navController: NavController,
@@ -133,7 +128,7 @@ fun HistoryScreen(
     val historySource by viewModel.historySource.collectAsState()
 
     val historyPage by viewModel.historyPage.collectAsState()
-    
+
     val events by viewModel.events.collectAsState()
 
     val innerTubeCookie by rememberPreference(InnerTubeCookieKey, "")

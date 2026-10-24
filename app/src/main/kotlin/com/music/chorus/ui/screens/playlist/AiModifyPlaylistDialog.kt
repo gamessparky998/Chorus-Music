@@ -3,6 +3,8 @@ package pushkar.chorus.music.ui.screens.playlist
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -27,7 +29,7 @@ fun AiModifyPlaylistDialog(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    
+
     var prompt by remember { mutableStateOf("") }
     var logs by remember { mutableStateOf("") }
     var isProcessing by remember { mutableStateOf(false) }
@@ -44,7 +46,7 @@ fun AiModifyPlaylistDialog(
             modifier = Modifier
                 .fillMaxWidth(0.9f)
                 .wrapContentHeight(),
-            shape = RoundedCornerShape(24.dp),
+            shape = if (isFluidTheme()) ContinuousRoundedRectangle(24.dp) else RoundedCornerShape(24.dp),
             color = MaterialTheme.colorScheme.surface,
             tonalElevation = 6.dp
         ) {
@@ -65,11 +67,11 @@ fun AiModifyPlaylistDialog(
                         label = { Text(stringResource(R.string.modify_with_ai_desc)) },
                         placeholder = { Text(stringResource(R.string.ai_modify_prompt_hint)) },
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
+                        shape = if (isFluidTheme()) ContinuousRoundedRectangle(12.dp) else RoundedCornerShape(12.dp),
                         enabled = true,
                         minLines = 3
                     )
-                    
+
                     if (logs.isNotEmpty()) {
                         Text(text = "Logs:", style = MaterialTheme.typography.bodyMedium)
                         val scrollState = rememberScrollState()
@@ -94,6 +96,7 @@ fun AiModifyPlaylistDialog(
                         }
                         Spacer(modifier = Modifier.width(8.dp))
                         Button(
+                            shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else ButtonDefaults.shape,
                             onClick = {
                                 if (prompt.isNotBlank()) {
                                     isProcessing = true

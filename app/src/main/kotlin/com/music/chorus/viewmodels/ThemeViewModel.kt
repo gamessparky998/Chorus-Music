@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.viewmodels
 
 import androidx.lifecycle.ViewModel
@@ -10,7 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class ThemeViewModel : ViewModel() {
-    
+
     private val _darkMode = MutableStateFlow(DarkMode.AUTO)
     val darkMode: StateFlow<DarkMode> = _darkMode.asStateFlow()
 

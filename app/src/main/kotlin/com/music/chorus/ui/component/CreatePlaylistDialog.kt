@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.component
 
 import android.widget.Toast
@@ -72,11 +70,10 @@ fun CreatePlaylistDialog(
                     bookmarkedAt = LocalDateTime.now(),
                     isEditable = true,
                 )
-                
+
                 database.query {
                     insert(playlistEntity)
                 }
-
 
                 withContext(Dispatchers.Main) {
                     onPlaylistCreated?.invoke(playlistEntity.id)

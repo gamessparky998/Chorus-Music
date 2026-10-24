@@ -1,6 +1,5 @@
 package com.music.innertube.models
 
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames
 
@@ -27,7 +26,7 @@ data class SectionListRenderer(
                     val isSelected: Boolean,
                     val navigationEndpoint: NavigationEndpoint,
                     val onDeselectedCommand: NavigationEndpoint? = null,
-                    
+
                     val text: Runs?,
                     val uniqueId: String?,
                 )
@@ -35,7 +34,6 @@ data class SectionListRenderer(
         }
     }
 
-    @OptIn(ExperimentalSerializationApi::class)
     @Serializable
     data class Content(
         @JsonNames("musicImmersiveCarouselShelfRenderer")

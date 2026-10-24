@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music
 import pushkar.chorus.music.R
 import pushkar.chorus.music.BuildConfig
@@ -74,12 +72,8 @@ class App : Application(), SingletonImageLoader.Factory {
     override fun onCreate() {
         super.onCreate()
 
-        
-
-        
         CrashHandler.install(this)
 
-        
         CipherDeobfuscator.initialize(this)
 
         if (BuildConfig.DEBUG) {
@@ -92,13 +86,12 @@ class App : Application(), SingletonImageLoader.Factory {
 
         applicationScope.launch {
             initializeSettings()
-            
-            
+
             launch(Dispatchers.IO) {
                 delay(1500)
                 CipherDeobfuscator.prewarm()
             }
-            
+
             observeSettingsChanges()
         }
     }
@@ -212,8 +205,6 @@ class App : Application(), SingletonImageLoader.Factory {
                 }
         }
 
-
-
         applicationScope.launch(Dispatchers.IO) {
             dataStore.data
                 .map { Triple(it[ContentCountryKey], it[ContentLanguageKey], it[AppLanguageKey]) }
@@ -256,9 +247,12 @@ class App : Application(), SingletonImageLoader.Factory {
             dataStore.data.map { it[MaxImageCacheSizeKey] ?: 512 }.first()
         }
         return ImageLoader.Builder(this).apply {
+            components {
+                add(pushkar.chorus.music.utils.ArtworkQualityInterceptor())
+            }
             crossfade(true)
             allowHardware(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
-            
+
             memoryCache {
                 MemoryCache.Builder()
                     .maxSizePercent(context, 0.25)
@@ -281,7 +275,6 @@ class App : Application(), SingletonImageLoader.Factory {
         suspend fun forgetAccount(context: Context) {
             Timber.d("forgetAccount: Starting logout process")
 
-            
             Timber.d("forgetAccount: Clearing DataStore preferences")
             context.dataStore.edit { settings ->
                 settings.remove(InnerTubeCookieKey)
@@ -293,7 +286,6 @@ class App : Application(), SingletonImageLoader.Factory {
             }
             Timber.d("forgetAccount: DataStore preferences cleared")
 
-            
             Timber.d("forgetAccount: Clearing YouTube object auth state")
             Timber.d("forgetAccount: Before - cookie=${YouTube.cookie?.take(50)}, visitorData=${YouTube.visitorData?.take(20)}, dataSyncId=${YouTube.dataSyncId?.take(20)}")
             YouTube.cookie = null
@@ -301,7 +293,6 @@ class App : Application(), SingletonImageLoader.Factory {
             YouTube.dataSyncId = null
             Timber.d("forgetAccount: After - cookie=${YouTube.cookie}, visitorData=${YouTube.visitorData}, dataSyncId=${YouTube.dataSyncId}")
 
-            
             Timber.d("forgetAccount: Clearing WebView CookieManager")
             withContext(Dispatchers.Main) {
                 android.webkit.CookieManager.getInstance().apply {

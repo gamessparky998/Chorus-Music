@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.viewmodels
 
 import androidx.compose.runtime.State
@@ -52,7 +50,7 @@ constructor(
         _isNetworkAvailable.value = try {
             networkConnectivity.isCurrentlyConnected()
         } catch (e: Exception) {
-            true 
+            true
         }
     }
 

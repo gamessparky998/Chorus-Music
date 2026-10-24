@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.menu
 
 import android.content.Context
@@ -19,7 +17,6 @@ import pushkar.chorus.music.db.entities.Playlist
 import pushkar.chorus.music.db.entities.PlaylistSong
 import pushkar.chorus.music.ui.component.Material3MenuGroup
 import pushkar.chorus.music.ui.component.Material3MenuItemData
-
 
 @Composable
 fun LocalPlaylistMenu(
@@ -53,6 +50,7 @@ fun LocalPlaylistMenu(
                 onDismiss()
             }
         )
+
         Download.STATE_QUEUED, Download.STATE_DOWNLOADING -> Material3MenuItemData(
             title = { Text(stringResource(R.string.downloading)) },
             description = { Text(stringResource(R.string.download_in_progress_desc)) },
@@ -67,6 +65,7 @@ fun LocalPlaylistMenu(
                 onDismiss()
             }
         )
+
         else -> Material3MenuItemData(
             title = { Text(stringResource(R.string.action_download)) },
             description = { Text(stringResource(R.string.download_playlist_desc)) },
@@ -103,7 +102,7 @@ fun LocalPlaylistMenu(
                 }
             )
         )
-        
+
         if (playlist.playlist.isEditable) {
             add(
                 Material3MenuItemData(
@@ -111,7 +110,7 @@ fun LocalPlaylistMenu(
                     description = { Text(stringResource(R.string.modify_with_ai_desc)) },
                     icon = {
                         Icon(
-                            painter = painterResource(R.drawable.edit), 
+                            painter = painterResource(R.drawable.edit),
                             contentDescription = null
                         )
                     },
@@ -140,7 +139,6 @@ fun LocalPlaylistMenu(
             )
         )
 
-        
         if (isYouTubePlaylist || hasSyncUrl) {
             add(
                 Material3MenuItemData(
@@ -230,7 +228,6 @@ fun LocalPlaylistMenu(
     Material3MenuGroup(items = menuItems)
 }
 
-
 @Composable
 fun AutoPlaylistMenu(
     downloadState: Int,
@@ -255,6 +252,7 @@ fun AutoPlaylistMenu(
                 onDismiss()
             }
         )
+
         Download.STATE_QUEUED, Download.STATE_DOWNLOADING -> Material3MenuItemData(
             title = { Text(stringResource(R.string.downloading)) },
             description = { Text(stringResource(R.string.download_in_progress_desc)) },
@@ -269,6 +267,7 @@ fun AutoPlaylistMenu(
                 onDismiss()
             }
         )
+
         else -> Material3MenuItemData(
             title = { Text(stringResource(R.string.action_download)) },
             description = { Text(stringResource(R.string.download_playlist_desc)) },
@@ -307,7 +306,6 @@ fun AutoPlaylistMenu(
         )
     )
 }
-
 
 @Composable
 fun TopPlaylistMenu(
@@ -333,6 +331,7 @@ fun TopPlaylistMenu(
                 onDismiss()
             }
         )
+
         Download.STATE_QUEUED, Download.STATE_DOWNLOADING -> Material3MenuItemData(
             title = { Text(stringResource(R.string.downloading)) },
             description = { Text(stringResource(R.string.download_in_progress_desc)) },
@@ -347,6 +346,7 @@ fun TopPlaylistMenu(
                 onDismiss()
             }
         )
+
         else -> Material3MenuItemData(
             title = { Text(stringResource(R.string.action_download)) },
             description = { Text(stringResource(R.string.download_playlist_desc)) },
@@ -386,7 +386,6 @@ fun TopPlaylistMenu(
     )
 }
 
-
 @Composable
 fun CachePlaylistMenu(
     downloadState: Int,
@@ -411,6 +410,7 @@ fun CachePlaylistMenu(
                 onDismiss()
             }
         )
+
         Download.STATE_QUEUED, Download.STATE_DOWNLOADING -> Material3MenuItemData(
             title = { Text(stringResource(R.string.downloading)) },
             description = { Text(stringResource(R.string.download_in_progress_desc)) },
@@ -425,6 +425,7 @@ fun CachePlaylistMenu(
                 onDismiss()
             }
         )
+
         else -> Material3MenuItemData(
             title = { Text(stringResource(R.string.action_download)) },
             description = { Text(stringResource(R.string.download_playlist_desc)) },

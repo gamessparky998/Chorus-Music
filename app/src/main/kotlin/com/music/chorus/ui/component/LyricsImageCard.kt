@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.component
 
 import android.annotation.SuppressLint
@@ -171,9 +169,10 @@ fun LyricsImageCard(
 
     val defaultBgColor = if (darkBackground) Color(0xFF121212) else Color(0xFFF5F5F5)
     val backgroundSolidColor = backgroundColor ?: defaultBgColor
-    
+
     val mainTextColor = textColor ?: if (darkBackground) Color.White else Color.Black
-    val secondaryColor = secondaryTextColor ?: if (darkBackground) Color.White.copy(alpha = 0.7f) else Color.Black.copy(alpha = 0.7f)
+    val secondaryColor =
+        secondaryTextColor ?: if (darkBackground) Color.White.copy(alpha = 0.7f) else Color.Black.copy(alpha = 0.7f)
 
     val painter = rememberAsyncImagePainter(
         ImageRequest.Builder(context)
@@ -181,16 +180,16 @@ fun LyricsImageCard(
             .crossfade(false)
             .build()
     )
-    
-    
+
     var gradientBrush by remember { mutableStateOf<Brush?>(null) }
-    
+
     if (backgroundStyle == LyricsBackgroundStyle.GRADIENT) {
         LaunchedEffect(mediaMetadata.thumbnailUrl) {
             withContext(Dispatchers.IO) {
                 try {
                     val loader = ImageLoader(context)
-                    val req = ImageRequest.Builder(context).data(mediaMetadata.thumbnailUrl).allowHardware(false).build()
+                    val req =
+                        ImageRequest.Builder(context).data(mediaMetadata.thumbnailUrl).allowHardware(false).build()
                     val result = loader.execute(req)
                     val bmp = result.image?.toBitmap()
                     if (bmp != null) {
@@ -198,27 +197,28 @@ fun LyricsImageCard(
                         val vibrant = palette.getVibrantColor(defaultBgColor.toArgb())
                         val muted = palette.getMutedColor(defaultBgColor.toArgb())
                         val darkVibrant = palette.getDarkVibrantColor(defaultBgColor.toArgb())
-                        
+
                         val color1 = Color(vibrant)
                         val color2 = Color(darkVibrant)
-                        
+
                         gradientBrush = Brush.linearGradient(
                             colors = listOf(color1, color2),
                             tileMode = TileMode.Clamp
                         )
                     }
-                } catch (_: Exception) {}
+                } catch (_: Exception) {
+                }
             }
         }
     }
 
     Box(
         modifier = Modifier
-            .background(Color.Black) 
+            .background(Color.Black)
             .fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        
+
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
@@ -226,48 +226,8 @@ fun LyricsImageCard(
                 LyricsBackgroundStyle.SOLID -> {
                     Box(modifier = Modifier.fillMaxSize().background(backgroundSolidColor))
                 }
+
                 LyricsBackgroundStyle.BLUR -> {
-                    Image(
-                        painter = painter,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .blur(50.dp) 
-                            .background(Color.Black.copy(alpha = 0.3f)) 
-                    )
-                }
-                LyricsBackgroundStyle.GRADIENT -> {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(gradientBrush ?: androidx.compose.ui.graphics.Brush.linearGradient(listOf(backgroundSolidColor, backgroundSolidColor)))
-                    )
-                }
-            }
-        }
-    
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .clip(RoundedCornerShape(cardCornerRadius))
-                
-                
-                
-                
-                
-                
-        ) {
-             when (backgroundStyle) {
-                LyricsBackgroundStyle.SOLID -> {
-                    Box(modifier = Modifier.fillMaxSize().background(backgroundSolidColor))
-                }
-                LyricsBackgroundStyle.BLUR -> {
-                    
-                    
-                    
-                    
-                    
                     Image(
                         painter = painter,
                         contentDescription = null,
@@ -278,16 +238,64 @@ fun LyricsImageCard(
                             .background(Color.Black.copy(alpha = 0.3f))
                     )
                 }
+
                 LyricsBackgroundStyle.GRADIENT -> {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(gradientBrush ?: androidx.compose.ui.graphics.Brush.linearGradient(listOf(backgroundSolidColor, backgroundSolidColor)))
+                            .background(
+                                gradientBrush ?: androidx.compose.ui.graphics.Brush.linearGradient(
+                                    listOf(
+                                        backgroundSolidColor,
+                                        backgroundSolidColor
+                                    )
+                                )
+                            )
                     )
                 }
             }
-            
-            
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(RoundedCornerShape(cardCornerRadius))
+
+        ) {
+            when (backgroundStyle) {
+                LyricsBackgroundStyle.SOLID -> {
+                    Box(modifier = Modifier.fillMaxSize().background(backgroundSolidColor))
+                }
+
+                LyricsBackgroundStyle.BLUR -> {
+
+                    Image(
+                        painter = painter,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .blur(50.dp)
+                            .background(Color.Black.copy(alpha = 0.3f))
+                    )
+                }
+
+                LyricsBackgroundStyle.GRADIENT -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                gradientBrush ?: androidx.compose.ui.graphics.Brush.linearGradient(
+                                    listOf(
+                                        backgroundSolidColor,
+                                        backgroundSolidColor
+                                    )
+                                )
+                            )
+                    )
+                }
+            }
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -300,7 +308,7 @@ fun LyricsImageCard(
                     .padding(padding),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                
+
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
@@ -340,7 +348,7 @@ fun LyricsImageCard(
                         )
                     }
                 }
-                
+
                 BoxWithConstraints(
                     modifier = Modifier
                         .weight(1f)
@@ -392,7 +400,7 @@ fun LyricsImageCard(
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
-                
+
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()

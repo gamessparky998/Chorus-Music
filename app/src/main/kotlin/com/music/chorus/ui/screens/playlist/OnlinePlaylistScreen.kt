@@ -1,12 +1,10 @@
-
+@file:Suppress("OPT_IN_USAGE_ERROR", "OPT_IN_USAGE")
 
 package pushkar.chorus.music.ui.screens.playlist
 
 import android.content.Intent
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ContainedLoadingIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -25,7 +23,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -52,6 +49,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -147,7 +146,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.systemBars
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun OnlinePlaylistScreen(
     navController: NavController,
@@ -401,16 +399,19 @@ fun OnlinePlaylistScreen(
                                                                 coroutineScope = coroutineScope,
                                                                 onDismiss = menuState::dismiss
                                                             )
+
                                                             is SongItem -> YouTubeSongMenu(
                                                                 song = item,
                                                                 navController = navController,
                                                                 onDismiss = menuState::dismiss
                                                             )
+
                                                             is AlbumItem -> YouTubeAlbumMenu(
                                                                 albumItem = item,
                                                                 navController = navController,
                                                                 onDismiss = menuState::dismiss
                                                             )
+
                                                             is ArtistItem -> YouTubeArtistMenu(
                                                                 artist = item,
                                                                 onDismiss = menuState::dismiss
@@ -463,18 +464,6 @@ fun OnlinePlaylistScreen(
                             .fillMaxWidth()
                             .focusRequester(focusRequester)
                     )
-                } else {
-                    AnimatedContent(
-                        targetState = !transparentAppBar,
-                        transitionSpec = {
-                            fadeIn().togetherWith(fadeOut())
-                        },
-                        label = "TopAppBarTitle"
-                    ) { show ->
-                        if (show) {
-                            Text(playlist?.title ?: "")
-                        }
-                    }
                 }
             },
             navigationIcon = {
@@ -493,7 +482,17 @@ fun OnlinePlaylistScreen(
                         if (!isSearching && !inSelectMode) {
                             navController.backToMain()
                         }
-                    }
+                    },
+                    colors = IconButtonDefaults.outlinedIconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f)
+                    ),
+                    modifier = Modifier.border(
+                        border = BorderStroke(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
+                        ),
+                        shape = CircleShape
+                    )
                 ) {
                     Icon(
                         painter = painterResource(
@@ -527,7 +526,17 @@ fun OnlinePlaylistScreen(
                                     clearAction = onExitSelectionMode
                                 )
                             }
-                        }
+                        },
+                        colors = IconButtonDefaults.outlinedIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f)
+                        ),
+                        modifier = Modifier.border(
+                            border = BorderStroke(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
+                            ),
+                            shape = CircleShape
+                        )
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.more_vert),
@@ -536,7 +545,17 @@ fun OnlinePlaylistScreen(
                     }
                 } else if (!isSearching) {
                     IconButton(
-                        onClick = { isSearching = true }
+                        onClick = { isSearching = true },
+                        colors = IconButtonDefaults.outlinedIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f)
+                        ),
+                        modifier = Modifier.border(
+                            border = BorderStroke(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
+                            ),
+                            shape = CircleShape
+                        )
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.search),
@@ -545,8 +564,11 @@ fun OnlinePlaylistScreen(
                     }
                 }
             },
-            colors = if (transparentAppBar && !isSearching && !inSelectMode) {
-                androidx.compose.material3.TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+            colors = if (!isSearching && !inSelectMode) {
+                androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent,
+                    scrolledContainerColor = Color.Transparent
+                )
             } else {
                 androidx.compose.material3.TopAppBarDefaults.topAppBarColors()
             }
@@ -559,7 +581,6 @@ fun OnlinePlaylistScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun OnlinePlaylistHeader(
     playlist: PlaylistItem,
@@ -605,9 +626,8 @@ private fun OnlinePlaylistHeader(
                 .padding(bottom = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(Modifier.height(20.dp)) 
+            Spacer(Modifier.height(20.dp))
 
-            
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -623,14 +643,13 @@ private fun OnlinePlaylistHeader(
                             if (LocalConfiguration.current.screenWidthDp > 600) Modifier.size(300.dp)
                             else Modifier.fillMaxWidth().aspectRatio(1f)
                         )
-                        .clip(RoundedCornerShape(8.dp)),
+                        .clip(if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else RoundedCornerShape(8.dp)),
                     contentScale = ContentScale.Crop
                 )
             }
 
             Spacer(Modifier.height(32.dp))
 
-            
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
@@ -662,7 +681,7 @@ private fun OnlinePlaylistHeader(
 
             if (hasExplicitContent) {
                 Surface(
-                    shape = RoundedCornerShape(6.dp),
+                    shape = if (isFluidTheme()) ContinuousRoundedRectangle(6.dp) else RoundedCornerShape(6.dp),
                     color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     Row(
@@ -687,11 +706,9 @@ private fun OnlinePlaylistHeader(
                 Spacer(Modifier.height(16.dp))
             }
 
-
-            
             val totalDuration = songs.sumOf { it.duration ?: 0 }
             Surface(
-                shape = RoundedCornerShape(6.dp),
+                shape = if (isFluidTheme()) ContinuousRoundedRectangle(6.dp) else RoundedCornerShape(6.dp),
                 color = MaterialTheme.colorScheme.surfaceVariant,
                 modifier = Modifier.padding(horizontal = 32.dp)
             ) {
@@ -717,7 +734,6 @@ private fun OnlinePlaylistHeader(
 
             Spacer(Modifier.height(24.dp))
 
-            
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -725,7 +741,7 @@ private fun OnlinePlaylistHeader(
                 horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                
+
                 Button(
                     onClick = {
                         coroutineScope.launch(Dispatchers.IO) {
@@ -765,7 +781,7 @@ private fun OnlinePlaylistHeader(
                             }
                         }
                     },
-                    shape = ButtonDefaults.shape,
+                    shape = if (isFluidTheme()) ContinuousRoundedRectangle(24.dp) else ButtonDefaults.shape,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant,
                         contentColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -795,7 +811,6 @@ private fun OnlinePlaylistHeader(
                     }
                 }
 
-                
                 Button(
                     onClick = {
                         if (songs.isNotEmpty()) {
@@ -809,7 +824,7 @@ private fun OnlinePlaylistHeader(
                             )
                         }
                     },
-                    shape = ButtonDefaults.shape,
+                    shape = if (isFluidTheme()) ContinuousRoundedRectangle(24.dp) else ButtonDefaults.shape,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary,
                         contentColor = MaterialTheme.colorScheme.onPrimary
@@ -839,7 +854,6 @@ private fun OnlinePlaylistHeader(
                     }
                 }
 
-                
                 Surface(
                     onClick = {
                         val intent = Intent().apply {
@@ -849,7 +863,7 @@ private fun OnlinePlaylistHeader(
                         }
                         context.startActivity(Intent.createChooser(intent, null))
                     },
-                    shape = CircleShape,
+                    shape = if (isFluidTheme()) ContinuousRoundedRectangle(24.dp) else CircleShape,
                     color = MaterialTheme.colorScheme.surfaceVariant,
                     modifier = Modifier.size(48.dp)
                 ) {
@@ -869,14 +883,13 @@ private fun OnlinePlaylistHeader(
 
             Spacer(Modifier.height(16.dp))
 
-            
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 32.dp),
                 horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween),
             ) {
-                
+
                 ToggleButton(
                     checked = downloadState == Download.STATE_COMPLETED || downloadState == Download.STATE_DOWNLOADING,
                     onCheckedChange = {
@@ -949,7 +962,6 @@ private fun OnlinePlaylistHeader(
                     )
                 }
 
-                
                 ToggleButton(
                     checked = false,
                     onCheckedChange = {
@@ -981,7 +993,6 @@ private fun OnlinePlaylistHeader(
                     )
                 }
 
-                
                 ToggleButton(
                     checked = false,
                     onCheckedChange = {

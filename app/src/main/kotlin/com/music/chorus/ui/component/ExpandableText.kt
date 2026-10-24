@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.component
 
 import androidx.compose.animation.animateContentSize
@@ -93,7 +91,7 @@ fun ExpandableText(
                 }
             }
         )
-        
+
         if (hasOverflow) {
             Box(
                 modifier = Modifier

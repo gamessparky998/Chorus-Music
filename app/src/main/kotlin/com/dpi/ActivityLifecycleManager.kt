@@ -10,7 +10,6 @@ import timber.log.Timber
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 
-
 abstract class ActivityLifecycleManager : BaseLifecycleContentProvider() {
 
     private val activeActivities: MutableSet<Activity> =

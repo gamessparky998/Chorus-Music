@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.utils
 
 import android.content.Context
@@ -9,7 +7,6 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
-
 
 class NetworkConnectivityObserver(context: Context) {
     private val connectivityManager =
@@ -33,15 +30,14 @@ class NetworkConnectivityObserver(context: Context) {
             .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
             .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED)
             .build()
-        
+
         try {
             connectivityManager.registerNetworkCallback(request, networkCallback)
         } catch (e: Exception) {
-            
+
             _networkStatus.trySend(true)
         }
-        
-        
+
         val isInitiallyConnected = isCurrentlyConnected()
         _networkStatus.trySend(isInitiallyConnected)
     }
@@ -49,17 +45,14 @@ class NetworkConnectivityObserver(context: Context) {
     fun unregister() {
         connectivityManager.unregisterNetworkCallback(networkCallback)
     }
-    
-    
+
     fun isCurrentlyConnected(): Boolean {
         return try {
             val activeNetwork = connectivityManager.activeNetwork
             val networkCapabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
-            
-            
+
             val hasInternet = networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
-            
-            
+
             val isValidated =
                 networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true
 

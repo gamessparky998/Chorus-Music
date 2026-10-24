@@ -1,5 +1,3 @@
-
-
 package com.music.chorus.unison.models
 
 import kotlinx.serialization.SerialName

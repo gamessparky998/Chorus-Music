@@ -1,4 +1,3 @@
-
 package pushkar.chorus.music.ui.component.backdrop.internal
 
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -7,10 +6,6 @@ import androidx.compose.ui.node.DelegatableNode
 import androidx.compose.ui.node.requireDensity
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.toIntSize
-
-
-
-
 
 internal fun DrawScope.recordLayer(
     node: DelegatableNode,

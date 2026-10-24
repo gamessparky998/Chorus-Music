@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.component
 
 import androidx.compose.foundation.Image
@@ -7,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,7 +29,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ThumbnailCornerRadiusModal(
     initialRadius: Float,
@@ -64,12 +63,15 @@ fun ThumbnailCornerRadiusModal(
                 else -> 0.95f
             }
 
+            val isFluid = isFluidTheme()
+            val dialogShape = if (isFluid) ContinuousRoundedRectangle(26.dp) else RoundedCornerShape(30.dp)
+
             Surface(
                 modifier = Modifier
                     .fillMaxWidth(dialogWidth)
                     .wrapContentHeight()
-                    .clip(RoundedCornerShape(30.dp)),
-                shape = MaterialTheme.shapes.large,
+                    .clip(dialogShape),
+                shape = dialogShape,
                 color = MaterialTheme.colorScheme.surface,
                 tonalElevation = 6.dp
             ) {
@@ -81,22 +83,22 @@ fun ThumbnailCornerRadiusModal(
                 ) {
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        
+
+                        val previewShape = if (isFluid) ContinuousRoundedRectangle(thumbnailCornerRadius.dp) else RoundedCornerShape(thumbnailCornerRadius.dp)
                         Box(
                             modifier = Modifier
                                 .size(160.dp)
-                                .clip(RoundedCornerShape(thumbnailCornerRadius.dp))
+                                .clip(previewShape)
                                 .background(MaterialTheme.colorScheme.surface)
                                 .border(
                                     width = 1.dp,
                                     color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
-                                    shape = RoundedCornerShape(thumbnailCornerRadius.dp)
+                                    shape = previewShape
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
@@ -108,11 +110,12 @@ fun ThumbnailCornerRadiusModal(
                                     .fillMaxSize()
                                     .padding(16.dp)
                             )
+                            val badgeShape = if (isFluid) ContinuousRoundedRectangle(10.dp) else RoundedCornerShape(10.dp)
                             Box(
                                 modifier = Modifier
                                     .align(Alignment.BottomCenter)
                                     .fillMaxWidth()
-                                    .clip(RoundedCornerShape(10.dp))
+                                    .clip(badgeShape)
                                     .background(
                                         MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
                                     )
@@ -128,7 +131,6 @@ fun ThumbnailCornerRadiusModal(
                             }
                         }
 
-                        
                         ChipsGrid(
                             modifier = Modifier.weight(1f),
                             values = presetValues,
@@ -139,7 +141,6 @@ fun ThumbnailCornerRadiusModal(
                             }
                         )
                     }
-                    
 
                     Spacer(modifier = Modifier.height(24.dp))
                     Row(
@@ -199,7 +200,7 @@ fun ThumbnailCornerRadiusModal(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             },
-                            shape = MaterialTheme.shapes.small
+                            shape = if (isFluid) ContinuousRoundedRectangle(12.dp) else MaterialTheme.shapes.small
                         )
                     }
 
@@ -268,6 +269,9 @@ fun ThumbnailCornerRadiusModal(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    val buttonShape = if (isFluid) ContinuousRoundedRectangle(16.dp) else ButtonDefaults.shape
+                    val textButtonShape = if (isFluid) ContinuousRoundedRectangle(16.dp) else ButtonDefaults.textShape
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -279,6 +283,7 @@ fun ThumbnailCornerRadiusModal(
                                 customValue = "3"
                                 isCustomSelected = true
                             },
+                            shape = textButtonShape,
                             modifier = Modifier.heightIn(min = 48.dp)
                         ) {
                             Text(
@@ -291,6 +296,7 @@ fun ThumbnailCornerRadiusModal(
 
                         TextButton(
                             onClick = onDismiss,
+                            shape = textButtonShape,
                             modifier = Modifier.heightIn(min = 48.dp)
                         ) {
                             Text(
@@ -305,6 +311,7 @@ fun ThumbnailCornerRadiusModal(
                                     onRadiusSelected(thumbnailCornerRadius)
                                 }
                             },
+                            shape = buttonShape,
                             modifier = Modifier.heightIn(min = 48.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primary,
@@ -312,11 +319,6 @@ fun ThumbnailCornerRadiusModal(
                             )
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-
-
-
-
-
 
                                 Text(
                                     text = stringResource(id = android.R.string.ok),
@@ -331,17 +333,18 @@ fun ThumbnailCornerRadiusModal(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ChipsGrid(
-    modifier: Modifier = Modifier,   
+    modifier: Modifier = Modifier,
     values: List<Float>,
     selectedValue: Float?,
     onValueSelected: (Float) -> Unit
 ) {
+    val isFluid = isFluidTheme()
+    val chipShape = if (isFluid) ContinuousRoundedRectangle(10.dp) else FilterChipDefaults.shape
     val chunkedValues = values.chunked(2)
     Column(
-        modifier = modifier,          
+        modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -355,6 +358,7 @@ private fun ChipsGrid(
                     FilterChip(
                         selected = selectedValue == value,
                         onClick = { onValueSelected(value) },
+                        shape = chipShape,
                         label = {
                             Text(
                                 text = "${value.roundToInt()}",

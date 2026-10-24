@@ -31,13 +31,13 @@ class AxionEqViewModel @Inject constructor(
     val enabled = _enabled.asStateFlow()
 
     private val bandFrequencies = doubleArrayOf(31.0, 62.0, 125.0, 250.0, 500.0, 1000.0, 2000.0, 4000.0, 8000.0, 16000.0)
-    
+
     private val _bandGains = MutableStateFlow(
         FloatArray(10) { prefs.getFloat("band_$it", 0f) }
     )
     val bandGains = _bandGains.asStateFlow()
 
-    private val _mode = MutableStateFlow(prefs.getInt("mode", 0)) 
+    private val _mode = MutableStateFlow(prefs.getInt("mode", 0))
     val mode = _mode.asStateFlow()
 
     private val _isDirty = MutableStateFlow(false)
@@ -69,7 +69,7 @@ class AxionEqViewModel @Inject constructor(
     fun setMode(mode: Int) {
         _mode.value = mode
         prefs.edit().putInt("mode", mode).apply()
-        _isDirty.value = false 
+        _isDirty.value = false
     }
 
     fun setBandGain(index: Int, gain: Float) {
@@ -88,7 +88,7 @@ class AxionEqViewModel @Inject constructor(
         val editor = prefs.edit()
         gains.forEachIndexed { index, f -> editor.putFloat("band_$index", f) }
         editor.apply()
-        _isDirty.value = fromUser 
+        _isDirty.value = fromUser
         if (_enabled.value) {
             applyToService()
         }
@@ -110,7 +110,7 @@ class AxionEqViewModel @Inject constructor(
                     enabled = true
                 )
             }
-            
+
             val id = "custom_${System.currentTimeMillis()}"
             val profile = SavedEQProfile(
                 id = id,
@@ -121,7 +121,7 @@ class AxionEqViewModel @Inject constructor(
                 isCustom = true,
                 isActive = true
             )
-            
+
             eqProfileRepository.saveProfile(profile)
             eqProfileRepository.setActiveProfile(profile.id)
             _isDirty.value = false
@@ -141,13 +141,13 @@ class AxionEqViewModel @Inject constructor(
             val bands = _bandGains.value.mapIndexed { index, f ->
                 ParametricEQBand(
                     frequency = bandFrequencies[index],
-                    gain = f.toDouble() / 50.0, 
+                    gain = f.toDouble() / 50.0,
                     q = 1.41,
                     filterType = FilterType.PK,
                     enabled = true
                 )
             }
-            
+
             val profile = SavedEQProfile(
                 id = "chorus_tuning",
                 name = "Chorus Tuning",
@@ -157,11 +157,10 @@ class AxionEqViewModel @Inject constructor(
                 isCustom = false,
                 isActive = true
             )
-            
-            
+
             eqProfileRepository.saveProfile(profile)
             eqProfileRepository.setActiveProfile(profile.id)
-            
+
             equalizerService.applyProfile(profile)
         }
     }

@@ -36,11 +36,11 @@ object LocalFileDownloader {
             notificationManager.createNotificationChannel(channel)
         }
         val notificationId = fileName.hashCode()
-        
+
         try {
             val destinationUri = Uri.parse(destinationDirUriString)
             val dir = DocumentFile.fromTreeUri(context, destinationUri)
-            
+
             if (dir == null || !dir.isDirectory || !dir.canWrite()) {
                 withContext(Dispatchers.Main) {
                     Toast.makeText(context, "Cannot write to selected destination. Please choose a valid directory.", Toast.LENGTH_LONG).show()
@@ -50,7 +50,7 @@ object LocalFileDownloader {
 
             val existingFile = dir.findFile(fileName)
             val file = existingFile ?: dir.createFile(mimeType, fileName)
-            
+
             if (file == null) {
                 withContext(Dispatchers.Main) {
                     Toast.makeText(context, "Failed to create file.", Toast.LENGTH_SHORT).show()
@@ -61,7 +61,7 @@ object LocalFileDownloader {
             withContext(Dispatchers.Main) {
                 Toast.makeText(context, "Downloading $fileName...", Toast.LENGTH_SHORT).show()
             }
-            
+
             val notificationBuilder = NotificationCompat.Builder(context, channelId)
                 .setContentTitle(fileName)
                 .setContentText("Downloading...")
@@ -114,7 +114,7 @@ object LocalFileDownloader {
             withContext(Dispatchers.Main) {
                 Toast.makeText(context, "Download completed: $fileName", Toast.LENGTH_SHORT).show()
             }
-            
+
             notificationBuilder.setContentText("Download complete")
                 .setProgress(0, 0, false)
                 .setOngoing(false)

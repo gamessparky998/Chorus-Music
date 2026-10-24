@@ -758,7 +758,6 @@
     <string name="monthly_listeners">Aylık</string>
     <string name="unlock_queue">Kuyruk Kilidini Aç</string>
     <string name="lock_queue">Kuyruk Kilidi</string>
-<!--    //Members-->
 
     <!-- ShowMediaInfo -->
     <string name="song_info">Şarkı Bilgisi</string>

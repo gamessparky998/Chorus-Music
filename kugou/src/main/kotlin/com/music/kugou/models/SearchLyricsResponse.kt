@@ -16,7 +16,7 @@ data class SearchLyricsResponse(
     data class Candidate(
         val id: Long,
         @SerialName("product_from")
-        val productFrom: String, 
+        val productFrom: String,
         val duration: Long,
         val accesskey: String,
     )

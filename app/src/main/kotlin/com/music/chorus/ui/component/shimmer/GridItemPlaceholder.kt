@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.component.shimmer
 
 import androidx.compose.foundation.background
@@ -33,7 +31,7 @@ fun GridItemPlaceHolder(
 ) {
     val gridItemSize by rememberEnumPreference(GridItemsSizeKey, GridItemSize.BIG)
     val gridHeight = if (gridItemSize == GridItemSize.BIG) GridThumbnailHeight else SmallGridThumbnailHeight
-    
+
     Column(
         modifier =
         if (fillMaxWidth) {

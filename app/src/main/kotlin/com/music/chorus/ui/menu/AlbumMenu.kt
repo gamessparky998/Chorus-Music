@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.menu
 
 import android.annotation.SuppressLint
@@ -198,8 +196,8 @@ fun AlbumMenu(
                         )
                     },
                     modifier =
-                    Modifier
-                        .clickable { showErrorPlaylistAddDialog = false },
+                        Modifier
+                            .clickable { showErrorPlaylistAddDialog = false },
                 )
             }
 
@@ -220,14 +218,14 @@ fun AlbumMenu(
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier =
-                    Modifier
-                        .height(ListItemHeight)
-                        .clickable {
-                            navController.navigate("artist/${artist.id}")
-                            showSelectArtistDialog = false
-                            onDismiss()
-                        }
-                        .padding(horizontal = 12.dp),
+                        Modifier
+                            .height(ListItemHeight)
+                            .clickable {
+                                navController.navigate("artist/${artist.id}")
+                                showSelectArtistDialog = false
+                                onDismiss()
+                            }
+                            .padding(horizontal = 12.dp),
                 ) {
                     Box(
                         modifier = Modifier.padding(8.dp),
@@ -237,9 +235,9 @@ fun AlbumMenu(
                             model = artist.thumbnailUrl,
                             contentDescription = null,
                             modifier =
-                            Modifier
-                                .size(ListThumbnailSize)
-                                .clip(CircleShape),
+                                Modifier
+                                    .size(ListThumbnailSize)
+                                    .clip(CircleShape),
                         )
                     }
                     Text(
@@ -249,9 +247,9 @@ fun AlbumMenu(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier =
-                        Modifier
-                            .weight(1f)
-                            .padding(horizontal = 8.dp),
+                            Modifier
+                                .weight(1f)
+                                .padding(horizontal = 8.dp),
                     )
                 }
             }
@@ -364,7 +362,10 @@ fun AlbumMenu(
                             val intent = Intent().apply {
                                 action = Intent.ACTION_SEND
                                 type = "text/plain"
-                                putExtra(Intent.EXTRA_TEXT, "https://music.youtube.com/playlist?list=${album.album.playlistId}")
+                                putExtra(
+                                    Intent.EXTRA_TEXT,
+                                    "https://music.youtube.com/playlist?list=${album.album.playlistId}"
+                                )
                             }
                             context.startActivity(Intent.createChooser(intent, null))
                         }
@@ -423,10 +424,10 @@ fun AlbumMenu(
                         }
                     ),
                     Material3MenuItemData(
-                        title = { 
+                        title = {
                             Text(
-                                text = if (isPinned) "Unpin from Speed dial" else "Pin to Speed dial" 
-                            ) 
+                                text = if (isPinned) "Unpin from Speed dial" else "Pin to Speed dial"
+                            )
                         },
                         icon = {
                             Icon(
@@ -490,6 +491,7 @@ fun AlbumMenu(
                                 }
                             )
                         }
+
                         STATE_QUEUED, STATE_DOWNLOADING -> {
                             Material3MenuItemData(
                                 title = { Text(text = stringResource(R.string.downloading)) },
@@ -511,6 +513,7 @@ fun AlbumMenu(
                                 }
                             )
                         }
+
                         else -> {
                             Material3MenuItemData(
                                 title = { Text(text = stringResource(R.string.action_download)) },

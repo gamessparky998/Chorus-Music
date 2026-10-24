@@ -1,10 +1,8 @@
 package com.music.innertube.models
 
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames
 
-@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 data class ThumbnailRenderer(
     @JsonNames("croppedSquareThumbnailRenderer")

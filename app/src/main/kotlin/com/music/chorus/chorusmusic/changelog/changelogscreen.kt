@@ -1,6 +1,6 @@
+@file:Suppress("OPT_IN_USAGE_ERROR", "OPT_IN_USAGE")
+
 package pushkar.chorus.music.chorusmusic.changelog
-
-
 
 import android.content.Context
 import android.content.Intent
@@ -34,8 +34,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -97,7 +95,6 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ChangelogScreen(
     navController: NavController,
@@ -148,16 +145,16 @@ fun ChangelogScreen(
                     val connection = changelogUrl.openConnection() as HttpURLConnection
                     connection.setRequestProperty("User-Agent", "chorusmusic-Changelog-App")
                     connection.setRequestProperty("Accept", "application/json")
-                    
+
                     if (connection.responseCode == 200) {
                         val changelogJson = connection.inputStream.bufferedReader().use { it.readText() }
                         val changelogData = JSONObject(changelogJson)
-                        
+
                         val desc = changelogData.optString("description").takeIf { it.isNotEmpty() }
                         val imageUrl = changelogData.optString("image").takeIf { it.isNotEmpty() }
                         val warning = changelogData.optString("warning").takeIf { it.isNotEmpty() }
                         val changelogArray = changelogData.optJSONArray("changelog")
-                        
+
                         val sections = mutableListOf<ChangelogSection>()
                         if (changelogArray != null) {
                             for (i in 0 until changelogArray.length()) {
@@ -175,7 +172,7 @@ fun ChangelogScreen(
                                         sections.add(ChangelogSection(title, items))
                                     }
                                 } else {
-                                    
+
                                     val item = changelogArray.optString(i, "")
                                     if (item.isNotBlank()) {
                                         if (sections.isEmpty() || sections[0].title.isNotBlank()) {
@@ -186,7 +183,7 @@ fun ChangelogScreen(
                                 }
                             }
                         }
-                        
+
                         saveChangelogToCache(context, tag, sections, imageUrl, desc, warning)
                         withContext(Dispatchers.Main) {
                             changelogSections = sections
@@ -221,7 +218,7 @@ fun ChangelogScreen(
                 val connection = releasesUrl.openConnection() as HttpURLConnection
                 connection.setRequestProperty("User-Agent", "chorusmusic-Changelog-App")
                 connection.setRequestProperty("Accept", "application/vnd.github+json")
-                
+
                 if (connection.responseCode == 200) {
                     val json = connection.inputStream.bufferedReader().use { it.readText() }
                     val array = JSONArray(json)
@@ -303,7 +300,7 @@ fun ChangelogScreen(
                 .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Bottom))
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
-                
+
                 if (availableReleases.isNotEmpty()) {
                     Row(
                         modifier = Modifier
@@ -368,7 +365,7 @@ fun ChangelogScreen(
                             .verticalScroll(rememberScrollState())
                     ) {
                         if (isLoading && availableReleases.isEmpty()) {
-                            
+
                         } else {
                             Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                                 Row(
@@ -388,7 +385,7 @@ fun ChangelogScreen(
                                         }
                                     }
                                 }
-                                
+
                                 updateImage?.let { imageUrl ->
                                     Spacer(modifier = Modifier.height(16.dp))
                                     AsyncImage(
@@ -420,7 +417,7 @@ fun ChangelogScreen(
                                         } else {
                                             Spacer(Modifier.height(16.dp))
                                         }
-                                        
+
                                         section.items.forEach { item ->
                                             val annotatedText = item.trim().parseMarkdown()
                                             Row(modifier = Modifier.padding(vertical = 4.dp), verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -443,7 +440,7 @@ fun ChangelogScreen(
                                         }
                                     }
                                 }
-                                
+
                                 Spacer(Modifier.height(32.dp))
                             }
                         }
@@ -451,7 +448,6 @@ fun ChangelogScreen(
                 }
             }
 
-            
             Box(
                 Modifier
                     .align(Alignment.TopCenter)
@@ -505,7 +501,7 @@ private fun loadChangelogFromCache(context: Context, versionTag: String): Cached
         val cacheFile = File(context.filesDir, "changelog_cache_$versionTag.json")
         if (!cacheFile.exists()) return null
         val cacheData = JSONObject(context.openFileInput("changelog_cache_$versionTag.json").use { it.bufferedReader().readText() })
-        
+
         val sectionsArray = cacheData.optJSONArray("sections")
         val sections = mutableListOf<ChangelogSection>()
         if (sectionsArray != null) {
@@ -520,7 +516,7 @@ private fun loadChangelogFromCache(context: Context, versionTag: String): Cached
                 sections.add(ChangelogSection(title, items))
             }
         }
-        
+
         CachedChangelogData(
             sections = sections,
             image = cacheData.optString("image").takeIf { it.isNotEmpty() },

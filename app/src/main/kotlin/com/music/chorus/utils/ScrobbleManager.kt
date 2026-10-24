@@ -22,7 +22,7 @@ class ScrobbleManager(
     private var currentMetadata: MediaMetadata? = null
     private var duration: Long? = null
     private var isPlaying = false
-    
+
     private var playTimeSeconds = 0
     private var scrobbled = false
     private var trackJob: Job? = null
@@ -35,16 +35,16 @@ class ScrobbleManager(
 
     fun onSongStart(metadata: MediaMetadata?, duration: Long? = null) {
         if (metadata?.id == currentMetadata?.id) return
-        
+
         stopTracking()
-        
+
         currentMetadata = metadata
         this.duration = duration
         playTimeSeconds = 0
         scrobbled = false
 
         if (!enableScrobbling || metadata == null || metadata.id.isLocalMediaId()) return
-        
+
         if (useNowPlaying && LastFM.isInitialized()) {
             scrobblingJob?.cancel()
             scrobblingJob = scope.launch {
@@ -73,11 +73,11 @@ class ScrobbleManager(
 
     fun onPlayerStateChanged(isPlaying: Boolean, metadata: MediaMetadata?, duration: Long? = null) {
         this.isPlaying = isPlaying
-        
+
         if (metadata != null && metadata.id != currentMetadata?.id) {
              onSongStart(metadata, duration)
         }
-        
+
         if (isPlaying) {
             startTracking()
         } else {
@@ -88,7 +88,7 @@ class ScrobbleManager(
     private fun startTracking() {
         trackJob?.cancel()
         if (scrobbled || currentMetadata == null || !enableScrobbling) return
-        
+
         trackJob = scope.launch {
             while (true) {
                 delay(1000)
@@ -97,7 +97,7 @@ class ScrobbleManager(
             }
         }
     }
-    
+
     private fun stopTracking() {
         trackJob?.cancel()
     }
@@ -111,7 +111,7 @@ class ScrobbleManager(
         val dur = duration?.let { it / 1000 } ?: return
 
         if (scrobbled) return
-        
+
         if (dur < minSongDuration && dur > 0) return
 
         val actualDuration = if (dur > 0) dur else 300L
@@ -125,13 +125,13 @@ class ScrobbleManager(
             doScrobble(meta, actualDuration)
         }
     }
-    
+
     private fun doScrobble(metadata: MediaMetadata, durationInSeconds: Long) {
         val artists = metadata.artists.joinToString(", ") { it.name }
         if (artists.isEmpty() || metadata.id.isLocalMediaId() || !LastFM.isInitialized()) return
-        
+
         val timestamp = System.currentTimeMillis() / 1000 - playTimeSeconds
-        
+
         scrobblingJob?.cancel()
         scrobblingJob = scope.launch {
             try {

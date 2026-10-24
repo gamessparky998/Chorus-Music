@@ -22,7 +22,7 @@ class JioSaavnLinkParser : UniversalLinkParser {
         val playlistId = url.substringAfterLast("/")
 
         val tracks = mutableListOf<UniversalParsedTrack>()
-        
+
         val songElements = doc.select(".song-wrap .title a")
         for (elem in songElements) {
             val trackName = elem.text()
@@ -31,7 +31,7 @@ class JioSaavnLinkParser : UniversalLinkParser {
                 tracks.add(UniversalParsedTrack(title = trackName, artist = artistElem))
             }
         }
-        
+
         if (tracks.isEmpty()) {
             val listItems = doc.select("ol li .content")
             for (item in listItems) {
@@ -42,7 +42,7 @@ class JioSaavnLinkParser : UniversalLinkParser {
                 }
             }
         }
-        
+
         if (tracks.isEmpty()) {
             val songLinks = doc.select("a[href*=/song/]")
             for (link in songLinks) {
@@ -52,7 +52,7 @@ class JioSaavnLinkParser : UniversalLinkParser {
                 }
             }
         }
-        
+
         val distinctTracks = tracks.distinctBy { it.title }.toMutableList()
         tracks.clear()
         tracks.addAll(distinctTracks)

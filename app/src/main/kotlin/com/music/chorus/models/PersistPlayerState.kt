@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.models
 
 import java.io.Serializable

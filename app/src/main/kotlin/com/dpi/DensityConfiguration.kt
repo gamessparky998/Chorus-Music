@@ -9,14 +9,12 @@ import android.util.Log
 import timber.log.Timber
 import kotlin.math.roundToInt
 
-
 internal class DensityConfiguration(
     private val densityScale: Float
 ) : ActivityLifecycleManager() {
 
     private var originalDensityDpi: Int = 0
 
-    
     @SuppressLint("LogNotTimber")
     fun applyDensityScaling(context: Context) {
         if (densityScale == 1.0f) return
@@ -32,7 +30,6 @@ internal class DensityConfiguration(
         }
     }
 
-    
     private fun updateDensityDpi(config: Configuration, resources: Resources) {
         val newDensityDpi = (originalDensityDpi * densityScale).roundToInt()
         config.densityDpi = newDensityDpi
@@ -41,22 +38,18 @@ internal class DensityConfiguration(
         resources.updateConfiguration(config, resources.displayMetrics)
     }
 
-    
     override fun onActivityCreated(activity: Activity) {
         applyDensityToActivity(activity)
     }
 
-    
     override fun onActivityResumed(activity: Activity) {
         applyDensityToActivity(activity)
     }
 
-    
     override fun onActivityStarted(activity: Activity) {
         applyDensityToActivity(activity)
     }
 
-    
     private fun applyDensityToActivity(activity: Activity) {
         try {
             updateDensityDpi(activity.resources.configuration, activity.resources)

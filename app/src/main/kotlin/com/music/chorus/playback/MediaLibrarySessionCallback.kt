@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.playback
 
 import android.content.ContentResolver
@@ -314,22 +312,22 @@ constructor(
                     song.artists.any { it.name.contains(query, ignoreCase = true) } ||
                     song.album?.title?.contains(query, ignoreCase = true) == true
                 }
-                
+
                 val artistSongs = database.searchArtists(query).first().flatMap { artist ->
                     database.artistSongsByCreateDateAsc(artist.id).first()
                 }
-                
+
                 val albumSongs = database.searchAlbums(query).first().flatMap { album ->
                     database.albumSongs(album.id).first()
                 }
-                
+
                 val playlistSongs = database.searchPlaylists(query).first().flatMap { playlist ->
                     database.playlistSongs(playlist.id).first().map { it.song }
                 }
 
                 val allLocalSongs = (localSongs + artistSongs + albumSongs + playlistSongs)
                     .distinctBy { it.id }
-                
+
                 allLocalSongs.forEach { song ->
                     searchResults.add(song.toMediaItem(
                         path = "${MusicService.SEARCH}/$query",
@@ -362,15 +360,15 @@ constructor(
                             database.query { insert(songItem.toMediaMetadata()) }
                         } catch (e: Exception) {
                         }
-                        
+
                         searchResults.add(songItem.toMediaItem("${MusicService.SEARCH}/$query"))
                     }
                 } catch (e: Exception) {
                     reportException(e)
                 }
-                
+
                 LibraryResult.ofItemList(searchResults.paginate(page, pageSize), params.withContentStyleHints())
-                
+
             } catch (e: Exception) {
                 reportException(e)
                 LibraryResult.ofItemList(emptyList(), params.withContentStyleHints())
@@ -452,7 +450,6 @@ constructor(
                         }
                     }.first()
 
-                    
                     if (songId == MusicService.SHUFFLE_ACTION) {
                         MediaItemsWithStartPosition(
                             songs.shuffled().take(200).map { it.toMediaItem() },
@@ -484,7 +481,6 @@ constructor(
                         return@future defaultResult
                     }
 
-                    
                     if (songId == MusicService.SHUFFLE_ACTION) {
                         MediaItemsWithStartPosition(
                             songs.shuffled(),
@@ -507,7 +503,7 @@ constructor(
                         ?.removeSuffix("/$songId")
                         ?.takeIf { it.isNotBlank() }
                         ?: return@future defaultResult
-                    
+
                     val searchResults = mutableListOf<Song>()
 
                     val localSongs = database.allSongs().first().filter { song ->
@@ -515,24 +511,24 @@ constructor(
                         song.artists.any { it.name.contains(searchQuery, ignoreCase = true) } ||
                         song.album?.title?.contains(searchQuery, ignoreCase = true) == true
                     }
-                    
+
                     val artistSongs = database.searchArtists(searchQuery).first().flatMap { artist ->
                         database.artistSongsByCreateDateAsc(artist.id).first()
                     }
-                    
+
                     val albumSongs = database.searchAlbums(searchQuery).first().flatMap { album ->
                         database.albumSongs(album.id).first()
                     }
-                    
+
                     val playlistSongs = database.searchPlaylists(searchQuery).first().flatMap { playlist ->
                         database.playlistSongs(playlist.id).first().map { it.song }
                     }
 
                     val allLocalSongs = (localSongs + artistSongs + albumSongs + playlistSongs)
                         .distinctBy { it.id }
-                    
+
                     searchResults.addAll(allLocalSongs)
-                    
+
                     try {
                         val onlineResults = YouTube.search(searchQuery, YouTube.SearchFilter.FILTER_SONG)
                             .getOrNull()
@@ -564,13 +560,13 @@ constructor(
                     } catch (e: Exception) {
                         reportException(e)
                     }
-                    
+
                     if (searchResults.isEmpty()) {
                         return@future defaultResult
                     }
-                    
+
                     val targetIndex = searchResults.indexOfFirst { it.id == songId }
-                    
+
                     MediaItemsWithStartPosition(
                         searchResults.map { it.toMediaItem() },
                         if (targetIndex >= 0) targetIndex else 0,

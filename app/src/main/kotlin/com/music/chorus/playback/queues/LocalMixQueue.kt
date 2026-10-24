@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.playback.queues
 
 import androidx.media3.common.MediaItem

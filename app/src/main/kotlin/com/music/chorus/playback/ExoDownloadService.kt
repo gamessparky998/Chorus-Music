@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.playback
 
 import android.app.Notification
@@ -18,7 +16,6 @@ import androidx.media3.exoplayer.scheduler.Scheduler
 import pushkar.chorus.music.R
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-
 
 @AndroidEntryPoint
 class ExoDownloadService : DownloadService(
@@ -73,8 +70,6 @@ class ExoDownloadService : DownloadService(
             ).build()
         ).build()
 
-
-    
     class TerminalStateNotificationHelper(
         private val context: Context,
         private val notificationHelper: DownloadNotificationHelper,

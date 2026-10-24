@@ -10,11 +10,11 @@ data class BeatInfoEntity(
     val firstBeatOffsetMs: Long,
     val confidence: Float,
     val analyzedAt: Long = System.currentTimeMillis(),
-    
+
     val mixInPointMs: Long? = null,
-    
+
     val mixOutPointMs: Long? = null,
-    
+
     val keyPitchClass: Int? = null,
     val keyIsMinor: Boolean? = null,
 )

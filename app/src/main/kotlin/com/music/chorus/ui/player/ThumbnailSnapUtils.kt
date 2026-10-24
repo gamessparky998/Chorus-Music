@@ -1,8 +1,5 @@
-
-
 package pushkar.chorus.music.ui.player
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider
 import androidx.compose.foundation.lazy.grid.LazyGridItemInfo
@@ -11,8 +8,6 @@ import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.ui.util.fastForEach
 import kotlin.math.abs
 
-
-@ExperimentalFoundationApi
 fun ThumbnailSnapLayoutInfoProvider(
     lazyGridState: LazyGridState,
     positionInLayout: (layoutSize: Float, itemSize: Float) -> Float = { layoutSize, itemSize ->
@@ -24,11 +19,10 @@ fun ThumbnailSnapLayoutInfoProvider(
         get() = lazyGridState.layoutInfo
 
     override fun calculateApproachOffset(velocity: Float, decayOffset: Float): Float = 0f
-    
+
     override fun calculateSnapOffset(velocity: Float): Float {
         val bounds = calculateSnappingOffsetBounds()
 
-        
         if (abs(velocity) < velocityThreshold) {
             return if (abs(bounds.start) < abs(bounds.endInclusive)) {
                 bounds.start
@@ -51,12 +45,10 @@ fun ThumbnailSnapLayoutInfoProvider(
         layoutInfo.visibleItemsInfo.fastForEach { item ->
             val offset = calculateDistanceToDesiredSnapPosition(layoutInfo, item, positionInLayout)
 
-            
             if (offset <= 0 && offset > lowerBoundOffset) {
                 lowerBoundOffset = offset
             }
 
-            
             if (offset >= 0 && offset < upperBoundOffset) {
                 upperBoundOffset = offset
             }
@@ -65,7 +57,6 @@ fun ThumbnailSnapLayoutInfoProvider(
         return lowerBoundOffset.rangeTo(upperBoundOffset)
     }
 }
-
 
 fun calculateDistanceToDesiredSnapPosition(
     layoutInfo: LazyGridLayoutInfo,
@@ -80,7 +71,6 @@ fun calculateDistanceToDesiredSnapPosition(
 
     return itemCurrentPosition - desiredDistance
 }
-
 
 val LazyGridLayoutInfo.singleAxisViewportSize: Int
     get() = if (orientation == Orientation.Vertical) viewportSize.height else viewportSize.width

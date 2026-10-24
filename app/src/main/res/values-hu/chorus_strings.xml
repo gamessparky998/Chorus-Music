@@ -215,10 +215,10 @@
     <string name="lyrics_romanize_kyrgyz">Kirgizisztáni dalszövegek latin betűs átírása</string>
     <string name="lyrics_romanize_serbian">Szerb dalszövegek latin betűs átírása</string>
     <string name="lyrics_romanize_bulgarian">Bolgár dalszövegek latin betűs átírása</string>
-    <string name="line_by_line_option_title">KÍSÉRLETI: Soronkénti nyelvfelismerés</string>
+    <string name="line_by_line_option_title">Soronkénti nyelvfelismerés</string>
     <string name="line_by_line_option_desc">A cirill nyelv soronként lesz felismerve az egész dalszöveg helyett.</string>
     <string name="line_by_line_dialog_title">Biztos vagy benne?</string>
-    <string name="line_by_line_dialog_desc">Ez egy kísérleti funkció, változó megbízhatósággal.\n\nAlapértelmezésben a rendszer a teljes dal alapján határozza meg a nyelvet, ez az opció viszont soronkénti ellenőrzést tesz lehetővé. Ez hasznos a többnyelvű daloknál, DE a nyelvfelismerés nem mindig pontos (például, ha egy ukrán sor nem tartalmaz speciális ukrán karaktereket, a rendszer oroszként írhatja át).\n\nHa nem tapasztalsz problémát, javasolt kikapcsolva hagyni ezt az opciót.</string>
+    <string name="line_by_line_dialog_desc">Alapértelmezésben a rendszer a teljes dal alapján határozza meg a nyelvet, ez az opció viszont soronkénti ellenőrzést tesz lehetővé. Ez hasznos a többnyelvű daloknál, DE a nyelvfelismerés nem mindig pontos (például, ha egy ukrán sor nem tartalmaz speciális ukrán karaktereket, a rendszer oroszként írhatja át).\n\nHa nem tapasztalsz problémát, javasolt kikapcsolva hagyni ezt az opciót.</string>
     <string name="line_by_line_dialog_enable">Bekapcsolás</string>
     <string name="romanize_current_track">Aktuális dal latin betűs átírása</string>
     <string name="updater">Frissítések</string>

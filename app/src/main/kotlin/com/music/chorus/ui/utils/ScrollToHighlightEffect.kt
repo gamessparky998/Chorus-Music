@@ -20,17 +20,16 @@ fun Modifier.scrollToOnHighlight(
     delayMs: Long = 300L
 ): Modifier {
     val targetScroll = remember { mutableStateOf<Int?>(null) }
-    
+
     val screenHeightPx = with(LocalDensity.current) {
         LocalConfiguration.current.screenHeightDp.dp.toPx()
     }
-    
-    
+
     val targetScreenY = screenHeightPx / 2f
 
     LaunchedEffect(isHighlighted, targetScroll.value) {
         if (isHighlighted && targetScroll.value != null) {
-            delay(delayMs) 
+            delay(delayMs)
             scrollState.animateScrollTo(targetScroll.value!!)
         }
     }
@@ -38,16 +37,14 @@ fun Modifier.scrollToOnHighlight(
     return if (isHighlighted) {
         this.onGloballyPositioned { coordinates ->
             if (targetScroll.value == null) {
-                
+
                 val currentScreenY = coordinates.positionInWindow().y
-                
-                
+
                 val scrollDelta = currentScreenY - targetScreenY
-                
-                
+
                 var newScroll = scrollState.value + scrollDelta.toInt()
                 if (newScroll < 0) newScroll = 0
-                
+
                 targetScroll.value = newScroll
             }
         }

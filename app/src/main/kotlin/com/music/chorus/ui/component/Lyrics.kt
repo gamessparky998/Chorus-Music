@@ -1,3 +1,5 @@
+@file:Suppress("OPT_IN_USAGE_ERROR", "OPT_IN_USAGE")
+
 package pushkar.chorus.music.ui.component
 
 import android.annotation.SuppressLint
@@ -17,7 +19,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -28,7 +29,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -57,7 +57,6 @@ import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -119,6 +118,8 @@ import pushkar.chorus.music.LocalDatabase
 import pushkar.chorus.music.LocalPlayerConnection
 import pushkar.chorus.music.R
 import pushkar.chorus.music.constants.DarkModeKey
+import pushkar.chorus.music.constants.AppThemeMode
+import pushkar.chorus.music.constants.AppThemeModeKey
 import pushkar.chorus.music.constants.LyricsAnimationStyle
 import pushkar.chorus.music.constants.LyricsAnimationStyleKey
 import pushkar.chorus.music.constants.LyricsClickKey
@@ -191,7 +192,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.seconds
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedBoxWithConstraintsScope", "StringFormatInvalid")
 @Composable
 fun Lyrics(
@@ -225,7 +225,13 @@ fun Lyrics(
     val romanizeHindiLyrics by rememberPreference(LyricsRomanizeHindiKey, true)
     val romanizePunjabiLyrics by rememberPreference(LyricsRomanizePunjabiKey, true)
     val lyricsGlowEffect by rememberPreference(LyricsGlowEffectKey, false)
-    val lyricsAnimationStyle by rememberEnumPreference(LyricsAnimationStyleKey, LyricsAnimationStyle.chorusmusic_1)
+    val lyricsAnimationStylePref by rememberEnumPreference(LyricsAnimationStyleKey, LyricsAnimationStyle.chorusmusic_1)
+    val (themeMode) = rememberPreference(AppThemeModeKey, AppThemeMode.MaterialUI.name)
+    val lyricsAnimationStyle = if (themeMode == AppThemeMode.FluidUI.name && lyricsAnimationStylePref == LyricsAnimationStyle.chorusmusic_1) {
+        LyricsAnimationStyle.LYRICS_V2
+    } else {
+        lyricsAnimationStylePref
+    }
     val lyricsTextSize by rememberPreference(LyricsTextSizeKey, 24f)
     val lyricsLineSpacing by rememberPreference(LyricsLineSpacingKey, 1.3f)
     val lyricsStandardBlur by rememberPreference(LyricsStandardBlurKey, false)
@@ -422,10 +428,8 @@ fun Lyrics(
             !lyrics.isNullOrEmpty() && lyrics.startsWith("[")
         }
 
-
     val translationStatus by LyricsTranslationHelper.status.collectAsState()
     val hasActiveTranslations by LyricsTranslationHelper.hasActiveTranslations.collectAsState()
-
 
     DisposableEffect(Unit) {
         LyricsTranslationHelper.setCompositionActive(true)
@@ -434,7 +438,6 @@ fun Lyrics(
             LyricsTranslationHelper.cancelTranslation()
         }
     }
-
 
     LaunchedEffect(lines, lyricsEntity, translateLanguage, translateMode, autoTranslate) {
         if (lines.isNotEmpty() && lyricsEntity != null) {
@@ -455,7 +458,6 @@ fun Lyrics(
             }
         }
     }
-
 
     LaunchedEffect(showLyrics, lines.size) {
         LyricsTranslationHelper.manualTrigger.collect {
@@ -483,13 +485,11 @@ fun Lyrics(
         }
     }
 
-
     LaunchedEffect(Unit) {
         LyricsTranslationHelper.clearTranslationsTrigger.collect {
             lines.forEach { it.translatedTextFlow.value = null }
         }
     }
-
 
     val expressiveAccent = when (playerBackground) {
         PlayerBackgroundStyle.DEFAULT -> MaterialTheme.colorScheme.primary
@@ -506,7 +506,6 @@ fun Lyrics(
     var currentPlaybackPosition by remember {
         mutableLongStateOf(0L)
     }
-
 
     var deferredCurrentLineIndex by rememberSaveable {
         mutableIntStateOf(0)
@@ -544,7 +543,6 @@ fun Lyrics(
     var previewTextColor by remember { mutableStateOf(Color.White) }
     var previewSecondaryTextColor by remember { mutableStateOf(Color.White.copy(alpha = 0.7f)) }
 
-
     var isSelectionModeActive by rememberSaveable { mutableStateOf(false) }
     val selectedIndices = remember { mutableStateListOf<Int>() }
     var showMaxSelectionToast by remember { mutableStateOf(false) }
@@ -554,19 +552,15 @@ fun Lyrics(
 
     val lazyListState = rememberLazyListState()
 
-
     var isAnimating by remember { mutableStateOf(false) }
     var isAutoScrollEnabled by rememberSaveable { mutableStateOf(true) }
-
 
     BackHandler(enabled = isSelectionModeActive) {
         isSelectionModeActive = false
         selectedIndices.clear()
     }
 
-
     val maxSelectionLimit = 5
-
 
     LaunchedEffect(showMaxSelectionToast) {
         if (showMaxSelectionToast) {
@@ -580,7 +574,6 @@ fun Lyrics(
     }
 
     val lifecycleOwner = LocalLifecycleOwner.current
-
 
     DisposableEffect(showLyrics) {
         val activity = context as? Activity
@@ -610,7 +603,6 @@ fun Lyrics(
             lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
-
 
     LaunchedEffect(lines) {
         isSelectionModeActive = false
@@ -864,7 +856,6 @@ fun Lyrics(
                     if (isSeeking || isSelectionModeActive) deferredCurrentLineIndex else currentLineIndex
                 }
 
-
                 if (isLyricsProviderShown) {
                     item {
                         Text(
@@ -1107,7 +1098,6 @@ fun Lyrics(
 
                                             lazyListState.scrollToItem(index = index)
 
-
                                             val itemInfo =
                                                 lazyListState.layoutInfo.visibleItemsInfo.firstOrNull { it.index == index }
                                             if (itemInfo != null) {
@@ -1150,7 +1140,6 @@ fun Lyrics(
                             )
                             .padding(horizontal = 24.dp, vertical = (8 * lyricsLineSpacing).dp)
 
-
                         val currentLineTime =
                             if (displayedCurrentLineIndex >= 0 && displayedCurrentLineIndex < lines.size) {
                                 lines[displayedCurrentLineIndex].time
@@ -1172,7 +1161,6 @@ fun Lyrics(
                             animationSpec = tween(durationMillis = 400)
                         )
 
-
                         val targetBlur =
                             if (!lyricsStandardBlur || !isAutoScrollEnabled || (isSelectionModeActive && isSelected) || isActiveByIndex || isActiveByTime) {
                                 0f
@@ -1193,7 +1181,6 @@ fun Lyrics(
                             animationSpec = tween(durationMillis = 1000),
                             label = "standard_blur"
                         )
-
 
                         val agentAlignment = when {
                             item.isBackground -> Alignment.CenterHorizontally
@@ -1218,7 +1205,6 @@ fun Lyrics(
                                 LyricsPosition.RIGHT -> TextAlign.Right
                             }
                         }
-
 
                         val bgScale = if (item.isBackground) 0.85f else 1f
 
@@ -1254,7 +1240,6 @@ fun Lyrics(
 
                             val hasWordTimings =
                                 if (romanizeAsMain && romanizedText != null) false else item.words?.isNotEmpty() == true
-
 
                             if (hasWordTimings && lyricsAnimationStyle == LyricsAnimationStyle.NONE) {
                                 val styledText = buildAnnotatedString {
@@ -1547,7 +1532,6 @@ fun Lyrics(
                                             val fillProgress =
                                                 linearProgress * linearProgress * (3f - 2f * linearProgress)
 
-
                                             val glowIntensity = fillProgress * fillProgress
 
                                             val wordBrush = Brush.horizontalGradient(
@@ -1571,7 +1555,6 @@ fun Lyrics(
                                                 ) to expressiveAccent.copy(alpha = 0.5f),
                                                 1.0f to expressiveAccent.copy(alpha = if (fillProgress >= 0.9f) 0.95f else 0.4f)
                                             )
-
 
                                             val wordShadow = Shadow(
                                                 color = expressiveAccent.copy(alpha = 0.5f + (0.3f * glowIntensity)),
@@ -1641,7 +1624,6 @@ fun Lyrics(
                                             val elapsed = effectivePlaybackPosition - wordStartMs
                                             (elapsed.toFloat() / wordDuration).coerceIn(0f, 1f)
                                         } else if (hasWordPassed) 1f else 0f
-
 
                                         val smoothProgress = rawProgress * rawProgress * (3f - 2f * rawProgress)
 
@@ -1735,7 +1717,6 @@ fun Lyrics(
                                     }
                                 }
 
-                                @OptIn(ExperimentalLayoutApi::class)
                                 FlowRow(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = when (agentAlignment) {
@@ -1792,7 +1773,6 @@ fun Lyrics(
                                         }
                                     }
 
-
                                     if (hasActiveTranslations) {
                                         val translatedText by item.translatedTextFlow.collectAsState()
                                         translatedText?.let { translated ->
@@ -1841,7 +1821,6 @@ fun Lyrics(
                                     )
                                 }
 
-
                                 LaunchedEffect(Unit) {
                                     while (true) {
                                         pulseProgress.animateTo(
@@ -1858,11 +1837,9 @@ fun Lyrics(
                                 val fill = fillProgress.value
                                 val pulse = pulseProgress.value
 
-
                                 val pulseEffect =
                                     (kotlin.math.sin(pulse * Math.PI.toFloat()) * 0.15f).coerceIn(0f, 0.15f)
                                 val glowIntensity = (fill + pulseEffect).coerceIn(0f, 1.2f)
-
 
                                 val glowBrush = Brush.horizontalGradient(
                                     0.0f to expressiveAccent.copy(alpha = 0.3f),
@@ -1886,7 +1863,6 @@ fun Lyrics(
                                         append(mainText)
                                     }
                                 }
-
 
                                 val bounceScale = if (fill < 0.3f) {
 
@@ -1960,7 +1936,6 @@ fun Lyrics(
                                 }
                             }
 
-
                             if (hasActiveTranslations &&
                                 lyricsAnimationStyle != LyricsAnimationStyle.LYRICS_V2 &&
                                 lyricsAnimationStyle != LyricsAnimationStyle.APPLE_V2
@@ -1986,7 +1961,6 @@ fun Lyrics(
                     }
                 }
             }
-
 
         }
 
@@ -2278,7 +2252,7 @@ fun Lyrics(
                         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            
+
                             .heightIn(max = 650.dp)
                     ) {
                         Column(
@@ -2524,16 +2498,14 @@ fun Lyrics(
                         }
                     }
                 }
-            } 
+            }
         }
     }
 }
-
 
 private const val chorusmusic_AUTO_SCROLL_DURATION = 1500L
 private const val chorusmusic_INITIAL_SCROLL_DURATION = 1000L
 private const val chorusmusic_SEEK_DURATION = 800L
 private const val chorusmusic_FAST_SEEK_DURATION = 600L
-
 
 val LyricsPreviewTime = 2.seconds

@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.screens
 
 import androidx.compose.runtime.Composable
@@ -30,7 +28,7 @@ fun rememberAlbumCanvas(
     var canvasArtwork by remember(cacheKey) {
         mutableStateOf(cacheKey?.let { CanvasArtworkPlaybackCache.get(it) })
     }
-    
+
     val storefront = remember {
         val country = Locale.getDefault().country
         if (country.length == 2) country.lowercase(Locale.ROOT) else "us"
@@ -48,14 +46,13 @@ fun rememberAlbumCanvas(
             val normalizedFirstSongTitle = firstSongTitle?.let { normalizeCanvasSongTitle(it) }
             val normalizedArtistName = normalizeCanvasArtistName(artistName)
 
-            
             val searchTasks = linkedSetOf(
                 normalizedAlbumTitle to normalizedArtistName,
                 albumTitle to normalizedArtistName,
                 normalizedAlbumTitle to artistName,
                 albumTitle to artistName,
             )
-            
+
             if (normalizedFirstSongTitle != null) {
                 searchTasks.add(normalizedFirstSongTitle to normalizedArtistName)
                 searchTasks.add(firstSongTitle to normalizedArtistName)
@@ -79,11 +76,10 @@ fun rememberAlbumCanvas(
                 }
         }
 
-        
         var validated = fetched?.let { artwork ->
             val resultArtist = artwork.artist
             if (resultArtist != null && artistName.isNotBlank()) {
-                if (resultArtist.contains(artistName, ignoreCase = true) || 
+                if (resultArtist.contains(artistName, ignoreCase = true) ||
                     artistName.contains(resultArtist, ignoreCase = true)) {
                     artwork
                 } else null
@@ -100,16 +96,16 @@ fun rememberAlbumCanvas(
             validated = tidalFetched?.let { artwork ->
                 val resultArtist = artwork.artist
                 val canvasAlbumName = artwork.albumName
-                
+
                 val artistMatches = if (resultArtist != null && artistName.isNotBlank()) {
-                    resultArtist.contains(artistName, ignoreCase = true) || 
+                    resultArtist.contains(artistName, ignoreCase = true) ||
                     artistName.contains(resultArtist, ignoreCase = true)
                 } else true
-                
+
                 val albumMatches = if (canvasAlbumName != null && !albumTitle.isNullOrBlank()) {
                     canvasAlbumName.trim().equals(albumTitle.trim(), ignoreCase = true)
                 } else false
-                
+
                 if (artistMatches && albumMatches) artwork else null
             }
         }

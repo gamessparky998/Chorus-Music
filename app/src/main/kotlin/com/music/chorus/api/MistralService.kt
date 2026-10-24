@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.api
 
 import kotlinx.coroutines.Dispatchers
@@ -186,19 +184,18 @@ Output MUST be a JSON array with EXACTLY $lineCount strings."""
                         if (!content.isNullOrBlank()) {
                             var translatedLines: List<String>? = null
 
-                            
                             try {
                                 val jsonArray = JSONArray(content)
                                 translatedLines = (0 until jsonArray.length()).map { jsonArray.optString(it) }
                             } catch (e: Exception) {
-                                
+
                                 content = content.replace("```json", "").replace("```", "").trim()
 
                                 try {
                                     val jsonArray = JSONArray(content)
                                     translatedLines = (0 until jsonArray.length()).map { jsonArray.optString(it) }
                                 } catch (e2: Exception) {
-                                    
+
                                     val startIdx = content.indexOf('[')
                                     val endIdx = content.lastIndexOf(']')
 
@@ -208,7 +205,7 @@ Output MUST be a JSON array with EXACTLY $lineCount strings."""
                                             val jsonArray = JSONArray(jsonString)
                                             translatedLines = (0 until jsonArray.length()).map { jsonArray.optString(it) }
                                         } catch (e3: Exception) {
-                                            
+
                                             translatedLines =
                                                 content
                                                     .lines()
@@ -225,7 +222,7 @@ Output MUST be a JSON array with EXACTLY $lineCount strings."""
                                     translatedLines.size == lineCount -> Result.success(translatedLines)
                                     translatedLines.size > lineCount -> Result.success(translatedLines.take(lineCount))
                                     else -> {
-                                        
+
                                         val paddedLines = translatedLines.toMutableList()
                                         while (paddedLines.size < lineCount) {
                                             paddedLines.add("")

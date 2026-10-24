@@ -35,11 +35,7 @@ private object AppleCanvasLogger {
     }
 }
 
-
 object AppleMusicCanvasProvider {
-
-    
-
 
     private const val ITUNES_SEARCH_URL = "https://itunes.apple.com/search"
     private const val AMP_BASE_URL = "https://amp-api.music.apple.com"
@@ -54,7 +50,7 @@ object AppleMusicCanvasProvider {
         HttpClient(OkHttp) {
             install(ContentNegotiation) {
                 json(json)
-                
+
                 register(ContentType.Text.JavaScript, KotlinxSerializationConverter(json))
             }
             install(HttpTimeout) {
@@ -77,7 +73,7 @@ object AppleMusicCanvasProvider {
     )
 
     private val cache = ConcurrentHashMap<String, CacheEntry>()
-    private const val CACHE_TTL_MS = 1000L * 60 * 60 * 24 
+    private const val CACHE_TTL_MS = 1000L * 60 * 60 * 24
 
     suspend fun getByAlbumArtist(
         album: String,
@@ -104,7 +100,6 @@ object AppleMusicCanvasProvider {
         val key = cacheKey("song", song, artist, album ?: "", storefront)
         cache[key]?.takeIf { it.expiresAtMs > System.currentTimeMillis() }?.let { return it.value }
 
-        
         val result = searchAndFetchMotion(song, artist, album, storefront, "songs")
         if (result != null) {
             cache[key] = CacheEntry(result, System.currentTimeMillis() + CACHE_TTL_MS)
@@ -124,13 +119,12 @@ object AppleMusicCanvasProvider {
         return result
     }
 
-    
     private suspend fun searchAndFetchMotion(
         term: String,
         artist: String,
         album: String?,
         storefront: String,
-        type: String, 
+        type: String,
     ): CanvasArtwork? {
         return runCatching {
             AppleCanvasLogger.d("searching for $type: $term (album: $album) in $storefront")
@@ -158,17 +152,14 @@ object AppleMusicCanvasProvider {
 
             val root = response.body<JsonObject>()
             val results = root["results"]?.jsonObject?.get(type)?.jsonObject?.get("data")?.jsonArray ?: return@runCatching null
-            
-            
+
             val scoredResults = results.mapNotNull { item ->
                 val obj = item.jsonObject
                 val attributes = obj["attributes"]?.jsonObject ?: return@mapNotNull null
                 val resultArtistName = attributes["artistName"]?.jsonPrimitive?.contentOrNull ?: ""
                 val resultName = attributes["name"]?.jsonPrimitive?.contentOrNull ?: ""
                 val resultCollectionName = attributes["collectionName"]?.jsonPrimitive?.contentOrNull ?: ""
-                
-                
-                
+
                 val nameLower = resultName.lowercase(Locale.ROOT)
                 val collectionLower = resultCollectionName.lowercase(Locale.ROOT)
                 val isBlacklisted = nameLower.contains("playlist") || nameLower.contains("set list") ||
@@ -177,60 +168,55 @@ object AppleMusicCanvasProvider {
                         collectionLower.contains("dj mix") || collectionLower.contains("mixed") ||
                         collectionLower.contains("apple music") || collectionLower.contains("today's hits") ||
                         nameLower.contains("session") || collectionLower.contains("session")
-                
+
                 if (isBlacklisted) {
                     AppleCanvasLogger.d("  - Skipping blacklisted result: '$resultName' (Album: '$resultCollectionName')")
                     return@mapNotNull null
                 }
 
-                
                 val artistMatch = resultArtistName.equals(artist, ignoreCase = true)
                 val artistFuzzy = resultArtistName.contains(artist, ignoreCase = true) || artist.contains(resultArtistName, ignoreCase = true)
-                
+
                 if (!artistFuzzy) return@mapNotNull null
-                
+
                 var score = 0
                 if (artistMatch) score += 10
                 else score += 5
-                
-                
+
                 val nameMatch = resultName.equals(term, ignoreCase = true)
                 val nameFuzzy = resultName.contains(term, ignoreCase = true) || term.contains(resultName, ignoreCase = true)
-                
+
                 if (nameMatch) {
                     score += 15
                 } else if (nameFuzzy) {
                     score += 7
                 } else {
-                    
+
                     score -= 10
                 }
 
-                
                 val editionWords = listOf("deluxe", "expanded", "remastered", "remix", "version", "edit", "mix", "bonus")
                 for (word in editionWords) {
                     val inTerm = term.contains(word, ignoreCase = true)
                     val inResult = resultName.contains(word, ignoreCase = true)
                     if (inTerm && inResult) score += 5
-                    else if (inTerm != inResult && inResult) score -= 3 
+                    else if (inTerm != inResult && inResult) score -= 3
                 }
 
-                
                 if (!album.isNullOrBlank() && resultCollectionName.isNotBlank()) {
                     val albumMatch = resultCollectionName.equals(album, ignoreCase = true)
                     val albumFuzzy = resultCollectionName.contains(album, ignoreCase = true) || album.contains(resultCollectionName, ignoreCase = true)
-                    
+
                     if (albumMatch) score += 20
                     else if (albumFuzzy) score += 10
                 }
-                
+
                 AppleCanvasLogger.d("  - Result: '$resultName' by '$resultArtistName' (Album: '$resultCollectionName', ID: ${obj["id"]}) -> Score: $score")
                 score to item
             }.sortedByDescending { it.first }
-            
+
             AppleCanvasLogger.d("Found ${scoredResults.size} scored results for term '$term'")
-            
-            
+
             for ((score, item) in scoredResults) {
                 if (score < 12) {
                     AppleCanvasLogger.d("skipping result with low score: $score")
@@ -241,7 +227,6 @@ object AppleMusicCanvasProvider {
                 val resultName = attributes["name"]?.jsonPrimitive?.contentOrNull ?: ""
                 val resultArtistName = attributes["artistName"]?.jsonPrimitive?.contentOrNull ?: ""
 
-                
                 var targetAlbumId: String? = null
                 val type = obj["type"]?.jsonPrimitive?.contentOrNull
                 if (type == "songs") {
@@ -249,12 +234,11 @@ object AppleMusicCanvasProvider {
                     targetAlbumId = relationships?.get("albums")?.jsonObject?.get("data")?.jsonArray?.firstOrNull()
                         ?.jsonObject?.get("id")?.jsonPrimitive?.contentOrNull
                         ?: attributes["collectionId"]?.jsonPrimitive?.contentOrNull
-                    
-                    
+
                     if (targetAlbumId == null) {
                         val url = attributes["url"]?.jsonPrimitive?.contentOrNull
                         if (url != null) {
-                            
+
                             val albumPart = url.substringAfter("/album/", "").substringBefore("?")
                             val id = albumPart.substringAfterLast("/", "")
                             if (id.isNotBlank() && id.all { it.isDigit() }) {
@@ -262,7 +246,7 @@ object AppleMusicCanvasProvider {
                             }
                         }
                     }
-                    
+
                     if (targetAlbumId == null) {
                         AppleCanvasLogger.d("relationships keys for $resultName: ${relationships?.keys}")
                     }
@@ -277,22 +261,19 @@ object AppleMusicCanvasProvider {
 
                 AppleCanvasLogger.d("trying resolve for $targetAlbumId (from ${obj["type"]?.jsonPrimitive?.contentOrNull})")
 
-                
                 val ev = attributes["editorialVideo"]?.jsonObject
                 if (ev != null) {
                     val hlsUrl = extractEditorialVideoUrl(ev)
                     if (!hlsUrl.isNullOrBlank()) {
                         val name = attributes["name"]?.jsonPrimitive?.contentOrNull
                         val collName = attributes["collectionName"]?.jsonPrimitive?.contentOrNull
-                        
-                        
+
                         val resolvedAlbumName = if (type == "songs") collName else name
                         AppleCanvasLogger.d("Found direct editorialVideo for $name (ID: $targetAlbumId)")
                         return@runCatching CanvasArtwork(name, resultArtistName, targetAlbumId, albumName = resolvedAlbumName, animated = hlsUrl)
                     }
                 }
 
-                
                 val fetched = fetchMotionArtwork(
                     albumId = targetAlbumId,
                     storefront = storefront,
@@ -341,29 +322,26 @@ object AppleMusicCanvasProvider {
             val root = response.body<JsonObject>()
             val data = root["data"]?.jsonArray
             if (data.isNullOrEmpty()) return@runCatching null
-            
+
             val albumObj = data.firstOrNull()?.jsonObject ?: return@runCatching null
             val attributes = albumObj["attributes"]?.jsonObject
             val albumName = attributes?.get("name")?.jsonPrimitive?.contentOrNull ?: ""
             val artistName = attributes?.get("artistName")?.jsonPrimitive?.contentOrNull ?: fallbackArtist
-            
-            
+
             val nameLower = albumName.lowercase(Locale.ROOT)
             val isBlacklisted = nameLower.contains("playlist") || nameLower.contains("set list") ||
                     nameLower.contains("essentials") || nameLower.contains("dj mix") ||
                     nameLower.contains("mixed") || nameLower.contains("apple music") ||
                     nameLower.contains("today's hits") || nameLower.contains("session")
-            
+
             if (isBlacklisted) {
                 AppleCanvasLogger.d("fetchMotionArtwork: ignoring blacklisted album '$albumName' ($albumId)")
                 return@runCatching null
             }
 
-            
             val finalTitle = titleOverride ?: albumName
             val finalArtist = artistOverride ?: artistName
 
-            
             val ev = attributes?.get("editorialVideo")?.jsonObject
             if (ev != null) {
                 val url = extractEditorialVideoUrl(ev)
@@ -386,16 +364,16 @@ object AppleMusicCanvasProvider {
             ev["motionDetailRaw"]?.jsonObject,
             ev["motionDetailSquare"]?.jsonObject,
             ev["motionDetailTall"]?.jsonObject,
-            ev["motionDetailStatic"]?.jsonObject 
+            ev["motionDetailStatic"]?.jsonObject
         ).filterNotNull()
-        
+
         for (asset in assets) {
-            
+
             val video = asset["video"]?.jsonPrimitive?.contentOrNull
                 ?: asset["videoUrl"]?.jsonPrimitive?.contentOrNull
                 ?: asset["hlsUrl"]?.jsonPrimitive?.contentOrNull
                 ?: asset["url"]?.jsonPrimitive?.contentOrNull
-            
+
             if (!video.isNullOrBlank()) return video
         }
 

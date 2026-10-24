@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.viewmodels
 
 import android.content.Context
@@ -66,7 +64,7 @@ class OnlinePlaylistViewModel @Inject constructor(
             _isLoading.value = true
             _error.value = null
             continuation = null
-            proactiveLoadJob?.cancel() 
+            proactiveLoadJob?.cancel()
 
             YouTube.playlist(playlistId)
                 .onSuccess { playlistPage ->
@@ -89,15 +87,14 @@ class OnlinePlaylistViewModel @Inject constructor(
     }
 
     private fun startProactiveBackgroundLoading() {
-        proactiveLoadJob?.cancel() 
+        proactiveLoadJob?.cancel()
         proactiveLoadJob = viewModelScope.launch(Dispatchers.IO) {
             var currentProactiveToken = continuation
             while (currentProactiveToken != null && isActive) {
-                
+
                 if (_isLoadingMore.value) {
-                    
-                    
-                    break 
+
+                    break
                 }
 
                 YouTube.playlistContinuation(currentProactiveToken)
@@ -106,23 +103,23 @@ class OnlinePlaylistViewModel @Inject constructor(
                         currentSongs.addAll(playlistContinuationPage.songs)
                         playlistSongs.value = applySongFilters(currentSongs)
                         currentProactiveToken = playlistContinuationPage.continuation
-                        
-                        this@OnlinePlaylistViewModel.continuation = currentProactiveToken 
+
+                        this@OnlinePlaylistViewModel.continuation = currentProactiveToken
                     }.onFailure { throwable ->
                         reportException(throwable)
-                        currentProactiveToken = null 
+                        currentProactiveToken = null
                     }
             }
-            
+
         }
     }
 
     fun loadMoreSongs() {
-        if (_isLoadingMore.value) return 
-        
-        val tokenForManualLoad = continuation ?: return 
+        if (_isLoadingMore.value) return
 
-        proactiveLoadJob?.cancel() 
+        val tokenForManualLoad = continuation ?: return
+
+        proactiveLoadJob?.cancel()
         _isLoadingMore.value = true
 
         viewModelScope.launch(Dispatchers.IO) {
@@ -136,7 +133,7 @@ class OnlinePlaylistViewModel @Inject constructor(
                     reportException(throwable)
                 }.also {
                     _isLoadingMore.value = false
-                    
+
                     if (continuation != null && isActive) {
                         startProactiveBackgroundLoading()
                     }
@@ -146,7 +143,7 @@ class OnlinePlaylistViewModel @Inject constructor(
 
     fun retry() {
         proactiveLoadJob?.cancel()
-        fetchInitialPlaylistData() 
+        fetchInitialPlaylistData()
     }
 
     private fun applySongFilters(songs: List<SongItem>): List<SongItem> {
@@ -155,7 +152,7 @@ class OnlinePlaylistViewModel @Inject constructor(
         if (!hideVideoSongs) return uniqueSongs
 
         val filtered = uniqueSongs.filterVideoSongs(true)
-        
+
         return if (filtered.isEmpty() && uniqueSongs.isNotEmpty()) uniqueSongs else filtered
     }
 

@@ -225,7 +225,7 @@ fun AmbientGlowBackground(
                     }
             )
         } else {
-            
+
             Box(modifier = Modifier.fillMaxSize())
         }
     }

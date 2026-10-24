@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -22,15 +21,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import pushkar.chorus.music.constants.ThumbnailCornerRadius
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun RandomizeGridItem(
     isLoading: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    
-    
+
     val dotOffsetMultiplier by animateFloatAsState(
         targetValue = if (isLoading) 0f else 1f,
         animationSpec = tween(durationMillis = 600),
@@ -51,15 +48,11 @@ fun RandomizeGridItem(
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        
+
         val dotColor = MaterialTheme.colorScheme.onSecondaryContainer
         val dotSize = 14.dp
         val padding = 24.dp
 
-        
-        
-
-        
         Box(
             modifier = Modifier
                 .align(Alignment.Center)
@@ -68,7 +61,7 @@ fun RandomizeGridItem(
                 .clip(CircleShape)
                 .background(dotColor)
         )
-        
+
         Box(
             modifier = Modifier
                 .align(Alignment.Center)
@@ -77,7 +70,7 @@ fun RandomizeGridItem(
                 .clip(CircleShape)
                 .background(dotColor)
         )
-        
+
         Box(
             modifier = Modifier
                 .align(Alignment.Center)
@@ -85,7 +78,7 @@ fun RandomizeGridItem(
                 .clip(CircleShape)
                 .background(dotColor)
         )
-        
+
         Box(
             modifier = Modifier
                 .align(Alignment.Center)
@@ -94,7 +87,7 @@ fun RandomizeGridItem(
                 .clip(CircleShape)
                 .background(dotColor)
         )
-        
+
         Box(
             modifier = Modifier
                 .align(Alignment.Center)
@@ -103,8 +96,7 @@ fun RandomizeGridItem(
                 .clip(CircleShape)
                 .background(dotColor)
         )
-        
-        
+
         Box(modifier = Modifier.alpha(loadingAlpha)) {
             LoadingIndicator(
                 modifier = Modifier.size(48.dp),

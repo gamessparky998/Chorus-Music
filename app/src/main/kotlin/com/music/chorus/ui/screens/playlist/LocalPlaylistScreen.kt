@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.screens.playlist
 
 import pushkar.chorus.music.ui.utils.resize
@@ -12,7 +10,6 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -37,10 +34,10 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -172,7 +169,6 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 import java.time.LocalDateTime
 
 @SuppressLint("RememberReturnType")
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun LocalPlaylistScreen(
     navController: NavController,
@@ -485,7 +481,6 @@ fun LocalPlaylistScreen(
                     move(viewModel.playlistId, from, to)
                 }
 
-                
                 if (viewModel.playlist.value?.playlist?.browseId != null) {
                     viewModel.viewModelScope.launch(Dispatchers.IO) {
                         val playlistSongMap = database.playlistSongMaps(viewModel.playlistId, 0)
@@ -766,8 +761,6 @@ fun LocalPlaylistScreen(
                 }
             }
 
-
-
             item(key = "bottom_spacer") {
                 Spacer(Modifier.height(50.dp))
             }
@@ -812,13 +805,23 @@ fun LocalPlaylistScreen(
                             .fillMaxWidth()
                             .focusRequester(focusRequester)
                     )
-                } else if (showTopBarTitle) {
-                    Text(playlist?.playlist?.name.orEmpty())
                 }
             },
             navigationIcon = {
                 if (inSelectMode) {
-                    IconButton(onClick = onExitSelectionMode) {
+                    IconButton(
+                        onClick = onExitSelectionMode,
+                        colors = IconButtonDefaults.outlinedIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f)
+                        ),
+                        modifier = Modifier.border(
+                            border = BorderStroke(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
+                            ),
+                            shape = CircleShape
+                        )
+                    ) {
                         Icon(
                             painter = painterResource(R.drawable.close),
                             contentDescription = null,
@@ -838,7 +841,17 @@ fun LocalPlaylistScreen(
                             if (!isSearching) {
                                 navController.backToMain()
                             }
-                        }
+                        },
+                        colors = IconButtonDefaults.outlinedIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f)
+                        ),
+                        modifier = Modifier.border(
+                            border = BorderStroke(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
+                            ),
+                            shape = CircleShape
+                        )
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.arrow_back),
@@ -875,7 +888,17 @@ fun LocalPlaylistScreen(
                                     clearAction = onExitSelectionMode
                                 )
                             }
-                        }
+                        },
+                        colors = IconButtonDefaults.outlinedIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f)
+                        ),
+                        modifier = Modifier.border(
+                            border = BorderStroke(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
+                            ),
+                            shape = CircleShape
+                        )
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.more_vert),
@@ -883,9 +906,19 @@ fun LocalPlaylistScreen(
                         )
                     }
                 } else if (!isSearching) {
-                    
+
                     IconButton(
-                        onClick = { isSearching = true }
+                        onClick = { isSearching = true },
+                        colors = IconButtonDefaults.outlinedIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f)
+                        ),
+                        modifier = Modifier.border(
+                            border = BorderStroke(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
+                            ),
+                            shape = CircleShape
+                        )
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.search),
@@ -893,6 +926,14 @@ fun LocalPlaylistScreen(
                         )
                     }
                 }
+            },
+            colors = if (!isSearching && !inSelectMode) {
+                androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent,
+                    scrolledContainerColor = Color.Transparent
+                )
+            } else {
+                androidx.compose.material3.TopAppBarDefaults.topAppBarColors()
             }
         )
 
@@ -945,7 +986,6 @@ fun LocalPlaylistHeader(
         it.contains("studio_square_thumbnail") || it.contains("content://com.chorusmusic.music")
     } ?: false
 
-
     val result = remember { mutableStateOf<Uri?>(null) }
     var pendingCropDestUri by remember { mutableStateOf<Uri?>(null) }
     var showEditNoteDialog by remember { mutableStateOf(false) }
@@ -972,13 +1012,13 @@ fun LocalPlaylistHeader(
             val destFile = java.io.File(context.cacheDir, "playlist_cover_crop_${System.currentTimeMillis()}.jpg")
             val destUri = FileProvider.getUriForFile(context, "${context.packageName}.FileProvider", destFile)
             pendingCropDestUri = destUri
-    
+
             val options = UCrop.Options().apply {
                 setCompressionFormat(Bitmap.CompressFormat.JPEG)
                 setCompressionQuality(90)
                 setHideBottomControls(true)
                 setToolbarTitle(context.getString(R.string.edit_playlist_cover))
-                
+
                 setStatusBarLight(!darkTheme)
 
                 setToolbarColor(cropColor.surface.toArgb())
@@ -1005,7 +1045,6 @@ fun LocalPlaylistHeader(
                     overrideThumbnail.value = uri.toString()
                     isCustomThumbnail = true
 
-                    
                     database.query {
                         update(playlist.playlist.copy(thumbnailUrl = uri.toString()))
                     }
@@ -1020,7 +1059,6 @@ fun LocalPlaylistHeader(
                         overrideThumbnail.value = newThumbnailUrl
                         isCustomThumbnail = true
 
-                        
                         database.query {
                             update(playlist.playlist.copy(thumbnailUrl = newThumbnailUrl))
                         }
@@ -1029,7 +1067,7 @@ fun LocalPlaylistHeader(
                             snackbarHostState.showSnackbar("Applied locally (${it.response.status.value} ${it.response.status.description})")
                         }
                         reportException(it)
-                        
+
                         overrideThumbnail.value = uri.toString()
                         isCustomThumbnail = true
                         database.query {
@@ -1092,7 +1130,7 @@ fun LocalPlaylistHeader(
                 )
             }
         }
-        
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -1105,7 +1143,7 @@ fun LocalPlaylistHeader(
                         if (LocalConfiguration.current.screenWidthDp > 600) Modifier.size(300.dp)
                         else Modifier.fillMaxWidth().padding(horizontal = 48.dp).aspectRatio(1f)
                     )
-                    .clip(RoundedCornerShape(8.dp))
+                    .clip(if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else RoundedCornerShape(8.dp))
             ) {
             when (playlist.thumbnails.size) {
                 0 -> Surface(
@@ -1155,7 +1193,7 @@ fun LocalPlaylistHeader(
                                                         }
                                                         else -> {
                                                             scope.launch(Dispatchers.IO) {
-                                                                YouTube.removeThumbnailPlaylist(playlist.playlist.browseId).onSuccess { newThumbnailUrl -> 
+                                                                YouTube.removeThumbnailPlaylist(playlist.playlist.browseId).onSuccess { newThumbnailUrl ->
                                                                     overrideThumbnail.value = newThumbnailUrl
                                                                     database.query {
                                                                         update(playlist.playlist.copy(thumbnailUrl = newThumbnailUrl))
@@ -1169,7 +1207,7 @@ fun LocalPlaylistHeader(
                                                             }
                                                         }
                                                     }
-                                                    isCustomThumbnail = false 
+                                                    isCustomThumbnail = false
                                                 },
                                                 onDismiss = menuState::dismiss
                                             )
@@ -1238,7 +1276,7 @@ fun LocalPlaylistHeader(
                                                             }
                                                         }
                                                     }
-                                                    isCustomThumbnail = false 
+                                                    isCustomThumbnail = false
                                                 },
                                                 onDismiss = menuState::dismiss
                                             )
@@ -1255,7 +1293,6 @@ fun LocalPlaylistHeader(
         }
         }
 
-        
         Text(
             text = playlist.playlist.name,
             style = MaterialTheme.typography.headlineSmall,
@@ -1268,7 +1305,6 @@ fun LocalPlaylistHeader(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        
         val songCount = if (playlist.songCount == 0 && playlist.playlist.remoteSongCount != null) {
             playlist.playlist.remoteSongCount
         } else {
@@ -1288,7 +1324,6 @@ fun LocalPlaylistHeader(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -1296,7 +1331,7 @@ fun LocalPlaylistHeader(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            
+
             TextButton(
                 onClick = {
                     playerConnection.playQueue(
@@ -1309,7 +1344,7 @@ fun LocalPlaylistHeader(
                 modifier = Modifier
                     .weight(1f)
                     .height(48.dp),
-                shape = CircleShape,
+                shape = if (isFluidTheme()) ContinuousRoundedRectangle(24.dp) else CircleShape,
                 colors = androidx.compose.material3.ButtonDefaults.textButtonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary
@@ -1328,7 +1363,6 @@ fun LocalPlaylistHeader(
                 )
             }
 
-            
             TextButton(
                 onClick = {
                     playerConnection.playQueue(
@@ -1341,7 +1375,7 @@ fun LocalPlaylistHeader(
                 modifier = Modifier
                     .weight(1f)
                     .height(48.dp),
-                shape = CircleShape,
+                shape = if (isFluidTheme()) ContinuousRoundedRectangle(24.dp) else CircleShape,
                 colors = androidx.compose.material3.ButtonDefaults.textButtonColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant,
                     contentColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1362,7 +1396,6 @@ fun LocalPlaylistHeader(
                 )
             }
 
-            
             Surface(
                 onClick = {
                     menuState.show {
@@ -1417,7 +1450,7 @@ fun LocalPlaylistHeader(
                         )
                     }
                 },
-                shape = CircleShape,
+                shape = if (isFluidTheme()) ContinuousRoundedRectangle(24.dp) else CircleShape,
                 color = MaterialTheme.colorScheme.surfaceVariant,
                 modifier = Modifier.size(48.dp)
             ) {
@@ -1475,8 +1508,6 @@ fun LocalPlaylistHeader(
     }
 }
 
-
-
 @Composable
 private fun MetadataChip(
     icon: Int,
@@ -1485,7 +1516,7 @@ private fun MetadataChip(
 ) {
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(20.dp),
+        shape = if (isFluidTheme()) ContinuousRoundedRectangle(20.dp) else RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
     ) {
         Row(

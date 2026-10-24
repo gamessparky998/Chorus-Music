@@ -25,20 +25,19 @@ class AppleMusicLinkParser : UniversalLinkParser {
         val playlistId = url.substringAfterLast("/")
 
         val tracks = mutableListOf<UniversalParsedTrack>()
-        
-        
+
         val jsonLdElements = doc.select("script[type=application/ld+json]")
         for (elem in jsonLdElements) {
             try {
                 val json = JSONObject(elem.data())
                 val trackArray = json.optJSONArray("track") ?: json.optJSONObject("tracks")?.optJSONArray("itemListElement")
-                
+
                 if (trackArray != null) {
                     for (i in 0 until trackArray.length()) {
                         val trackObj = trackArray.optJSONObject(i) ?: continue
                         val itemObj = trackObj.optJSONObject("item") ?: trackObj
                         val trackName = itemObj.optString("name")
-                        
+
                         var artistName = "Unknown Artist"
                         val byArtistObj = itemObj.optJSONObject("byArtist")
                         if (byArtistObj != null) {
@@ -49,7 +48,7 @@ class AppleMusicLinkParser : UniversalLinkParser {
                                 artistName = byArtistArr.optJSONObject(0)?.optString("name") ?: "Unknown Artist"
                             }
                         }
-                        
+
                         if (trackName.isNotBlank()) {
                             tracks.add(
                                 UniversalParsedTrack(
@@ -75,14 +74,14 @@ class AppleMusicLinkParser : UniversalLinkParser {
                     val artistMatches = Regex(""""artistName":"([^"]+)"""").findAll(rawJson)
                     val titles = titleMatches.map { it.groupValues[1] }.toList()
                     val artists = artistMatches.map { it.groupValues[1] }.toList()
-                    
+
                     for (i in 0 until minOf(titles.size, artists.size)) {
                         tracks.add(UniversalParsedTrack(title = titles[i], artist = artists[i]))
                     }
                 } catch (e: Exception) {}
             }
         }
-        
+
         if (tracks.isEmpty()) {
             throw IllegalArgumentException("Could not extract tracks from Apple Music playlist. Ensure the playlist is public.")
         }

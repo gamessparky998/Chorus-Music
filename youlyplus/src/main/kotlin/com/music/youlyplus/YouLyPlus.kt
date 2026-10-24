@@ -17,23 +17,19 @@ import kotlinx.coroutines.selects.select
 import kotlinx.serialization.json.Json
 import java.util.concurrent.atomic.AtomicReference
 
-
 object YouLyPlus {
 
-    
     private val BASE_SERVERS = listOf(
-        "https://lyricsplus.prjktla.my.id",       
-        "https://lyricsplus.atomix.one",          
-        "https://lyricsplus.binimum.org",         
-        "https://lyricsplus.prjktla.workers.dev", 
-        "https://lyricsplus-seven.vercel.app",    
-        "https://lyrics-plus-backend.vercel.app", 
+        "https://lyricsplus.prjktla.my.id",
+        "https://lyricsplus.atomix.one",
+        "https://lyricsplus.binimum.org",
+        "https://lyricsplus.prjktla.workers.dev",
+        "https://lyricsplus-seven.vercel.app",
+        "https://lyrics-plus-backend.vercel.app",
     )
 
-    
     private val lastWorkingServer = AtomicReference<String?>(null)
 
-    
     private val servers: List<String>
         get() {
             val lws = lastWorkingServer.get() ?: return BASE_SERVERS
@@ -58,7 +54,6 @@ object YouLyPlus {
         }
     }
 
-    
     suspend fun getLyrics(
         title: String,
         artist: String,
@@ -75,7 +70,7 @@ object YouLyPlus {
         }
 
         try {
-            
+
             val remaining = jobs.toMutableList()
             while (remaining.isNotEmpty()) {
                 val (winServer, winLyrics) = select {
@@ -101,7 +96,6 @@ object YouLyPlus {
         }
     }
 
-    
     suspend fun getAllLyrics(
         title: String,
         artist: String,
@@ -138,17 +132,15 @@ object YouLyPlus {
         }
     }
 
-    
     private fun List<com.music.youlyplus.models.LyricsItem>.convertToLrc(): String? {
         if (isEmpty()) return null
         return joinToString("\n") { item ->
             val lineTime = item.time ?: 0L
-            
-            
+
             val isBg = item.syllabus?.any { it.isBackground == true } == true
             val lineTimestamp = formatTime(lineTime)
             val bgMarker = if (isBg) "{bg}" else ""
-            
+
             val syllabus = item.syllabus
             if (!syllabus.isNullOrEmpty()) {
                 val sb = StringBuilder(lineTimestamp)
@@ -157,7 +149,7 @@ object YouLyPlus {
                     val sylTime = syl.time ?: 0L
                     sb.append(formatTime(sylTime, isSyllable = true))
                     sb.append(syl.text ?: "")
-                    
+
                     if (syl.text?.endsWith(" ") == false) {
                         sb.append(" ")
                     }
@@ -169,7 +161,6 @@ object YouLyPlus {
         }
     }
 
-
     private fun formatTime(timeMs: Long, isSyllable: Boolean = false): String {
         val minutes = (timeMs / 1000) / 60
         val seconds = (timeMs / 1000) % 60
@@ -178,7 +169,6 @@ object YouLyPlus {
         val suffix = if (isSyllable) ">" else "]"
         return "%s%02d:%02d.%03d%s".format(prefix, minutes, seconds, millis, suffix)
     }
-
 
     private suspend fun fetchFromServer(
         baseUrl: String,

@@ -22,7 +22,7 @@ class SoundCloudLinkParser : UniversalLinkParser {
         val playlistId = url.substringAfterLast("/")
 
         val tracks = mutableListOf<UniversalParsedTrack>()
-        
+
         val trackElements = doc.select("a[itemprop=url]")
         for (elem in trackElements) {
             val trackName = elem.text()
@@ -30,7 +30,7 @@ class SoundCloudLinkParser : UniversalLinkParser {
                 tracks.add(UniversalParsedTrack(title = trackName, artist = "SoundCloud"))
             }
         }
-        
+
         if (tracks.isEmpty()) {
             val html = doc.html()
             val matches = Regex("""itemprop="url"[^>]*>\s*([^<]+)\s*</a>""").findAll(html)
@@ -55,7 +55,7 @@ class SoundCloudLinkParser : UniversalLinkParser {
                 }
             }
         }
-        
+
         if (tracks.isEmpty()) {
             throw IllegalArgumentException("Could not extract tracks from SoundCloud playlist.")
         }

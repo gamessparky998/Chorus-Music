@@ -34,7 +34,6 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoAwesome
@@ -133,7 +132,6 @@ fun currentGridThumbnailHeight(): Dp {
     return if (gridItemSize == GridItemSize.BIG) GridThumbnailHeight else SmallGridThumbnailHeight
 }
 
-
 @Composable
 inline fun ListItem(
     modifier: Modifier = Modifier,
@@ -149,21 +147,29 @@ inline fun ListItem(
     horizontalPadding: Dp = 16.dp,
     color: Color = MaterialTheme.colorScheme.surfaceContainer,
 ) {
+    val isFluid = pushkar.chorus.music.ui.theme.isFluidTheme()
+    val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+    val effectiveColor = if (isFluid && color == MaterialTheme.colorScheme.surfaceContainer) {
+        if (isDark) Color(0x991C1C1E) else Color(0xB3FFFFFF)
+    } else {
+        color
+    }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
-            .padding(vertical = 2.dp)
+            .padding(vertical = if (isFluid) 1.dp else 2.dp)
             .padding(horizontal = horizontalPadding)
             .clip(shape)
             .background(
                 color = when {
-                    isActive -> MaterialTheme.colorScheme.secondaryContainer
-                    isSelected == true && drawHighlight -> MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
-                    else -> color
+                    isActive -> if (isFluid) pushkar.chorus.music.ui.fluid.foundation.FluidTheme.tint.copy(alpha = 0.2f) else MaterialTheme.colorScheme.secondaryContainer
+                    isSelected == true && drawHighlight -> if (isFluid) pushkar.chorus.music.ui.fluid.foundation.FluidTheme.tint.copy(alpha = 0.3f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
+                    else -> effectiveColor
                 }
             )
             .then(modifier)
-            .height(ListItemHeight)
+            .height(if (isFluid) 58.dp else ListItemHeight)
     ) {
         Box(
             modifier = Modifier.padding(start = 12.dp, top = 6.dp, end = 6.dp, bottom = 6.dp),
@@ -254,7 +260,6 @@ fun ListItem(
     horizontalPadding = horizontalPadding,
     color = color,
 )
-
 
 @Composable
 fun ListItem(
@@ -393,7 +398,6 @@ fun SongListItem(
     showDownloadIcon: Boolean = true,
     showSize: Boolean = false,
     badges: @Composable RowScope.() -> Unit = {
-
 
         if (showLikedIcon && song.song.liked) {
             Icon.Favorite()
@@ -1060,8 +1064,6 @@ fun MediaMetadataListItem(
     )
 }
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun YouTubeListItem(
     item: YTItem,
@@ -1352,13 +1354,19 @@ fun ItemThumbnail(
     thumbnailRatio: Float = 1f
 ) {
     val cropAlbumArt by rememberPreference(CropAlbumArtKey, true)
+    val isFluid = pushkar.chorus.music.ui.theme.isFluidTheme()
+    val effectiveShape = if (isFluid && shape is RoundedCornerShape) {
+        pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle(ThumbnailCornerRadius)
+    } else {
+        shape
+    }
 
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
             .fillMaxSize()
             .aspectRatio(thumbnailRatio)
-            .clip(shape)
+            .clip(effectiveShape)
     ) {
         if (albumIndex == null) {
             AsyncImage(
@@ -1372,7 +1380,7 @@ fun ItemThumbnail(
                 contentScale = if (cropAlbumArt) androidx.compose.ui.layout.ContentScale.Crop else androidx.compose.ui.layout.ContentScale.Fit,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(shape)
+                    .clip(effectiveShape)
             )
         }
 
@@ -1434,12 +1442,18 @@ fun LocalThumbnail(
     thumbnailRatio: Float = 1f
 ) {
     val cropAlbumArt by rememberPreference(CropAlbumArtKey, true)
+    val isFluid = pushkar.chorus.music.ui.theme.isFluidTheme()
+    val effectiveShape = if (isFluid && shape is RoundedCornerShape) {
+        pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle(ThumbnailCornerRadius)
+    } else {
+        shape
+    }
 
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
             .aspectRatio(thumbnailRatio)
-            .clip(shape)
+            .clip(effectiveShape)
     ) {
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
@@ -1462,7 +1476,7 @@ fun LocalThumbnail(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.4f), shape)
+                    .background(Color.Black.copy(alpha = 0.4f), effectiveShape)
             ) {
                 if (isPlaying) {
                     PlayingIndicator(
@@ -1778,7 +1792,6 @@ fun SwipeToSongBox(
     }
 }
 
-
 private fun reset(offset: MutableState<Float>, scope: CoroutineScope) {
     scope.launch {
         animate(
@@ -1788,7 +1801,6 @@ private fun reset(offset: MutableState<Float>, scope: CoroutineScope) {
         ) { value, _ -> offset.value = value }
     }
 }
-
 
 data class Quadruple<A, B, C, D>(
     val first: A,
@@ -1855,7 +1867,4 @@ object Icon {
     }
 
 }
-
-
-
 

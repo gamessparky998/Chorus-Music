@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.models
 
 import java.io.Serializable
@@ -25,14 +23,14 @@ sealed class QueueData : Serializable {
         val endpoint: String,
         val continuation: String? = null
     ) : QueueData()
-    
+
     data class YouTubeAlbumRadioData(
         val playlistId: String,
         val albumSongCount: Int = 0,
         val continuation: String? = null,
         val firstTimeLoaded: Boolean = false
     ) : QueueData()
-    
+
     data class LocalAlbumRadioData(
         val albumId: String,
         val startIndex: Int = 0,

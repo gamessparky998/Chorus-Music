@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.utils
 
 import android.content.Context
@@ -193,8 +191,6 @@ class SyncUtils @Inject constructor(
         _syncState.value = _syncState.value.update()
     }
 
-    
-
     fun performFullSync() {
         syncScope.launch {
             syncChannel.send(SyncOperation.FullSync)
@@ -319,8 +315,6 @@ class SyncUtils @Inject constructor(
         }
     }
 
-    
-
     suspend fun syncLikedSongsSuspend() = executeSyncLikedSongs()
     suspend fun syncLibrarySongsSuspend() = executeSyncLibrarySongs()
     suspend fun syncUploadedSongsSuspend() = executeSyncUploadedSongs()
@@ -341,8 +335,6 @@ class SyncUtils @Inject constructor(
         executeSyncArtistsSubscriptions()
     }
 
-    
-
     private suspend fun executeFullSync() = withContext(Dispatchers.IO) {
         if (!isLoggedIn()) {
             Timber.w("Skipping full sync - user not logged in")
@@ -352,7 +344,7 @@ class SyncUtils @Inject constructor(
         updateState { copy(overallStatus = SyncStatus.Syncing, currentOperation = "Starting full sync") }
 
         try {
-            
+
             executeSyncLikedSongs()
             delay(DB_OPERATION_DELAY_MS)
 
@@ -402,7 +394,6 @@ class SyncUtils @Inject constructor(
             Timber.e(e, "Failed to like song on YouTube: ${s.id}")
         }
 
-
     }
 
     private suspend fun executeSyncLikedSongs() = withContext(Dispatchers.IO) {
@@ -422,14 +413,13 @@ class SyncUtils @Inject constructor(
                     val remoteIds = remoteSongs.map { it.id }.toSet()
                     val localSongs = database.likedSongsByNameAsc().first()
 
-                    
                     val lastSync = context.dataStore.get(LastFullSyncKey, 0L)
 
                     localSongs.filterNot { it.id in remoteIds || it.song.isLocal }.forEach { song ->
                         try {
                             val likedDate = song.song.likedDate
                             if (likedDate == null || likedDate.toEpochSecond(ZoneOffset.UTC) > lastSync) {
-                                
+
                                 withRetry {
                                     YouTube.likeVideo(song.id, true)
                                 }.onFailure { e ->
@@ -444,7 +434,6 @@ class SyncUtils @Inject constructor(
                         }
                     }
 
-                    
                     val now = LocalDateTime.now()
                     remoteSongs.forEachIndexed { index, song ->
                         try {
@@ -459,7 +448,13 @@ class SyncUtils @Inject constructor(
                                     }
                                 } else if (!dbSong.song.liked || dbSong.song.isVideo != isVideoSong) {
                                     val newLikedDate = if (!dbSong.song.liked) timestamp else dbSong.song.likedDate
-                                    update(dbSong.song.copy(liked = true, likedDate = newLikedDate, isVideo = isVideoSong))
+                                    update(
+                                        dbSong.song.copy(
+                                            liked = true,
+                                            likedDate = newLikedDate,
+                                            isVideo = isVideoSong
+                                        )
+                                    )
                                 }
                             }
                             delay(DB_OPERATION_DELAY_MS)
@@ -554,7 +549,7 @@ class SyncUtils @Inject constructor(
 
         withRetry {
             Timber.d("[UPLOAD_DEBUG] Calling YouTube.library(FEmusic_library_privately_owned_tracks, tabIndex=1)")
-            
+
             YouTube.library("FEmusic_library_privately_owned_tracks", tabIndex = 1).completed()
         }.onSuccess { result ->
             Timber.d("[UPLOAD_DEBUG] withRetry succeeded, result isSuccess=${result.isSuccess}")
@@ -796,7 +791,8 @@ class SyncUtils @Inject constructor(
                                     val existing = dbArtist.artist
                                     val needsChannelIdUpdate = existing.channelId == null && channelId != null
                                     if (existing.bookmarkedAt == null || needsChannelIdUpdate ||
-                                        existing.name != artist.title || existing.thumbnailUrl != artist.thumbnail) {
+                                        existing.name != artist.title || existing.thumbnailUrl != artist.thumbnail
+                                    ) {
                                         update(
                                             existing.copy(
                                                 name = artist.title,
@@ -1029,13 +1025,12 @@ class SyncUtils @Inject constructor(
 
         try {
             database.withTransaction {
-                
+
                 val likedSongs = database.likedSongsByNameAsc().first()
                 likedSongs.forEach {
                     database.update(it.song.copy(liked = false, likedDate = null))
                 }
 
-                
                 val librarySongs = database.songsByNameAsc().first()
                 librarySongs.forEach {
                     if (it.song.inLibrary != null) {
@@ -1043,19 +1038,16 @@ class SyncUtils @Inject constructor(
                     }
                 }
 
-                
                 val likedAlbums = database.albumsLikedByNameAsc().first()
                 likedAlbums.forEach {
                     database.update(it.album.copy(bookmarkedAt = null))
                 }
 
-                
                 val subscribedArtists = database.artistsBookmarkedByNameAsc().first()
                 subscribedArtists.forEach {
                     database.update(it.artist.copy(bookmarkedAt = null))
                 }
 
-                
                 val savedPlaylists = database.playlistsByNameAsc().first()
                 savedPlaylists.forEach {
                     if (it.playlist.browseId != null) {
@@ -1064,20 +1056,17 @@ class SyncUtils @Inject constructor(
                     }
                 }
 
-                
                 val uploadedSongs = database.uploadedSongsByNameAsc().first()
                 uploadedSongs.forEach {
                     database.update(it.song.copy(isUploaded = false))
                 }
 
-                
                 val uploadedAlbums = database.albumsUploadedByCreateDateAsc().first()
                 uploadedAlbums.forEach {
                     database.update(it.album.copy(isUploaded = false))
                 }
             }
 
-            
             context.dataStore.edit { settings ->
                 settings[LastFullSyncKey] = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)
             }

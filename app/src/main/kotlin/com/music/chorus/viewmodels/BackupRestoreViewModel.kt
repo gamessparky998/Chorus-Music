@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.viewmodels
 
 import android.content.Context
@@ -90,7 +88,7 @@ class BackupRestoreViewModel @Inject constructor(
             Timber.tag("RESTORE").i("Starting restore from URI: $uri")
             context.applicationContext.contentResolver.openInputStream(uri)?.use { raw ->
                 raw.zipInputStream().use { inputStream ->
-                    var entry = tryOrNull { inputStream.nextEntry } 
+                    var entry = tryOrNull { inputStream.nextEntry }
                     var foundAny = false
                     while (entry != null) {
                         Timber.tag("RESTORE").i("Found zip entry: ${entry.name}")
@@ -106,12 +104,12 @@ class BackupRestoreViewModel @Inject constructor(
                             InternalDatabase.DB_NAME -> {
                                 Timber.tag("RESTORE").i("Restoring DB (entry = ${entry.name})")
                                 foundAny = true
-                                
+
                                 val tempFile = java.io.File(context.cacheDir, "temp_restore.db")
                                 java.io.FileOutputStream(tempFile).use { outputStream ->
                                     inputStream.copyTo(outputStream)
                                 }
-                                
+
                                 var backupVersion = 0
                                 runCatching {
                                     java.io.RandomAccessFile(tempFile, "r").use { raf ->
@@ -119,7 +117,7 @@ class BackupRestoreViewModel @Inject constructor(
                                         backupVersion = raf.readInt()
                                     }
                                 }
-                                
+
                                 val currentVersion = database.openHelper.writableDatabase.version
                                 if (backupVersion > currentVersion) {
                                     Timber.tag("RESTORE").e("Backup version ($backupVersion) > current version ($currentVersion)")
@@ -129,7 +127,7 @@ class BackupRestoreViewModel @Inject constructor(
                                     tempFile.delete()
                                     return@withContext
                                 }
-                                
+
                                 try {
                                     val dbPath = database.openHelper.writableDatabase.path
                                     if (dbPath == null) {
@@ -139,11 +137,11 @@ class BackupRestoreViewModel @Inject constructor(
                                     database.checkpoint()
                                     database.close()
                                     Timber.tag("RESTORE").i("Overwriting DB at path: $dbPath")
-                                    
+
                                     val dbFile = java.io.File(dbPath)
                                     val walFile = java.io.File(dbPath + "-wal")
                                     val shmFile = java.io.File(dbPath + "-shm")
-                                    
+
                                     if (walFile.exists()) {
                                         walFile.delete()
                                         Timber.tag("RESTORE").i("Deleted existing WAL file")
@@ -169,7 +167,7 @@ class BackupRestoreViewModel @Inject constructor(
                                 Timber.tag("RESTORE").i("Skipping unexpected entry: ${entry.name}")
                             }
                         }
-                        entry = tryOrNull { inputStream.nextEntry } 
+                        entry = tryOrNull { inputStream.nextEntry }
                     }
                     if (!foundAny) {
                         Timber.tag("RESTORE").w("No expected entries found in archive")
@@ -313,7 +311,7 @@ class BackupRestoreViewModel @Inject constructor(
                 ).show()
             }
         }
-        
+
         songs
     }
 
@@ -382,7 +380,7 @@ class BackupRestoreViewModel @Inject constructor(
                 ).show()
             }
         }
-        
+
         songs
     }
 

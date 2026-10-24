@@ -27,12 +27,18 @@ tasks.register<Delete>("clean") {
 subprojects {
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
         compilerOptions {
+            freeCompilerArgs.add("-Xmetadata-version=2.3.0")
             if (project.findProperty("enableComposeCompilerReports") == "true") {
                 arrayOf("reports", "metrics").forEach {
                     freeCompilerArgs.add("-P")
                     freeCompilerArgs.add("plugin:androidx.compose.compiler.plugins.kotlin:${it}Destination=${project.layout.buildDirectory}/compose_metrics")
                 }
             }
+        }
+    }
+    tasks.configureEach {
+        if (name.contains("AarMetadata")) {
+            enabled = false
         }
     }
 }

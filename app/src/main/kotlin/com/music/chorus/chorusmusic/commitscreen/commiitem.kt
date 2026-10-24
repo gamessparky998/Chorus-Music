@@ -41,7 +41,7 @@ import pushkar.chorus.music.R
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        
+
         Box(
             modifier = Modifier
                 .size(40.dp)
@@ -52,19 +52,18 @@ import pushkar.chorus.music.R
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                painter = painterResource(R.drawable.commit), 
+                painter = painterResource(R.drawable.commit),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier.size(20.dp)
             )
         }
 
-        
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            
+
             Text(
                 text = commit.message,
                 style = MaterialTheme.typography.bodyLarge,
@@ -74,7 +73,6 @@ import pushkar.chorus.music.R
                 overflow = TextOverflow.Ellipsis
             )
 
-            
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -98,7 +96,6 @@ import pushkar.chorus.music.R
                 )
             }
 
-            
             Surface(
                 color = MaterialTheme.colorScheme.secondaryContainer,
                 shape = RoundedCornerShape(4.dp)
@@ -114,7 +111,6 @@ import pushkar.chorus.music.R
 
         Spacer(Modifier.width(4.dp))
 
-        
         if (commit.authorAvatarUrl != null) {
             AsyncImage(
                 model = commit.authorAvatarUrl,
@@ -124,7 +120,7 @@ import pushkar.chorus.music.R
                     .clip(CircleShape)
             )
         } else {
-            
+
             Box(
                 modifier = Modifier
                     .size(36.dp)

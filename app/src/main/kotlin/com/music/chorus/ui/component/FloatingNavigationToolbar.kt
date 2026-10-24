@@ -1,6 +1,4 @@
-
-
-@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@file:Suppress("OPT_IN_USAGE_ERROR", "OPT_IN_USAGE")
 
 package pushkar.chorus.music.ui.component
 
@@ -42,7 +40,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.ui.draw.blur
 import androidx.compose.material3.FloatingToolbarDefaults
 import androidx.compose.material3.FloatingToolbarScrollBehavior
@@ -73,8 +70,9 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import pushkar.chorus.music.R
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
 import pushkar.chorus.music.ui.screens.Screens
+import pushkar.chorus.music.ui.theme.isFluidTheme
 
 @Composable
 fun FloatingNavigationToolbar(
@@ -98,43 +96,15 @@ fun FloatingNavigationToolbar(
     val toolbarColors = FloatingToolbarDefaults.standardFloatingToolbarColors(
         toolbarContainerColor = toolbarContainerColor,
     )
-    val hasOverflowMenu = (onShuffleClick != null && shuffleIconRes != null)
     val hasFabAction = onFabClick != null && fabIconRes != null
 
     BoxWithConstraints(
         modifier = modifier.fillMaxWidth(),
         contentAlignment = Alignment.Center,
     ) {
-        val showSelectedLabels = false
+        val showSelectedLabels = true
 
-        if (hasOverflowMenu) {
-            HorizontalFloatingToolbar(
-                expanded = true,
-                floatingActionButton = {
-                    FloatingToolbarOverflowMenuButton(
-                        pureBlack = pureBlack,
-                        onShuffleClick = onShuffleClick,
-                        shuffleIconRes = shuffleIconRes,
-                        shuffleContentDescription = shuffleContentDescription,
-                        onSettingsClick = onSettingsClick,
-                        settingsIconRes = settingsIconRes,
-                        settingsContentDescription = settingsContentDescription,
-                    )
-                },
-                modifier = Modifier.widthIn(max = 480.dp),
-                colors = toolbarColors,
-                scrollBehavior = scrollBehavior,
-                animationSpec = FloatingToolbarDefaults.animationSpec(),
-            ) {
-                ToolbarItemsContainer(
-                    items = items,
-                    pureBlack = pureBlack,
-                    showSelectedLabels = showSelectedLabels,
-                    isSelected = isSelected,
-                    onItemClick = onItemClick
-                )
-            }
-        } else if (hasFabAction) {
+        if (hasFabAction) {
             HorizontalFloatingToolbar(
                 expanded = true,
                 floatingActionButton = {
@@ -161,7 +131,7 @@ fun FloatingNavigationToolbar(
         } else {
             HorizontalFloatingToolbar(
                 expanded = true,
-                modifier = Modifier.widthIn(max = 420.dp),
+                modifier = Modifier.widthIn(max = 480.dp),
                 colors = toolbarColors,
                 scrollBehavior = scrollBehavior,
             ) {
@@ -221,7 +191,7 @@ private fun ToolbarItemsContainer(
                         .fillMaxHeight()
                         .background(
                             color = floatingToolbarSelectedItemContainerColor(pureBlack),
-                            shape = RoundedCornerShape(24.dp)
+                            shape = if (isFluidTheme()) ContinuousRoundedRectangle(24.dp) else RoundedCornerShape(24.dp)
                         )
                 )
             }
@@ -229,7 +199,6 @@ private fun ToolbarItemsContainer(
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             items.forEach { screen ->
-
 
                 val selected = isSelected(screen)
                 FloatingNavigationToolbarItem(
@@ -242,99 +211,6 @@ private fun ToolbarItemsContainer(
                         itemWidths[screen] = with(density) { coordinates.size.width.toDp() }
                         itemPositions[screen] = with(density) { coordinates.positionInParent().x.toDp() }
                     }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun FloatingToolbarOverflowMenuButton(
-    pureBlack: Boolean,
-    onShuffleClick: (() -> Unit)?,
-    shuffleIconRes: Int?,
-    shuffleContentDescription: String,
-    onSettingsClick: (() -> Unit)?,
-    settingsIconRes: Int?,
-    settingsContentDescription: String,
-) {
-    var menuExpanded by rememberSaveable { mutableStateOf(false) }
-
-    Box {
-        FloatingToolbarDefaults.VibrantFloatingActionButton(
-            onClick = { menuExpanded = !menuExpanded },
-            shape = CircleShape,
-            containerColor = floatingToolbarFabContainerColor(pureBlack = pureBlack),
-            contentColor = floatingToolbarFabContentColor(pureBlack = pureBlack),
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.more_horiz),
-                contentDescription = stringResource(R.string.more_label),
-            )
-        }
-
-        DropdownMenu(
-            expanded = menuExpanded,
-            onDismissRequest = { menuExpanded = false },
-            shape = RoundedCornerShape(24.dp),
-            containerColor = if (pureBlack) Color.Black.copy(alpha = 0.92f) else MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.96f),
-            tonalElevation = 8.dp,
-        ) {
-            if (onShuffleClick != null && shuffleIconRes != null) {
-                DropdownMenuItem(
-                    text = { Text(stringResource(R.string.shuffle)) },
-                    onClick = {
-                        menuExpanded = false
-                        onShuffleClick()
-                    },
-                    leadingIcon = {
-                        Surface(
-                            modifier = Modifier.size(40.dp),
-                            shape = CircleShape,
-                            color = floatingToolbarMenuIconContainerColor(pureBlack = pureBlack),
-                            contentColor = floatingToolbarMenuIconContentColor(pureBlack = pureBlack),
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    painter = painterResource(shuffleIconRes),
-                                    contentDescription = shuffleContentDescription.ifEmpty { stringResource(R.string.shuffle) },
-                                )
-                            }
-                        }
-                    },
-                    colors = MenuDefaults.itemColors(
-                        textColor = if (pureBlack) Color.White else MaterialTheme.colorScheme.onSurface,
-                        leadingIconColor = if (pureBlack) Color.White.copy(alpha = 0.82f) else MaterialTheme.colorScheme.onSurfaceVariant,
-                    ),
-                )
-            }
-
-            if (onSettingsClick != null && settingsIconRes != null) {
-                DropdownMenuItem(
-                    text = { Text(settingsContentDescription) },
-                    onClick = {
-                        menuExpanded = false
-                        onSettingsClick()
-                    },
-                    leadingIcon = {
-                        Surface(
-                            modifier = Modifier.size(40.dp),
-                            shape = CircleShape,
-                            color = floatingToolbarMenuIconContainerColor(pureBlack = pureBlack),
-                            contentColor = floatingToolbarMenuIconContentColor(pureBlack = pureBlack),
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    painter = painterResource(settingsIconRes),
-                                    contentDescription = settingsContentDescription,
-                                )
-                            }
-                        }
-                    },
-                    colors = MenuDefaults.itemColors(
-                        textColor = if (pureBlack) Color.White else MaterialTheme.colorScheme.onSurface,
-                        leadingIconColor = if (pureBlack) Color.White.copy(alpha = 0.82f) else MaterialTheme.colorScheme.onSurfaceVariant,
-                    ),
                 )
             }
         }
@@ -359,7 +235,7 @@ private fun FloatingToolbarFabAction(
             painter = painterResource(iconRes),
             contentDescription =
                 contentDescription.ifEmpty {
-                    stringResource(R.string.create_playlist)
+                    stringResource(pushkar.chorus.music.R.string.create_playlist)
                 },
         )
     }
@@ -374,7 +250,7 @@ private fun FloatingNavigationToolbarItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val shape = RoundedCornerShape(24.dp)
+    val shape = if (isFluidTheme()) ContinuousRoundedRectangle(24.dp) else RoundedCornerShape(24.dp)
     val showLabel = selected && showSelectedLabel
     val transition = updateTransition(targetState = selected, label = "navItem_${screen.route}")
 
@@ -519,7 +395,6 @@ private fun floatingToolbarSelectedItemContainerColor(pureBlack: Boolean): Color
 private fun floatingToolbarSelectedItemContentColor(pureBlack: Boolean): Color {
     return MaterialTheme.colorScheme.onSecondaryContainer
 }
-
 
 @Composable
 private fun floatingToolbarItemContentColor(pureBlack: Boolean): Color {

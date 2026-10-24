@@ -19,7 +19,7 @@ data class ArtistItemsPage(
 ) {
     companion object {
         fun fromMusicResponsiveListItemRenderer(renderer: MusicResponsiveListItemRenderer): SongItem? {
-            
+
             val secondaryLineRuns = renderer.flexColumns
                 .getOrNull(1)
                 ?.musicResponsiveListItemFlexColumnRenderer
@@ -27,7 +27,6 @@ data class ArtistItemsPage(
                 ?.runs
                 ?.splitBySeparator()
 
-            
             val artists = secondaryLineRuns?.firstOrNull()?.oddElements()?.map {
                 Artist(
                     name = it.text,
@@ -35,7 +34,6 @@ data class ArtistItemsPage(
                 )
             }
 
-            
             val album = renderer.flexColumns.lastOrNull()
                 ?.musicResponsiveListItemFlexColumnRenderer?.text?.runs
                 ?.firstOrNull()?.let {
@@ -47,7 +45,6 @@ data class ArtistItemsPage(
                     } else null
                 }
 
-            
             val libraryTokens = PageHelper.extractLibraryTokensFromMenuItems(renderer.menu?.menuRenderer?.items)
 
             return SongItem(
@@ -95,7 +92,7 @@ data class ArtistItemsPage(
                         it.musicInlineBadgeRenderer?.icon?.iconType == "MUSIC_EXPLICIT_BADGE"
                     } != null
                 )
-                
+
                 renderer.isSong -> SongItem(
                     id = renderer.navigationEndpoint.watchEndpoint?.videoId ?: return null,
                     title = renderer.title.runs?.firstOrNull()?.text ?: return null,

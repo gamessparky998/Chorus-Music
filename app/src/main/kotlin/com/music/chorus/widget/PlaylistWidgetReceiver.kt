@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.widget
 
 import android.appwidget.AppWidgetManager

@@ -11,7 +11,6 @@ import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-
 @UnstableApi
 class AutomixDuckAudioProcessor(
     private val shelfFrequencyHz: Double = 150.0,
@@ -27,11 +26,9 @@ class AutomixDuckAudioProcessor(
     private var outputBuffer: ByteBuffer = EMPTY_BUFFER
     private var inputEnded = false
 
-    
     @Volatile
     private var targetMix: Float = 0f
 
-    
     private var currentMix: Float = 0f
 
     private var b0 = 1.0
@@ -51,11 +48,10 @@ class AutomixDuckAudioProcessor(
 
     companion object {
         private val EMPTY_BUFFER: ByteBuffer = ByteBuffer.allocateDirect(0).order(ByteOrder.nativeOrder())
-        
+
         private const val MIX_EASE_MS = 15.0
     }
 
-    
     fun setMix(fraction: Float) {
         targetMix = fraction.coerceIn(0f, 1f)
     }
@@ -69,7 +65,7 @@ class AutomixDuckAudioProcessor(
         val omega = 2.0 * PI * shelfFrequencyHz / sampleRate
         val sinOmega = sin(omega)
         val cosOmega = cos(omega)
-        val alpha = sinOmega / 2.0 * sqrt(2.0) 
+        val alpha = sinOmega / 2.0 * sqrt(2.0)
         val sqrtA = sqrt(A)
         val aPlusOne = A + 1.0
         val aMinusOne = A - 1.0
@@ -112,8 +108,6 @@ class AutomixDuckAudioProcessor(
             outputBuffer.clear()
         }
 
-        
-        
         val easePerSample = (1000.0 / (MIX_EASE_MS * sampleRate)).toFloat().coerceIn(0f, 1f)
 
         val sampleCount = inputSize / 2

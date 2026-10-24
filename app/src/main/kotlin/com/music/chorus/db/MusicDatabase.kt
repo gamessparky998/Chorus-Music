@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.db
 
 import android.annotation.SuppressLint
@@ -200,8 +198,6 @@ abstract class InternalDatabase : RoomDatabase() {
             )
     }
 }
-
-
 
 val MIGRATION_1_2 =
     object : Migration(1, 2) {
@@ -413,8 +409,6 @@ val MIGRATION_21_24 =
     object : Migration(21, 24) {
         override fun migrate(db: SupportSQLiteDatabase) {
 
-
-
             try {
                 db.execSQL("ALTER TABLE song ADD COLUMN libraryAddToken TEXT DEFAULT ''")
             } catch (e: Exception) {
@@ -435,7 +429,6 @@ val MIGRATION_21_24 =
             } catch (e: Exception) {
                 Timber.tag("Migration").w("Column isDownloaded may already exist")
             }
-
 
             var hasIsUploaded = false
             db.query("PRAGMA table_info('song')").use { cursor ->
@@ -513,7 +506,6 @@ val MIGRATION_31_32 = object : Migration(31, 32) {
         }
     }
 }
-
 
 @DeleteColumn.Entries(
     DeleteColumn(tableName = "song", columnName = "isTrash"),
@@ -729,12 +721,10 @@ val MIGRATION_29_30 = object : Migration(29, 30) {
 
     override fun migrate(db: SupportSQLiteDatabase) {
 
-        
         db.execSQL("DROP VIEW IF EXISTS sorted_song_artist_map")
         db.execSQL("DROP VIEW IF EXISTS sorted_song_album_map")
         db.execSQL("DROP VIEW IF EXISTS playlist_song_map_preview")
 
-        
         if (!hasColumn(db, "song", "isVideo")) {
             try {
                 db.execSQL(
@@ -745,9 +735,6 @@ val MIGRATION_29_30 = object : Migration(29, 30) {
             }
         }
 
-        
-        
-        
         if (!hasColumn(db, "lyrics", "provider")) {
             try {
                 db.execSQL(
@@ -758,7 +745,6 @@ val MIGRATION_29_30 = object : Migration(29, 30) {
             }
         }
 
-        
         db.execSQL(
             "CREATE VIEW `sorted_song_artist_map` AS SELECT * FROM song_artist_map ORDER BY position"
         )
@@ -794,7 +780,7 @@ private fun hasColumn(
 val MIGRATION_27_28 =
     object : Migration(27, 28) {
         override fun migrate(db: SupportSQLiteDatabase) {
-            
+
             try {
                 db.execSQL("ALTER TABLE song ADD COLUMN lyricsOffset INTEGER NOT NULL DEFAULT 0")
             } catch (e: Exception) {
@@ -867,7 +853,7 @@ val MIGRATION_28_29 = object : Migration(28, 29) {
 val MIGRATION_36_37 =
     object : Migration(36, 37) {
         override fun migrate(db: SupportSQLiteDatabase) {
-            
+
         }
     }
 
@@ -880,7 +866,6 @@ val MIGRATION_37_38 =
             db.execSQL("CREATE TABLE IF NOT EXISTS `play_event` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `trackId` TEXT NOT NULL, `startTime` INTEGER NOT NULL, `durationMs` INTEGER NOT NULL, `skipped` INTEGER NOT NULL, `engaged` INTEGER NOT NULL)")
             db.execSQL("CREATE TABLE IF NOT EXISTS `taste_profile` (`id` INTEGER NOT NULL, `genres` TEXT NOT NULL, `confidence` REAL NOT NULL, `patternsFound` INTEGER NOT NULL, `modelVersion` TEXT NOT NULL, `updatedAt` INTEGER NOT NULL, PRIMARY KEY(`id`))")
 
-            
             var columnExists = false
             db.query("PRAGMA table_info(format)").use { cursor ->
                 val nameIndex = cursor.getColumnIndex("name")
@@ -900,7 +885,7 @@ val MIGRATION_37_38 =
 val MIGRATION_38_39 =
     object : Migration(38, 39) {
         override fun migrate(db: SupportSQLiteDatabase) {
-            
+
             var columnExists = false
             db.query("PRAGMA table_info(format)").use { cursor ->
                 val nameIndex = cursor.getColumnIndex("name")
@@ -943,7 +928,6 @@ val MIGRATION_40_41 =
         }
     }
 
-
 @DeleteTable.Entries(
     DeleteTable(tableName = "brain_activity_log"),
     DeleteTable(tableName = "play_event"),
@@ -953,7 +937,7 @@ class Migration41To42 : AutoMigrationSpec
 
 val MIGRATION_41_42 = object : Migration(41, 42) {
     override fun migrate(db: SupportSQLiteDatabase) {
-        
+
     }
 }
 

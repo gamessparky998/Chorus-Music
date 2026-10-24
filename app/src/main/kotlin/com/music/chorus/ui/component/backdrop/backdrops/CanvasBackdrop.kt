@@ -1,4 +1,3 @@
-
 package pushkar.chorus.music.ui.component.backdrop.backdrops
 
 import androidx.compose.runtime.Composable

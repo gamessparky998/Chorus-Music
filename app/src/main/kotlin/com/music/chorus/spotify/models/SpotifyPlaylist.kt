@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.spotify.models
 
 import kotlinx.serialization.SerialName
@@ -26,13 +24,11 @@ data class SpotifyPlaylistOwner(
     val uri: String? = null,
 )
 
-
 @Serializable
 data class SpotifyPlaylistTracksRef(
     val total: Int? = null,
     val href: String? = null,
 )
-
 
 @Serializable
 data class SpotifyPlaylistTrack(

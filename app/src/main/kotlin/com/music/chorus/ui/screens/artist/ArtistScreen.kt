@@ -1,12 +1,9 @@
-
-
 package pushkar.chorus.music.ui.screens.artist
 
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.widget.Toast
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -29,20 +26,22 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ButtonGroupDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -139,13 +138,15 @@ import pushkar.chorus.music.constants.ShowArtistVideoKey
 import pushkar.chorus.music.constants.ShowArtistBackgroundVideoKey
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.shape.RoundedCornerShape
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.material3.ButtonDefaults
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import pushkar.chorus.music.canvas.AppleMusicArtistBackgroundProvider
+import pushkar.chorus.music.ui.component.artist.ArtistHero
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ArtistScreen(
     navController: NavController,
@@ -171,7 +172,10 @@ fun ArtistScreen(
     val showArtistDescription by rememberPreference(key = ShowArtistDescriptionKey, defaultValue = true)
     val showArtistSubscriberCount by rememberPreference(key = ShowArtistSubscriberCountKey, defaultValue = true)
     val showMonthlyListeners by rememberPreference(key = ShowMonthlyListenersKey, defaultValue = true)
-    val dataSaverEnabled by rememberPreference(key = pushkar.chorus.music.constants.DataSaverEnabledKey, defaultValue = false)
+    val dataSaverEnabled by rememberPreference(
+        key = pushkar.chorus.music.constants.DataSaverEnabledKey,
+        defaultValue = false
+    )
     val showArtistVideoPref by rememberPreference(key = ShowArtistVideoKey, defaultValue = true)
     val showArtistVideo = if (dataSaverEnabled) false else showArtistVideoPref
     val showArtistBackgroundVideoPref by rememberPreference(key = ShowArtistBackgroundVideoKey, defaultValue = true)
@@ -182,7 +186,6 @@ fun ArtistScreen(
     var showLocal by rememberSaveable { mutableStateOf(false) }
     val density = LocalDensity.current
 
-    
     val systemBarsTopPadding = WindowInsets.systemBars.asPaddingValues().calculateTopPadding()
     val headerOffset = with(density) {
         -(systemBarsTopPadding + AppBarHeight).roundToPx()
@@ -195,26 +198,96 @@ fun ArtistScreen(
     }
 
     LaunchedEffect(libraryArtist) {
-        
+
         showLocal = libraryArtist?.artist?.isLocal == true
     }
 
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
+        val onPlayAllClick: () -> Unit = {
+            if (showLocal) {
+                if (librarySongs.isNotEmpty()) {
+                    playerConnection.playQueue(
+                        ListQueue(
+                            title = libraryArtist?.artist?.name ?: "Unknown Artist",
+                            items = librarySongs.map { it.toMediaItem() }
+                        )
+                    )
+                }
+            } else if (artistPage != null) {
+                val songSection = artistPage.sections.find { section ->
+                    (section.items.firstOrNull() as? SongItem)?.album != null
+                }
+
+                val moreEndpoint = songSection?.moreEndpoint
+                if (moreEndpoint != null) {
+                    coroutineScope.launch(Dispatchers.IO) {
+                        val result = YouTube.artistItems(moreEndpoint).getOrNull()
+                        withContext(Dispatchers.Main) {
+                            if (result != null && result.items.isNotEmpty()) {
+                                val songs = result.items.filterIsInstance<SongItem>().map { it.toMediaItem() }
+                                playerConnection.playQueue(
+                                    ListQueue(
+                                        title = artistPage.artist.title,
+                                        items = songs
+                                    )
+                                )
+                            } else {
+                                val songs =
+                                    songSection.items.filterIsInstance<SongItem>().map { it.toMediaItem() }
+                                if (songs.isNotEmpty()) {
+                                    playerConnection.playQueue(
+                                        ListQueue(
+                                            title = artistPage.artist.title,
+                                            items = songs
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
+                } else if (songSection != null) {
+                    val songs = songSection.items.filterIsInstance<SongItem>().map { it.toMediaItem() }
+                    playerConnection.playQueue(
+                        ListQueue(
+                            title = artistPage.artist.title,
+                            items = songs
+                        )
+                    )
+                } else {
+                    val shuffleEndpoint = artistPage.artist.shuffleEndpoint
+                    if (shuffleEndpoint != null) {
+                        val endpoint = if (shuffleEndpoint.playlistId != null) {
+                            WatchEndpoint(
+                                playlistId = shuffleEndpoint.playlistId,
+                                params = null,
+                                videoId = null
+                            )
+                        } else {
+                            shuffleEndpoint
+                        }
+                        playerConnection.playQueue(YouTubeQueue(endpoint))
+                    }
+                }
+            }
+        }
+
         LazyColumn(
             state = lazyListState,
-            contentPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues(),
+            contentPadding = LocalPlayerAwareWindowInsets.current
+                .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)
+                .asPaddingValues(),
         ) {
             if (artistPage == null && !showLocal) {
                 item(key = "shimmer") {
-                    ShimmerHost (
+                    ShimmerHost(
                         modifier = Modifier
                             .offset {
                                 IntOffset(x = 0, y = headerOffset)
                             }
                     ) {
-                        
+
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -231,13 +304,13 @@ fun ArtistScreen(
                                     ),
                             )
                         }
-                        
+
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(16.dp)
                         ) {
-                            
+
                             TextPlaceholder(
                                 height = 36.dp,
                                 modifier = Modifier
@@ -245,12 +318,11 @@ fun ArtistScreen(
                                     .padding(bottom = 16.dp)
                             )
 
-                            
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                
+
                                 ButtonPlaceholder(
                                     modifier = Modifier
                                         .width(120.dp)
@@ -259,19 +331,17 @@ fun ArtistScreen(
 
                                 Spacer(modifier = Modifier.weight(1f))
 
-                                
                                 Row(
                                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    
+
                                     ButtonPlaceholder(
                                         modifier = Modifier
                                             .width(100.dp)
                                             .height(52.dp)
                                     )
 
-                                    
                                     Box(
                                         modifier = Modifier
                                             .size(52.dp)
@@ -284,7 +354,7 @@ fun ArtistScreen(
                                 }
                             }
                         }
-                        
+
                         repeat(6) {
                             ListItemPlaceHolder()
                         }
@@ -292,7 +362,7 @@ fun ArtistScreen(
                 }
             } else {
                 item(key = "header") {
-                    val thumbnail = artistPage?.artist?.thumbnail?.takeIf { it.isNotBlank() } 
+                    val thumbnail = artistPage?.artist?.thumbnail?.takeIf { it.isNotBlank() }
                         ?: libraryArtist?.artist?.thumbnailUrl?.takeIf { it.isNotBlank() }
                     val artistName = artistPage?.artist?.title ?: libraryArtist?.artist?.name
 
@@ -305,293 +375,78 @@ fun ArtistScreen(
                         }
                     }
 
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        if (thumbnail != null || backgroundVideoUrl != null) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(300.dp)
-                                    .offset {
-                                        IntOffset(x = 0, y = headerOffset)
-                                    }
-                            ) {
-                                if (thumbnail != null) {
-                                    AsyncImage(
-                                        model = thumbnail.resize(1200, 1200),
-                                        contentDescription = null,
-                                        modifier = Modifier.fillMaxSize().blur(50.dp),
-                                        contentScale = androidx.compose.ui.layout.ContentScale.Crop,
-                                        alignment = Alignment.Center
-                                    )
-                                    AsyncImage(
-                                        model = thumbnail.resize(1200, 1200),
-                                        contentDescription = null,
-                                        modifier = Modifier.fillMaxSize(),
-                                        contentScale = androidx.compose.ui.layout.ContentScale.Fit,
-                                        alignment = Alignment.Center
-                                    )
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(150.dp)
-                                            .align(Alignment.BottomCenter)
-                                            .background(
-                                                brush = androidx.compose.ui.graphics.Brush.verticalGradient(
-                                                    colors = listOf(
-                                                        Color.Transparent,
-                                                        MaterialTheme.colorScheme.background
-                                                    )
-                                                )
-                                            )
+                    val canShuffle =
+                        if (showLocal) librarySongs.isNotEmpty() && !isGuest else !isGuest && artistPage?.artist?.shuffleEndpoint != null
+                    val isFollowed = libraryArtist?.artist?.bookmarkedAt != null
+
+                    val isCurrentArtistPlaying = isPlaying && (
+                        (artistName != null && mediaMetadata?.artists?.any { it.name == artistName } == true) ||
+                        (artistName != null && mediaMetadata?.album?.title == artistName)
+                    )
+
+                    ArtistHero(
+                        thumbnail = thumbnail,
+                        artistName = artistName,
+                        backgroundVideoUrl = backgroundVideoUrl,
+                        showArtistBackgroundVideo = showArtistBackgroundVideo,
+                        showArtistVideo = showArtistVideo,
+                        artistVideoUrl = artistVideoUrl,
+                        isFollowed = isFollowed,
+                        canShuffle = canShuffle,
+                        isPlaying = isCurrentArtistPlaying,
+                        onPlayClick = {
+                            if (isCurrentArtistPlaying) {
+                                playerConnection.togglePlayPause()
+                            } else {
+                                onPlayAllClick()
+                            }
+                        },
+                        onShuffle = {
+                            if (showLocal) {
+                                val shuffledSongs = librarySongs.shuffled()
+                                if (shuffledSongs.isNotEmpty()) {
+                                    playerConnection.playQueue(
+                                        ListQueue(
+                                            title = libraryArtist?.artist?.name ?: "Unknown Artist",
+                                            items = shuffledSongs.map { it.toMediaItem() }
+                                        )
                                     )
                                 }
-                                if (backgroundVideoUrl != null && showArtistBackgroundVideo) {
-                                    ArtistVideo(
-                                        videoUrl = backgroundVideoUrl!!,
-                                        modifier = Modifier.fillMaxSize(),
-                                        onClick = { }
-                                    )
+                            } else {
+                                artistPage?.artist?.shuffleEndpoint?.let { shuffleEndpoint ->
+                                    playerConnection.playQueue(YouTubeQueue(shuffleEndpoint))
                                 }
                             }
-                            Spacer(modifier = Modifier.height(24.dp))
-                        }
-
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center,
-                                modifier = Modifier.padding(bottom = 16.dp).fillMaxWidth()
-                            ) {
-                                    if (showArtistVideo && !(showArtistBackgroundVideo && backgroundVideoUrl != null)) {
-                                        artistVideoUrl?.let { videoUrl ->
-                                            artistPage?.artist?.radioEndpoint?.let { radioEndpoint ->
-                                                Spacer(modifier = Modifier.width(5.dp))
-                                                ArtistVideo(
-                                                    videoUrl = videoUrl,
-                                                    modifier = Modifier
-                                                        .size(45.dp),
-                                                    onClick = {
-                                                        val watchEndpoint = artistVideoSong?.endpoint
-                                                            ?: artistPage.artist.radioEndpoint
-                                                        watchEndpoint?.let {
-                                                            playerConnection.playQueue(YouTubeQueue(it))
-                                                        }
-                                                    }
-                                                )
-                                            }
-                                        }
-                                    }
-
-                                    Spacer(modifier = Modifier.width(5.dp))
-
-                                    Text(
-                                        text = artistName ?: "Unknown",
-                                        style = MaterialTheme.typography.headlineLarge,
-                                        fontWeight = FontWeight.Bold,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        fontSize = 32.sp,
-                                        modifier = Modifier.weight(1f, fill = false)
-                                    )
-                                }
-
-                                @OptIn(ExperimentalLayoutApi::class)
-                                FlowRow(
-                                    horizontalArrangement = Arrangement.Center,
-                                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(bottom = 16.dp)
-                                ) {
-                                    if (showArtistSubscriberCount) {
-                                        artistPage?.subscriberCountText?.takeIf { it.isNotBlank() }?.let { subscribers ->
-                                            Row(
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                modifier = Modifier
-                                                    .clip(RoundedCornerShape(12.dp))
-                                                    .background(MaterialTheme.colorScheme.secondaryContainer)
-                                                    .padding(horizontal = 12.dp, vertical = 6.dp)
-                                            ) {
-                                                Icon(
-                                                    painter = painterResource(R.drawable.artist_screen),
-                                                    contentDescription = null,
-                                                    modifier = Modifier.size(16.dp),
-                                                    tint = MaterialTheme.colorScheme.onSecondaryContainer
-                                                )
-                                                Spacer(modifier = Modifier.width(6.dp))
-                                                Text(
-                                                    text = "$subscribers ${stringResource(R.string.subscribers)}",
-                                                    style = MaterialTheme.typography.labelLarge,
-                                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                                    fontWeight = FontWeight.Medium,
-                                                    maxLines = 1,
-                                                    overflow = TextOverflow.Ellipsis
-                                                )
-                                            }
-                                        }
-                                    }
-                                    
-                                    Spacer(modifier = Modifier.width(8.dp))
-
-                                    artistPage?.monthlyListenerCount?.takeIf { it.isNotBlank() }?.let { monthlyListeners ->
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            modifier = Modifier
-                                                .clip(RoundedCornerShape(12.dp))
-                                                .background(MaterialTheme.colorScheme.tertiaryContainer)
-                                                .padding(horizontal = 12.dp, vertical = 6.dp)
-                                        ) {
-                                            Icon(
-                                                painter = painterResource(R.drawable.graphic_eq),
-                                                contentDescription = null,
-                                                modifier = Modifier.size(16.dp),
-                                                tint = MaterialTheme.colorScheme.onTertiaryContainer
-                                            )
-                                            Spacer(modifier = Modifier.width(6.dp))
-                                            Text(
-                                                text = "$monthlyListeners ${stringResource(R.string.monthly_listeners)}",
-                                                style = MaterialTheme.typography.labelLarge,
-                                                color = MaterialTheme.colorScheme.onTertiaryContainer,
-                                                fontWeight = FontWeight.Medium,
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis
-                                            )
-                                        }
-                                    }
-                                }
-
-                                Row(
-                                    horizontalArrangement = Arrangement.Center,
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(bottom = 24.dp)
-                                ) {
-                                    if (!showLocal && !isGuest) {
-                                        artistPage?.artist?.radioEndpoint?.let { radioEndpoint ->
-                                            OutlinedButton(
-                                                onClick = { playerConnection.playQueue(YouTubeQueue(radioEndpoint)) },
-                                                modifier = Modifier.size(48.dp),
-                                                shape = androidx.compose.foundation.shape.CircleShape,
-                                                contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
-                                            ) {
-                                                Icon(
-                                                    painter = painterResource(R.drawable.radio),
-                                                    contentDescription = stringResource(R.string.radio),
-                                                    modifier = Modifier.size(24.dp)
-                                                )
-                                            }
-                                        }
-                                    }
-
-                                    val canShuffle = if (showLocal) librarySongs.isNotEmpty() && !isGuest else !isGuest && artistPage?.artist?.shuffleEndpoint != null
-                                    if (canShuffle) {
-                                        androidx.compose.material3.Button(
-                                            onClick = {
-                                                if (showLocal) {
-                                                    val shuffledSongs = librarySongs.shuffled()
-                                                    if (shuffledSongs.isNotEmpty()) {
-                                                        playerConnection.playQueue(
-                                                            ListQueue(
-                                                                title = libraryArtist?.artist?.name ?: "Unknown Artist",
-                                                                items = shuffledSongs.map { it.toMediaItem() }
-                                                            )
-                                                        )
-                                                    }
-                                                } else {
-                                                    artistPage?.artist?.shuffleEndpoint?.let { shuffleEndpoint ->
-                                                        playerConnection.playQueue(YouTubeQueue(shuffleEndpoint))
-                                                    }
-                                                }
-                                            },
-                                            modifier = Modifier
-                                                .padding(horizontal = 16.dp)
-                                                .size(56.dp),
-                                            shape = androidx.compose.foundation.shape.CircleShape,
-                                            colors = ButtonDefaults.buttonColors(
-                                                containerColor = MaterialTheme.colorScheme.primary,
-                                                contentColor = MaterialTheme.colorScheme.onPrimary
-                                            ),
-                                            contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
-                                        ) {
-                                            Icon(
-                                                painter = painterResource(R.drawable.shuffle),
-                                                contentDescription = stringResource(R.string.shuffle),
-                                                modifier = Modifier.size(32.dp)
-                                            )
-                                        }
-                                    }
-
-                                    val isFollowed = libraryArtist?.artist?.bookmarkedAt != null
-
-                                    if (isFollowed) {
-                                        androidx.compose.material3.Button(
-                                            onClick = {
-                                                database.query {
-                                                    val artist = libraryArtist?.artist
-                                                    if (artist != null) {
-                                                        update(artist.toggleLike())
-                                                    }
-                                                }
-                                            },
-                                            modifier = Modifier.size(56.dp),
-                                            shape = androidx.compose.foundation.shape.CircleShape,
-                                            contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
-                                        ) {
-                                            Icon(
-                                                painter = painterResource(R.drawable.subscribed),
-                                                contentDescription = stringResource(R.string.subscribed),
-                                                modifier = Modifier.size(24.dp)
-                                            )
-                                        }
-                                    } else {
-                                        OutlinedButton(
-                                            onClick = {
-                                                database.query {
-                                                    val artist = libraryArtist?.artist
-                                                    if (artist != null) {
-                                                        update(artist.toggleLike())
-                                                    } else {
-                                                        artistPage?.artist?.let {
-                                                            insert(
-                                                                pushkar.chorus.music.db.entities.ArtistEntity(
-                                                                    id = it.id,
-                                                                    name = it.title,
-                                                                    channelId = it.channelId,
-                                                                    thumbnailUrl = it.thumbnail,
-                                                                ).toggleLike()
-                                                            )
-                                                        }
-                                                    }
-                                                }
-                                            },
-                                            modifier = Modifier.size(56.dp),
-                                            shape = androidx.compose.foundation.shape.CircleShape,
-                                            contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
-                                        ) {
-                                            Icon(
-                                                painter = painterResource(R.drawable.subscribe),
-                                                contentDescription = stringResource(R.string.subscribe),
-                                                modifier = Modifier.size(24.dp)
-                                            )
-                                        }
+                        },
+                        onToggleFollow = {
+                            database.query {
+                                val artist = libraryArtist?.artist
+                                if (artist != null) {
+                                    update(artist.toggleLike())
+                                } else {
+                                    artistPage?.artist?.let {
+                                        insert(
+                                            pushkar.chorus.music.db.entities.ArtistEntity(
+                                                id = it.id,
+                                                name = it.title,
+                                                channelId = it.channelId,
+                                                thumbnailUrl = it.thumbnail,
+                                            ).toggleLike()
+                                        )
                                     }
                                 }
                             }
-                            Spacer(modifier = Modifier.height(16.dp))
-                        }
-                    }
-
+                        },
+                        onPlayVideo = {
+                            val watchEndpoint = artistVideoSong?.endpoint
+                                ?: artistPage?.artist?.radioEndpoint
+                            watchEndpoint?.let {
+                                playerConnection.playQueue(YouTubeQueue(it))
+                            }
+                        },
+                        headerOffset = headerOffset
+                    )
+                }
 
                 if (showLocal) {
                     if (librarySongs.isNotEmpty()) {
@@ -688,7 +543,8 @@ fun ArtistScreen(
                                 libraryAlbums
                             }
                             LazyRow(
-                                contentPadding = WindowInsets.systemBars.only(WindowInsetsSides.Horizontal).asPaddingValues(),
+                                contentPadding = WindowInsets.systemBars.only(WindowInsetsSides.Horizontal)
+                                    .asPaddingValues(),
                             ) {
                                 items(
                                     items = filteredLibraryAlbums,
@@ -799,7 +655,8 @@ fun ArtistScreen(
                         } else {
                             item(key = "section_list_${section.title}") {
                                 LazyRow(
-                                    contentPadding = WindowInsets.systemBars.only(WindowInsetsSides.Horizontal).asPaddingValues(),
+                                    contentPadding = WindowInsets.systemBars.only(WindowInsetsSides.Horizontal)
+                                        .asPaddingValues(),
                                 ) {
                                     items(
                                         items = section.items.distinctBy { it.id },
@@ -814,7 +671,7 @@ fun ArtistScreen(
                                             },
                                             isPlaying = isPlaying,
                                             coroutineScope = coroutineScope,
-                                            thumbnailRatio = 1f, 
+                                            thumbnailRatio = 1f,
                                             modifier = Modifier
                                                 .combinedClickable(
                                                     onClick = {
@@ -878,14 +735,14 @@ fun ArtistScreen(
                 if (!showLocal && showArtistDescription && artistPage != null) {
                     val description = artistPage.description
                     val descriptionRuns = artistPage.descriptionRuns
-                    
+
                     if (!description.isNullOrEmpty() || !descriptionRuns.isNullOrEmpty()) {
                         item(key = "section_description") {
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 16.dp, vertical = 16.dp)
-                                    .clip(RoundedCornerShape(16.dp))
+                                    .clip(if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else RoundedCornerShape(16.dp))
                                     .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
                                     .padding(16.dp)
                             ) {
@@ -895,7 +752,7 @@ fun ArtistScreen(
                                     fontWeight = FontWeight.Bold,
                                     modifier = Modifier.padding(bottom = 8.dp)
                                 )
-                                
+
                                 ExpandableText(
                                     text = description.orEmpty(),
                                     runs = descriptionRuns?.map {
@@ -915,8 +772,7 @@ fun ArtistScreen(
 
         val isScrollingUp = lazyListState.isScrollingUp()
         val showLocalFab = librarySongs.isNotEmpty() && libraryArtist?.artist?.isLocal != true
-        
-        
+
         HideOnScrollFAB(
             visible = showLocalFab,
             lazyListState = lazyListState,
@@ -926,113 +782,6 @@ fun ArtistScreen(
                 if (!showLocal && artistPage == null) viewModel.fetchArtistsFromYTM()
             }
         )
-        
-        
-        val canPlayAll = !isGuest && (
-            (showLocal && librarySongs.isNotEmpty()) || 
-            (!showLocal && artistPage?.sections?.any { 
-                (it.items.firstOrNull() as? SongItem)?.album != null 
-            } == true)
-        )
-
-        if (canPlayAll) {
-             androidx.compose.animation.AnimatedVisibility(
-                visible = isScrollingUp,
-                enter = androidx.compose.animation.slideInVertically { it * 2 },
-                exit = androidx.compose.animation.slideOutVertically { it * 2 },
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .windowInsetsPadding(
-                        LocalPlayerAwareWindowInsets.current
-                            .only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal),
-                    )
-                    
-                    
-                    .padding(bottom = if (showLocalFab) 120.dp else 0.dp)
-            ) {
-                val onPlayAllClick: () -> Unit = {
-                     if (showLocal) {
-                         if (librarySongs.isNotEmpty()) {
-                            playerConnection.playQueue(
-                                ListQueue(
-                                    title = libraryArtist?.artist?.name ?: "Unknown Artist",
-                                    items = librarySongs.map { it.toMediaItem() }
-                                )
-                            )
-                        }
-                    } else if (artistPage != null) {
-                        val songSection = artistPage.sections.find { section ->
-                            (section.items.firstOrNull() as? SongItem)?.album != null
-                        }
-                        
-                        val moreEndpoint = songSection?.moreEndpoint
-                        if (moreEndpoint != null) {
-                            coroutineScope.launch(kotlinx.coroutines.Dispatchers.IO) {
-                                val result = YouTube.artistItems(moreEndpoint).getOrNull()
-                                withContext(kotlinx.coroutines.Dispatchers.Main) {
-                                    if (result != null && result.items.isNotEmpty()) {
-                                        val songs = result.items.filterIsInstance<SongItem>().map { it.toMediaItem() }
-                                        playerConnection.playQueue(
-                                            ListQueue(
-                                                title = artistPage.artist.title,
-                                                items = songs
-                                            )
-                                        )
-                                    } else {
-                                        
-                                        val songs = songSection.items.filterIsInstance<SongItem>().map { it.toMediaItem() }
-                                        if (songs.isNotEmpty()) {
-                                            playerConnection.playQueue(
-                                                ListQueue(
-                                                    title = artistPage.artist.title,
-                                                    items = songs
-                                                )
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                            } else if (songSection != null) {
-                            
-                            val songs = songSection.items.filterIsInstance<SongItem>().map { it.toMediaItem() }
-                            playerConnection.playQueue(
-                                ListQueue(
-                                    title = artistPage.artist.title,
-                                    items = songs
-                                )
-                            )
-                        } else {
-                            
-                            val shuffleEndpoint = artistPage.artist.shuffleEndpoint
-                            if (shuffleEndpoint != null) {
-                                val endpoint = if (shuffleEndpoint.playlistId != null) {
-                                    WatchEndpoint(
-                                        playlistId = shuffleEndpoint.playlistId,
-                                        params = null, 
-                                        videoId = null 
-                                    )
-                                } else {
-                                    shuffleEndpoint
-                                }
-                                playerConnection.playQueue(YouTubeQueue(endpoint))
-                            }
-                        }
-                    }
-                }
-
-                androidx.compose.material3.FloatingActionButton(
-                    modifier = Modifier.padding(16.dp),
-                    onClick = onPlayAllClick
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.play),
-                        contentDescription = "Play All",
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
-            }
-        }
-
 
         SnackbarHost(
             hostState = snackbarHostState,
@@ -1043,39 +792,106 @@ fun ArtistScreen(
     }
 
     TopAppBar(
-        title = { if (!transparentAppBar) Text(artistPage?.artist?.title.orEmpty()) },
+        title = { },
         navigationIcon = {
-            IconButton(
-                onClick = navController::navigateUp,
-                onLongClick = navController::backToMain,
+            pushkar.chorus.music.ui.component.IconButton(
+                onClick = { navController.navigateUp() },
+                onLongClick = { navController.backToMain() },
+                colors = IconButtonDefaults.outlinedIconButtonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f)
+                ),
+                modifier = Modifier.border(
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
+                    ),
+                    shape = CircleShape
+                )
             ) {
                 Icon(
-                    painterResource(R.drawable.arrow_back),
-                    contentDescription = null,
+                    painter = painterResource(R.drawable.arrow_back_ios),
+                    contentDescription = null
                 )
             }
         },
         actions = {
-            IconButton(
-                onClick = {
-                    viewModel.artistPage?.artist?.shareLink?.let { link ->
-                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        val clip = ClipData.newPlainText("Artist Link", link)
-                        clipboard.setPrimaryClip(clip)
-                        Toast.makeText(context, R.string.link_copied, Toast.LENGTH_SHORT).show()
-                    }
-                },
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(
-                    painterResource(R.drawable.link),
-                    contentDescription = null,
-                )
+                IconButton(
+                    onClick = {
+                        val shareUrl = artistPage?.artist?.shareLink
+                            ?: "https://music.youtube.com/channel/${viewModel.artistId}"
+                        val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(android.content.Intent.EXTRA_TEXT, shareUrl)
+                        }
+                        context.startActivity(android.content.Intent.createChooser(intent, null))
+                    },
+                    colors = IconButtonDefaults.outlinedIconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f)
+                    ),
+                    modifier = Modifier
+                        .border(
+                            border = BorderStroke(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
+                            ),
+                            shape = CircleShape
+                        )
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ios_share),
+                        contentDescription = stringResource(R.string.share),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
+                IconButton(
+                    onClick = {
+                        menuState.show {
+                            if (showLocal) {
+                                libraryArtist?.let { la ->
+                                    pushkar.chorus.music.ui.menu.ArtistMenu(
+                                        originalArtist = la,
+                                        coroutineScope = coroutineScope,
+                                        onDismiss = menuState::dismiss
+                                    )
+                                }
+                            } else {
+                                artistPage?.artist?.let { artist ->
+                                    YouTubeArtistMenu(
+                                        artist = artist,
+                                        onDismiss = menuState::dismiss
+                                    )
+                                }
+                            }
+                        }
+                    },
+                    colors = IconButtonDefaults.outlinedIconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f)
+                    ),
+                    modifier = Modifier
+                        .border(
+                            border = BorderStroke(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
+                            ),
+                            shape = CircleShape
+                        )
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.more_vert),
+                        contentDescription = stringResource(R.string.more_options),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
         },
-        colors = if (transparentAppBar) {
-            TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
-        } else {
-            TopAppBarDefaults.topAppBarColors()
-        }
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = Color.Transparent,
+            scrolledContainerColor = Color.Transparent
+        )
     )
 }

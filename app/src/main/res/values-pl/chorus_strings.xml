@@ -196,7 +196,7 @@
     <string name="lyrics_romanize_kyrgyz">Romanizuj teksty kirgiskie</string>
     <string name="lyrics_romanize_serbian">Romanizuj teksty serbskie</string>
     <string name="lyrics_romanize_bulgarian">Romanizuj teksty bułgarskie</string>
-    <string name="line_by_line_option_title">EKSPERYMENTALNE: Wykrywanie języka linijka po linijce</string>
+    <string name="line_by_line_option_title">Wykrywanie języka linijka po linijce</string>
     <string name="line_by_line_option_desc">Język cyrylicy będzie wykrywany wiersz po wierszu, zamiast w całej piosence.</string>
     <string name="line_by_line_dialog_title">Jesteś pewien?</string>
     <string name="line_by_line_dialog_desc">Funkcja eksperymentalna.\n\nDomyślnie język jest określany na podstawie całego utworu, ale po włączeniu tej opcji będzie on określany wiersz po wierszu. Umożliwi to działanie utworów wielojęzycznych, ALE język może nie zawsze być poprawny (na przykład, jeśli tekst po ukraińsku nie zawiera liter charakterystycznych dla tego języka, może zostać zromanizowany na rosyjski).\n\nJeśli nie masz problemów, zalecamy wyłączenie tej opcji.</string>

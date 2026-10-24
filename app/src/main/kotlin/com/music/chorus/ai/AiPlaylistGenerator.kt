@@ -32,21 +32,21 @@ object AiPlaylistGenerator {
         onLog: suspend (String) -> Unit
     ): String? = withContext(Dispatchers.IO) {
         val database = InternalDatabase.newInstance(context)
-        
+
         onLog("Connecting to AI Provider...")
 
         val aiProvider = context.dataStore.get(AiProviderKey, "OpenRouter")
-        
+
         val systemPrompt = """
             You are a highly accurate and strict music historian. The user will ask for a playlist based on a specific prompt.
             You must output ONLY a valid JSON object with a creative playlist name and a list of exactly $numberOfSongs songs.
-            
+
             CRITICAL RULES:
             1. YOU MUST VERIFY THE RELEASE YEAR, MOVIE, AND ARTIST/ACTOR for EVERY SINGLE TRACK.
             2. ONLY include songs that EXACTLY match the user's prompt (e.g., if they ask for "90s SRK", do NOT include recent songs like "Gerua" or "Do Anjaane Ajnabi" - every song MUST be from the 1990s AND feature Shahrukh Khan).
-            3. If the user specifies an era (e.g. "90s"), EVERY SINGLE SONG MUST be released in that exact decade (e.g. 1990-1999). 
+            3. If the user specifies an era (e.g. "90s"), EVERY SINGLE SONG MUST be released in that exact decade (e.g. 1990-1999).
             4. You MUST output ONLY raw JSON. Do NOT include any markdown formatting (like ```json), explanations, or conversational text.
-            
+
             Example format:
             {
               "name": "Creative Playlist Name",
@@ -57,7 +57,7 @@ object AiPlaylistGenerator {
         """.trimIndent()
 
         val jsonOutput = if (aiProvider == "Puter") {
-            
+
             onLog("Puter is not implemented yet. Using dummy data.")
             "{}"
         } else {
@@ -109,7 +109,7 @@ object AiPlaylistGenerator {
 
         onLog("Parsing AI response...")
         val cleanJsonStr = jsonOutput.replace("```json", "").replace("```", "").trim()
-        
+
         val parsedJson = try {
             JSONObject(cleanJsonStr)
         } catch (e: Exception) {

@@ -1,9 +1,6 @@
-
-
 package pushkar.chorus.music.ui.component
 
 import androidx.annotation.DrawableRes
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.Indication
 import androidx.compose.foundation.background
@@ -56,7 +53,6 @@ fun ResizableIconButton(
     )
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun IconButton(
     onClick: () -> Unit,

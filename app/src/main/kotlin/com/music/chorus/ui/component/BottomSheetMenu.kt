@@ -1,4 +1,4 @@
-
+@file:Suppress("OPT_IN_USAGE_ERROR", "OPT_IN_USAGE")
 
 package pushkar.chorus.music.ui.component
 
@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomSheetDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalBottomSheetDefaults
@@ -37,6 +36,11 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.fluid.foundation.GlassIntensity
+import pushkar.chorus.music.ui.fluid.foundation.fluidGlass
+import pushkar.chorus.music.ui.theme.isFluidTheme
+
 val LocalMenuState = compositionLocalOf { MenuState() }
 
 @Stable
@@ -57,7 +61,6 @@ class MenuState(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AnimatedBottomSheet(
     isVisible: Boolean,
@@ -112,7 +115,6 @@ fun AnimatedBottomSheet(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomSheetMenu(
     modifier: Modifier = Modifier,
@@ -121,6 +123,20 @@ fun BottomSheetMenu(
 ) {
     val focusManager = LocalFocusManager.current
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+    val isFluid = isFluidTheme()
+    val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+
+    val sheetShape = if (isFluid) {
+        ContinuousRoundedRectangle(topStart = 32.dp, topEnd = 32.dp)
+    } else {
+        BottomSheetDefaults.ExpandedShape
+    }
+
+    val sheetColor = if (isFluid && background == BottomSheetDefaults.ContainerColor) {
+        if (isDark) Color(0xF01C1C1E) else Color(0xF2FFFFFF)
+    } else {
+        background
+    }
 
     AnimatedBottomSheet(
         isVisible = state.isVisible,
@@ -129,18 +145,28 @@ fun BottomSheetMenu(
             state.isVisible = false
         },
         sheetState = sheetState,
-        containerColor = background,
+        shape = sheetShape,
+        containerColor = sheetColor,
         contentColor = MaterialTheme.colorScheme.onSurface,
         dragHandle = {
+            val handleColor = if (isFluid) {
+                if (isDark) Color.White.copy(alpha = 0.25f) else Color.Black.copy(alpha = 0.2f)
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+            }
             Box(
                 modifier = Modifier
-                    .padding(vertical = 12.dp)
-                    .size(width = 40.dp, height = 4.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f))
+                    .padding(vertical = if (isFluid) 10.dp else 12.dp)
+                    .size(width = if (isFluid) 36.dp else 40.dp, height = if (isFluid) 5.dp else 4.dp)
+                    .clip(if (isFluid) ContinuousRoundedRectangle(2.5.dp) else RoundedCornerShape(2.dp))
+                    .background(handleColor)
             )
         },
-        modifier = modifier.fillMaxHeight()
+        modifier = modifier
+            .fillMaxHeight()
+            .let { mod ->
+                if (isFluid) mod.clip(sheetShape).fluidGlass(intensity = GlassIntensity.Standard) else mod
+            }
     ) {
         Column(
             modifier = Modifier

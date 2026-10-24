@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.menu
 
 import android.content.Intent
@@ -119,7 +117,7 @@ fun SongMenu(
     val coroutineScope = rememberCoroutineScope()
     val syncUtils = LocalSyncUtils.current
     val scope = rememberCoroutineScope()
-    
+
     val (enableExportAsMp3) = rememberPreference(key = EnableExportAsMp3Key, defaultValue = false)
     val (exportDirectoryUri) = rememberPreference(key = ExportDirectoryUriKey, defaultValue = "")
     val (exportingSongIds) = rememberPreference(key = ExportingSongIdsKey, defaultValue = "")
@@ -419,7 +417,7 @@ fun SongMenu(
                                 contentDescription = null,
                             )
                         },
-                        onClick = { 
+                        onClick = {
                             showEditDialog = true
                         }
                     ),
@@ -466,10 +464,10 @@ fun SongMenu(
                 items = buildList {
                     add(
                         Material3MenuItemData(
-                            title = { 
+                            title = {
                                 Text(
-                                    text = if (isPinned) "Unpin from Speed dial" else "Pin to Speed dial" 
-                                ) 
+                                    text = if (isPinned) "Unpin from Speed dial" else "Pin to Speed dial"
+                                )
                             },
                             icon = {
                                 Icon(
@@ -641,6 +639,7 @@ fun SongMenu(
                                 }
                             )
                         }
+
                         Download.STATE_QUEUED, Download.STATE_DOWNLOADING -> {
                             Material3MenuItemData(
                                 title = { Text(text = stringResource(R.string.downloading)) },
@@ -660,6 +659,7 @@ fun SongMenu(
                                 }
                             )
                         }
+
                         else -> {
                             Material3MenuItemData(
                                 title = { Text(text = stringResource(R.string.action_download)) },
@@ -707,6 +707,7 @@ fun SongMenu(
                                 },
                                 onClick = {}
                             )
+
                             isExported -> Material3MenuItemData(
                                 title = { Text(text = stringResource(R.string.action_exported)) },
                                 icon = {
@@ -717,6 +718,7 @@ fun SongMenu(
                                 },
                                 onClick = {}
                             )
+
                             else -> Material3MenuItemData(
                                 title = { Text(text = stringResource(R.string.action_export)) },
                                 description = { Text(text = stringResource(R.string.export_desc)) },
@@ -728,7 +730,11 @@ fun SongMenu(
                                 },
                                 onClick = {
                                     if (exportDirectoryUri.isBlank()) {
-                                        android.widget.Toast.makeText(context, context.getString(R.string.export_directory_not_set), android.widget.Toast.LENGTH_SHORT).show()
+                                        android.widget.Toast.makeText(
+                                            context,
+                                            context.getString(R.string.export_directory_not_set),
+                                            android.widget.Toast.LENGTH_SHORT
+                                        ).show()
                                         onDismiss()
                                     } else {
                                         onDismiss()
@@ -766,7 +772,12 @@ fun SongMenu(
                         },
                         onClick = {
                             if (ringtoneViewModel.hasSettingsPermission(context)) {
-                                ringtoneViewModel.showTrimmer(song.id, song.song.title, song.artists.joinToString { it.name }, song.song.duration)
+                                ringtoneViewModel.showTrimmer(
+                                    song.id,
+                                    song.song.title,
+                                    song.artists.joinToString { it.name },
+                                    song.song.duration
+                                )
                             } else {
                                 ringtoneViewModel.requestSettingsPermission(context)
                             }
@@ -838,8 +849,16 @@ fun SongMenu(
                             onClick = {
                                 refetchIconDegree -= 360
                                 cacheViewModel.removeSongFromCache(song.id)
-                                androidx.media3.exoplayer.offline.DownloadService.sendRemoveDownload(context, pushkar.chorus.music.playback.ExoDownloadService::class.java, song.id, false)
-                                val intent = android.content.Intent(context, pushkar.chorus.music.playback.MusicService::class.java).apply {
+                                androidx.media3.exoplayer.offline.DownloadService.sendRemoveDownload(
+                                    context,
+                                    pushkar.chorus.music.playback.ExoDownloadService::class.java,
+                                    song.id,
+                                    false
+                                )
+                                val intent = android.content.Intent(
+                                    context,
+                                    pushkar.chorus.music.playback.MusicService::class.java
+                                ).apply {
                                     action = "pushkar.chorus.music.ACTION_CLEAR_SONG_CACHE"
                                     putExtra("songId", song.id)
                                 }

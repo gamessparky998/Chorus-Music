@@ -42,7 +42,6 @@ class CustomDownloadManager {
                 val fileLength = connection.contentLength
                 val inputStream = connection.inputStream
 
-                
                 val downloadDir = File(
                     context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),
                     "chorus_updates"
@@ -103,5 +102,4 @@ class CustomDownloadManager {
         downloadJob = null
     }
 }
-
 

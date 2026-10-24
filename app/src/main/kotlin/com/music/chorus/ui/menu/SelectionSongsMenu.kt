@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.menu
 
 import android.annotation.SuppressLint
@@ -361,7 +359,7 @@ fun SelectionSongMenu(
                                         }
                                     }
                                     coroutineScope.launch {
-                                        
+
                                         songSelection.forEach { song ->
                                             YouTube.toggleSongLibrary(song.id, false)
                                         }
@@ -374,7 +372,7 @@ fun SelectionSongMenu(
                                         }
                                     }
                                     coroutineScope.launch {
-                                        
+
                                         songSelection.filter { it.song.inLibrary == null }
                                             .forEach { song ->
                                                 YouTube.toggleSongLibrary(song.id, true)
@@ -413,6 +411,7 @@ fun SelectionSongMenu(
                                     }
                                 )
                             }
+
                             Download.STATE_QUEUED, Download.STATE_DOWNLOADING -> {
                                 Material3MenuItemData(
                                     title = { Text(text = stringResource(R.string.downloading)) },
@@ -427,6 +426,7 @@ fun SelectionSongMenu(
                                     }
                                 )
                             }
+
                             else -> {
                                 Material3MenuItemData(
                                     title = { Text(text = stringResource(R.string.action_download)) },
@@ -819,6 +819,7 @@ fun SelectionMediaMetadataMenu(
                                     )
                                 )
                             }
+
                             Download.STATE_QUEUED, Download.STATE_DOWNLOADING -> {
                                 Material3MenuItemData(
                                     title = { Text(text = stringResource(R.string.downloading)) },
@@ -833,6 +834,7 @@ fun SelectionMediaMetadataMenu(
                                     }
                                 )
                             }
+
                             else -> {
                                 Material3MenuItemData(
                                     title = { Text(text = stringResource(R.string.action_download)) },

@@ -2,7 +2,6 @@ package pushkar.chorus.music.ui.screens.playlist
 
 import pushkar.chorus.music.ui.utils.resize
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,9 +23,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -106,7 +106,6 @@ import pushkar.chorus.music.utils.rememberPreference
 import pushkar.chorus.music.viewmodels.CachePlaylistViewModel
 import java.time.LocalDateTime
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun CachePlaylistScreen(
     navController: NavController,
@@ -488,7 +487,7 @@ private fun CachePlaylistHeader(
                         if (LocalConfiguration.current.screenWidthDp > 600) Modifier.size(300.dp)
                         else Modifier.fillMaxWidth().padding(horizontal = 48.dp).aspectRatio(1f)
                     )
-                    .clip(RoundedCornerShape(8.dp))
+                    .clip(if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else RoundedCornerShape(8.dp))
             ) {
                 AsyncImage(
                     model = songs.firstOrNull()?.thumbnailUrl?.resize(1200, 1200),
@@ -498,7 +497,6 @@ private fun CachePlaylistHeader(
                 )
             }
         }
-
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -523,7 +521,6 @@ private fun CachePlaylistHeader(
 
         Spacer(Modifier.height(8.dp))
 
-
         Text(
             text = buildString {
                 append(pluralStringResource(R.plurals.n_song, songs.size, songs.size))
@@ -537,7 +534,6 @@ private fun CachePlaylistHeader(
         )
 
         Spacer(Modifier.height(24.dp))
-
 
         Row(
             modifier = Modifier
@@ -578,7 +574,6 @@ private fun CachePlaylistHeader(
                 )
             }
 
-
             TextButton(
                 onClick = {
                     playerConnection.playQueue(
@@ -611,7 +606,6 @@ private fun CachePlaylistHeader(
                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
             }
-
 
             Surface(
                 onClick = {

@@ -1,6 +1,5 @@
 package pushkar.chorus.music.eq
 
-
 import android.annotation.SuppressLint
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
@@ -10,7 +9,6 @@ import pushkar.chorus.music.eq.data.SavedEQProfile
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
-
 
 @Singleton
 class EqualizerService @Inject constructor() {
@@ -24,29 +22,25 @@ class EqualizerService @Inject constructor() {
         private const val TAG = "EqualizerService"
     }
 
-    
     @OptIn(UnstableApi::class)
     fun addAudioProcessor(processor: CustomEqualizerAudioProcessor) {
         audioProcessors.add(processor)
         Timber.tag(TAG).d("Audio processor added. Total: ${audioProcessors.size}")
 
-        
         if (shouldDisable) {
             processor.disable()
-            
+
         } else if (pendingProfile != null) {
             val profile = pendingProfile!!
             applyProfileToProcessor(processor, profile)
-            
+
         }
     }
 
-    
     fun removeAudioProcessor(processor: CustomEqualizerAudioProcessor) {
         audioProcessors.remove(processor)
     }
 
-    
     @OptIn(UnstableApi::class)
     fun applyProfile(profile: SavedEQProfile): Result<Unit> {
         if (audioProcessors.isEmpty()) {
@@ -57,9 +51,9 @@ class EqualizerService @Inject constructor() {
             return Result.success(Unit)
         }
 
-        pendingProfile = profile 
+        pendingProfile = profile
         shouldDisable = false
-        
+
         var success = true
         var lastError: Exception? = null
 
@@ -83,7 +77,6 @@ class EqualizerService @Inject constructor() {
         processor.applyProfile(parametricEQ)
     }
 
-    
     @OptIn(UnstableApi::class)
     fun disable() {
         if (audioProcessors.isEmpty()) {
@@ -93,7 +86,7 @@ class EqualizerService @Inject constructor() {
             return
         }
 
-        shouldDisable = true 
+        shouldDisable = true
         pendingProfile = null
 
         audioProcessors.forEach { processor ->
@@ -106,18 +99,15 @@ class EqualizerService @Inject constructor() {
         Timber.tag(TAG).d("Equalizer disabled on all processors")
     }
 
-    
     fun isInitialized(): Boolean {
         return audioProcessors.isNotEmpty()
     }
 
-    
     @OptIn(UnstableApi::class)
     fun isEnabled(): Boolean {
         return audioProcessors.any { it.isEnabled() }
     }
 
-    
     fun getEqualizerInfo(): EqualizerInfo {
         return EqualizerInfo(
             supportsUnlimitedBands = true,
@@ -126,14 +116,12 @@ class EqualizerService @Inject constructor() {
         )
     }
 
-    
     fun release() {
-        
+
         audioProcessors.clear()
         Timber.tag(TAG).d("Audio processor references cleared")
     }
 }
-
 
 data class EqualizerInfo(
     val supportsUnlimitedBands: Boolean,

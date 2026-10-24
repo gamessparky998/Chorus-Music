@@ -18,7 +18,6 @@ class TidalCanvasProviderTest {
 
     @Test
     fun testCacheBehavior() = runBlocking {
-        
-        
+
     }
 }

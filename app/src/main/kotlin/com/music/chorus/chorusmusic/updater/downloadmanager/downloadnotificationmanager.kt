@@ -17,7 +17,7 @@ object DownloadNotificationManager {
     private lateinit var appContext: Context
 
     const val CHANNEL_ID = "download_progress_channel"
-    private const val CHANNEL_NAME = "Download Progress" 
+    private const val CHANNEL_NAME = "Download Progress"
     const val NOTIFICATION_ID = 5678
 
     fun initialize(context: Context) {
@@ -40,7 +40,6 @@ object DownloadNotificationManager {
         }
     }
 
-    
     fun getDownloadStartingNotification(version: String, fileSize: String): Notification {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
             buildDownloadStartingModern(version, fileSize)
@@ -49,7 +48,6 @@ object DownloadNotificationManager {
         }
     }
 
-    
     fun getDownloadProgressNotification(progress: Int, version: String): Notification {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
             buildDownloadProgressModern(progress, version)
@@ -58,7 +56,6 @@ object DownloadNotificationManager {
         }
     }
 
-    
     fun showDownloadComplete(version: String, filePath: String) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
             showDownloadCompleteModern(version, filePath)
@@ -67,7 +64,6 @@ object DownloadNotificationManager {
         }
     }
 
-    
     fun showDownloadFailed(version: String, errorMessage: String) {
         val notification = NotificationCompat.Builder(appContext, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.stat_sys_warning)
@@ -85,25 +81,23 @@ object DownloadNotificationManager {
         notificationManager.notify(NOTIFICATION_ID, notification)
     }
 
-    
     fun cancelNotification() {
         notificationManager.cancel(NOTIFICATION_ID)
     }
 
-    
     @RequiresApi(Build.VERSION_CODES.BAKLAVA)
     private fun buildDownloadStartingModern(version: String, fileSize: String): Notification {
         val progressStyle = Notification.ProgressStyle()
             .also {
-                
+
                 for (i in 0 until 4) {
                     it.addProgressSegment(
                         Notification.ProgressStyle.Segment(25)
                             .setColor(
                                 if (i % 2 == 0) {
-                                    "#4285F4".toColorInt() 
+                                    "#4285F4".toColorInt()
                                 } else {
-                                    "#8E24AA".toColorInt() 
+                                    "#8E24AA".toColorInt()
                                 }
                             )
                     )
@@ -112,7 +106,7 @@ object DownloadNotificationManager {
             .setProgress(0)
 
         val builder = Notification.Builder(appContext, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground) 
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(appContext.getString(R.string.downloading_update))
             .setContentText(appContext.getString(R.string.version_file_size, version, fileSize))
             .setOngoing(true)
@@ -122,7 +116,6 @@ object DownloadNotificationManager {
             .setCategory(Notification.CATEGORY_PROGRESS)
             .setWhen(System.currentTimeMillis())
 
-        
         setRequestPromotedOngoingSafely(builder, true)
         setShortCriticalTextSafely(builder, appContext.getString(R.string.starting))
 
@@ -133,15 +126,15 @@ object DownloadNotificationManager {
     private fun buildDownloadProgressModern(progress: Int, version: String): Notification {
         val progressStyle = Notification.ProgressStyle()
             .also {
-                
+
                 for (i in 0 until 4) {
                     it.addProgressSegment(
                         Notification.ProgressStyle.Segment(25)
                             .setColor(
                                 if (i % 2 == 0) {
-                                    "#4285F4".toColorInt() 
+                                    "#4285F4".toColorInt()
                                 } else {
-                                    "#8E24AA".toColorInt() 
+                                    "#8E24AA".toColorInt()
                                 }
                             )
                     )
@@ -150,7 +143,7 @@ object DownloadNotificationManager {
             .setProgress(progress)
 
         val builder = Notification.Builder(appContext, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground) 
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(appContext.getString(R.string.downloading_update))
             .setContentText(appContext.getString(R.string.version_progress, version, progress))
             .setOngoing(progress < 100)
@@ -160,7 +153,6 @@ object DownloadNotificationManager {
             .setCategory(Notification.CATEGORY_PROGRESS)
             .setWhen(System.currentTimeMillis())
 
-        
         setRequestPromotedOngoingSafely(builder, progress < 100)
         setShortCriticalTextSafely(builder, "$progress%")
 
@@ -191,15 +183,15 @@ object DownloadNotificationManager {
 
         val progressStyle = Notification.ProgressStyle()
             .also {
-                
+
                 for (i in 0 until 4) {
                     it.addProgressSegment(
                         Notification.ProgressStyle.Segment(25)
                             .setColor(
                                 if (i % 2 == 0) {
-                                    "#4285F4".toColorInt() 
+                                    "#4285F4".toColorInt()
                                 } else {
-                                    "#8E24AA".toColorInt() 
+                                    "#8E24AA".toColorInt()
                                 }
                             )
                     )
@@ -208,7 +200,7 @@ object DownloadNotificationManager {
             .setProgress(100)
 
         val builder = Notification.Builder(appContext, CHANNEL_ID)
-            .setSmallIcon(R.drawable.updated) 
+            .setSmallIcon(R.drawable.updated)
             .setContentTitle(appContext.getString(R.string.update_ready))
             .setContentText(appContext.getString(R.string.tap_to_install_version, version))
             .setAutoCancel(true)
@@ -218,7 +210,6 @@ object DownloadNotificationManager {
             .setCategory(Notification.CATEGORY_STATUS)
             .setWhen(System.currentTimeMillis())
 
-        
         setRequestPromotedOngoingSafely(builder, false)
         setShortCriticalTextSafely(builder, appContext.getString(R.string.done))
 
@@ -235,11 +226,11 @@ object DownloadNotificationManager {
     }
 
     private fun setRequestPromotedOngoingSafely(builder: Notification.Builder, promoted: Boolean) {
-        
+
         builder.getExtras().putBoolean("android.requestPromotedOngoing", promoted)
 
         try {
-            
+
             val methodNames = arrayOf("setRequestPromotedOngoing", "setPromotedOngoing", "setOngoingActivity")
             for (name in methodNames) {
                 try {
@@ -253,7 +244,7 @@ object DownloadNotificationManager {
 
     private fun buildDownloadStartingLegacy(version: String, fileSize: String): Notification {
         return NotificationCompat.Builder(appContext, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground) 
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(appContext.getString(R.string.downloading_update))
             .setContentText(appContext.getString(R.string.version_file_size, version, fileSize))
             .setProgress(100, 0, false)
@@ -267,7 +258,7 @@ object DownloadNotificationManager {
 
     private fun buildDownloadProgressLegacy(progress: Int, version: String): Notification {
         return NotificationCompat.Builder(appContext, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher) 
+            .setSmallIcon(R.drawable.ic_launcher)
             .setContentTitle(appContext.getString(R.string.downloading_update))
             .setContentText(appContext.getString(R.string.version_progress, version, progress))
             .setProgress(100, progress, false)
@@ -307,7 +298,7 @@ object DownloadNotificationManager {
         )
 
         val notification = NotificationCompat.Builder(appContext, CHANNEL_ID)
-            .setSmallIcon(R.drawable.updated) 
+            .setSmallIcon(R.drawable.updated)
             .setContentTitle(appContext.getString(R.string.update_ready))
             .setContentText(appContext.getString(R.string.tap_to_install_version, version))
             .setProgress(0, 0, false)

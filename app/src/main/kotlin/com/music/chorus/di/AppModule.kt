@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.di
 
 import android.content.Context
@@ -40,7 +38,6 @@ object AppModule {
     fun provideDao(
         database: InternalDatabase,
     ) = database.dao
-
 
     @Singleton
     @Provides

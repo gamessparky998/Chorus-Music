@@ -30,7 +30,6 @@ android {
     compileSdk = 36
     ndkVersion = "27.0.12077973"
 
-
     defaultConfig {
         applicationId = "pushkar.chorus.music"
         minSdk = 26
@@ -47,7 +46,6 @@ android {
         buildConfigField("String", "LASTFM_API_KEY", "\"$lastFmKey\"")
         buildConfigField("String", "LASTFM_SECRET", "\"$lastFmSecret\"")
 
-        // GitHub OAuth keys
         val githubClientId = localProperties.getProperty("GH_CLIENT_ID") ?: System.getenv("GH_CLIENT_ID") ?: ""
         val githubClientSecret = localProperties.getProperty("GH_CLIENT_SECRET") ?: System.getenv("GH_CLIENT_SECRET") ?: ""
         buildConfigField("String", "GH_CLIENT_ID", "\"$githubClientId\"")
@@ -56,7 +54,6 @@ android {
         buildConfigField("String", "FLOW_NEURO_BASE_URL", project.findProperty("FLOW_NEURO_BASE_URL")?.toString()?.let { "\"$it\"" } ?: "\"https://api.flowneuroengine.com\"")
         buildConfigField("String", "FLOW_NEURO_API_KEY", project.findProperty("FLOW_NEURO_API_KEY")?.toString()?.let { "\"$it\"" } ?: "\"\"")
 
-//add nightly build label support
         val isNightly = project.hasProperty("nightly") && project.property("nightly") == "true"
         buildConfigField("Boolean", "IS_NIGHTLY", isNightly.toString())
 
@@ -69,7 +66,7 @@ android {
         buildConfigField("String", "DISCORD_REDIRECT_SCHEME", "\"$discordRedirectScheme\"")
         buildConfigField("Boolean", "CAST_AVAILABLE", "false")
         manifestPlaceholders["discordRedirectScheme"] = discordRedirectScheme
-        
+
         buildConfigField("String", "ARCHITECTURE", "\"universal\"")
     }
 
@@ -100,14 +97,13 @@ android {
             isShrinkResources = true
             isCrunchPngs = false
             isDebuggable = false
-            
-            // Use the release keystore if it exists, otherwise sign with debug keystore for CI so it's installable
+
             signingConfig = if (file("keystore/release.keystore").exists()) {
                 signingConfigs.getByName("release")
             } else {
                 signingConfigs.getByName("debug")
             }
-            
+
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -132,6 +128,7 @@ android {
         jvmToolchain(21)
         compilerOptions {
             freeCompilerArgs.add("-Xannotation-default-target=param-property")
+            freeCompilerArgs.add("-Xmetadata-version=2.3.0")
             jvmTarget.set(JvmTarget.JVM_21)
         }
     }
@@ -227,18 +224,16 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 }
 
 dependencies {
-    // Firebase - GMS flavor only (excluded from F-Droid / FOSS builds)
+
     implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-crashlytics")
 
-    // Google Drive Sync - GMS flavor only
     implementation(libs.play.services.auth)
     implementation(libs.google.api.client.android)
     implementation(libs.google.api.services.drive) {
         exclude(group = "org.apache.httpcomponents")
     }
-
 
     implementation(libs.haze)
     implementation(libs.guava)
@@ -285,7 +280,6 @@ dependencies {
     implementation(libs.media3.ui)
     implementation(libs.media3.okhttp)
 
-    // Google Cast - only included in GMS flavor (not available in F-Droid/FOSS builds)
     implementation(libs.media3.cast)
     implementation(libs.mediarouter)
     implementation(libs.cast.framework)
@@ -301,6 +295,7 @@ dependencies {
     implementation(libs.hilt)
     implementation(libs.jsoup)
     ksp(libs.hilt.compiler)
+    annotationProcessor("org.jetbrains.kotlin:kotlin-metadata-jvm:${libs.versions.kotlin.get()}")
 
     implementation(project(":innertube"))
     implementation(project(":kugou"))
@@ -314,7 +309,7 @@ dependencies {
     implementation(project(":chorusmusiccanvas"))
     implementation(project(":paxsenixlyrics"))
     implementation(project(":unison"))
-
+    implementation(project(":hig"))
 
     implementation(libs.ktor.client.core)
     implementation(libs.retrofit)
@@ -323,7 +318,6 @@ dependencies {
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.serialization.json)
 
-    // Protobuf for message serialization (lite version for Android)
     implementation(libs.protobuf.javalite)
     implementation(libs.protobuf.kotlin.lite)
 
@@ -336,4 +330,13 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.ffmpeg.kit.audio)
 
+}
+
+configurations.all {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "org.jetbrains.kotlin" && requested.name == "kotlin-metadata-jvm") {
+            useVersion(libs.versions.kotlin.get())
+            because("Required for Hilt Kotlin metadata compatibility")
+        }
+    }
 }

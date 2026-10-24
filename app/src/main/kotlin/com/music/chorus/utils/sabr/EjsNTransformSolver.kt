@@ -18,13 +18,11 @@ import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-
 object EjsNTransformSolver {
     private const val TAG = "chorusmusic_EjsNSolver"
 
     private var solverWebView: SolverWebView? = null
 
-    
     suspend fun transformNParamInUrl(url: String): String {
         val nMatch = Regex("[?&]n=([^&]+)").find(url)
         if (nMatch == null) {

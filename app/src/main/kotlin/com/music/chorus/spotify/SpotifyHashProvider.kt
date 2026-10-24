@@ -1,9 +1,6 @@
-
-
 package pushkar.chorus.music.spotify
 
 import java.util.concurrent.ConcurrentHashMap
-
 
 object SpotifyHashProvider {
 
@@ -44,16 +41,13 @@ object SpotifyHashProvider {
         }
     }
 
-    
     fun getHash(operationName: String): String =
         hashes[operationName]?.hash
             ?: error("No hash registered for GQL operation: $operationName")
 
-    
     fun getPreviousHash(operationName: String): String? =
         hashes[operationName]?.previousHash
 
-    
     fun updateHashes(
         remoteHashes: Map<String, RemoteHashEntry>,
         source: HashSource,

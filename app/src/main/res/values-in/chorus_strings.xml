@@ -181,7 +181,7 @@
     <string name="lyrics_romanize_kyrgyz">Romanisasi lirik Kirgiz</string>
     <string name="lyrics_romanize_serbian">Romanisasi lirik Serbia</string>
     <string name="lyrics_romanize_bulgarian">Romanisasi lirik Bulgaria</string>
-    <string name="line_by_line_option_title">EKSPERIMENTAL: Deteksi bahasa baris per baris</string>
+    <string name="line_by_line_option_title">Deteksi bahasa baris per baris</string>
     <string name="line_by_line_option_desc">Bahasa Sirilik akan dideteksi baris per baris alih-alih keseluruhan lagu.</string>
     <string name="romanize_current_track">Romanisasi lirik lagu saat ini</string>
     <string name="settings_section_ui">Antarmuka</string>

@@ -10,7 +10,6 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.pow
 
-
 @UnstableApi
 @SuppressWarnings("Deprecated")
 class CustomEqualizerAudioProcessor : AudioProcessor {
@@ -26,7 +25,7 @@ class CustomEqualizerAudioProcessor : AudioProcessor {
     private var inputEnded = false
 
     private var filters: List<BiquadFilter> = emptyList()
-    private var preampGain: Double = 1.0  
+    private var preampGain: Double = 1.0
     private var pendingProfile: ParametricEQ? = null
 
     companion object {
@@ -34,31 +33,27 @@ class CustomEqualizerAudioProcessor : AudioProcessor {
         private val EMPTY_BUFFER: ByteBuffer = ByteBuffer.allocateDirect(0).order(ByteOrder.nativeOrder())
     }
 
-    
     @Synchronized
     fun applyProfile(parametricEQ: ParametricEQ) {
         if (sampleRate == 0) {
-            
+
             Timber.tag(TAG)
                 .d("Audio processor not configured yet. Storing profile as pending with ${parametricEQ.bands.size} bands")
             pendingProfile = parametricEQ
             return
         }
 
-        
         preampGain = 10.0.pow(parametricEQ.preamp / 20.0)
 
         createFilters(parametricEQ.bands)
         equalizerEnabled = true
 
-        
         filters.forEach { it.reset() }
 
         Timber.tag(TAG)
             .d("Applied EQ profile with ${filters.size} bands and ${parametricEQ.preamp} dB preamp")
     }
 
-    
     @Synchronized
     fun disable() {
         equalizerEnabled = false
@@ -68,17 +63,14 @@ class CustomEqualizerAudioProcessor : AudioProcessor {
         Timber.tag(TAG).d("Equalizer disabled")
     }
 
-    
     fun isEnabled(): Boolean = equalizerEnabled
 
-    
     private fun createFilters(bands: List<ParametricEQBand>) {
         if (sampleRate == 0) {
             Timber.tag(TAG).w("Cannot create filters: sample rate not set")
             return
         }
 
-        
         filters = bands
             .filter { it.enabled && it.frequency < sampleRate / 2.0 }
             .map { band ->
@@ -103,7 +95,6 @@ class CustomEqualizerAudioProcessor : AudioProcessor {
         Timber.tag(TAG)
             .d("Configured: sampleRate=$sampleRate, channels=$channelCount, encoding=$encoding")
 
-        
         pendingProfile?.let { profile ->
             preampGain = 10.0.pow(profile.preamp / 20.0)
             createFilters(profile.bands)
@@ -113,10 +104,9 @@ class CustomEqualizerAudioProcessor : AudioProcessor {
                 .d("Applied pending profile with ${filters.size} bands and ${profile.preamp} dB preamp")
         }
 
-        
         if (encoding != C.ENCODING_PCM_16BIT || channelCount > 2) {
             val exception = AudioProcessor.UnhandledAudioFormatException(inputAudioFormat)
-            throw exception 
+            throw exception
         }
 
         isActive = true
@@ -127,11 +117,10 @@ class CustomEqualizerAudioProcessor : AudioProcessor {
 
     override fun queueInput(inputBuffer: ByteBuffer) {
         if (!equalizerEnabled || filters.isEmpty()) {
-            
+
             val remaining = inputBuffer.remaining()
             if (remaining == 0) return
 
-            
             if (outputBuffer.capacity() < remaining) {
                 outputBuffer = ByteBuffer.allocateDirect(remaining).order(ByteOrder.nativeOrder())
             } else {
@@ -147,83 +136,69 @@ class CustomEqualizerAudioProcessor : AudioProcessor {
             return
         }
 
-        
-        
         if (outputBuffer === EMPTY_BUFFER || outputBuffer === inputBuffer) {
-            
+
             outputBuffer = ByteBuffer.allocateDirect(inputSize).order(ByteOrder.nativeOrder())
         } else if (outputBuffer.capacity() < inputSize) {
-            
+
             outputBuffer = ByteBuffer.allocateDirect(inputSize).order(ByteOrder.nativeOrder())
         } else {
-            
+
             outputBuffer.clear()
         }
 
-        
         when (encoding) {
             C.ENCODING_PCM_16BIT -> {
-                
-                
+
                 processAudioBuffer16Bit(inputBuffer, outputBuffer)
             }
             else -> {
-                
+
                 outputBuffer.put(inputBuffer)
             }
         }
 
         outputBuffer.flip()
-        
+
     }
 
-    
     private fun processAudioBuffer16Bit(input: ByteBuffer, output: ByteBuffer) {
-        
-        
-        
 
-        val sampleCount = input.remaining() / 2 
+        val sampleCount = input.remaining() / 2
 
         repeat(sampleCount / channelCount) {
             when (channelCount) {
                 1 -> {
-                    
-                    val sample = input.getShort().toDouble() / 32768.0 
+
+                    val sample = input.getShort().toDouble() / 32768.0
                     var processed = sample
 
-                    
                     for (filter in filters) {
                         processed = filter.processSample(processed)
                     }
 
-                    
                     processed *= preampGain
 
-                    
                     val outputSample = (processed * 32768.0).coerceIn(-32768.0, 32767.0).toInt().toShort()
                     output.putShort(outputSample)
                 }
                 2 -> {
-                    
+
                     val leftSample = input.getShort().toDouble() / 32768.0
                     val rightSample = input.getShort().toDouble() / 32768.0
 
                     var processedLeft = leftSample
                     var processedRight = rightSample
 
-                    
                     for (filter in filters) {
                         val (left, right) = filter.processStereo(processedLeft, processedRight)
                         processedLeft = left
                         processedRight = right
                     }
 
-                    
                     processedLeft *= preampGain
                     processedRight *= preampGain
 
-                    
                     val outputLeft = (processedLeft * 32768.0).coerceIn(-32768.0, 32767.0).toInt().toShort()
                     val outputRight = (processedRight * 32768.0).coerceIn(-32768.0, 32767.0).toInt().toShort()
 
@@ -231,7 +206,7 @@ class CustomEqualizerAudioProcessor : AudioProcessor {
                     output.putShort(outputRight)
                 }
                 else -> {
-                    
+
                     repeat(channelCount) {
                         output.putShort(input.getShort())
                     }
@@ -241,7 +216,7 @@ class CustomEqualizerAudioProcessor : AudioProcessor {
     }
 
     override fun getOutput(): ByteBuffer {
-        
+
         val buffer = outputBuffer
         outputBuffer = EMPTY_BUFFER
         return buffer
@@ -256,7 +231,6 @@ class CustomEqualizerAudioProcessor : AudioProcessor {
         outputBuffer = EMPTY_BUFFER
         inputEnded = false
 
-        
         filters.forEach { it.reset() }
     }
 

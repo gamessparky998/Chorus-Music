@@ -6,9 +6,6 @@ import java.security.MessageDigest
 object FunctionNameExtractor {
     private const val TAG = "chorusmusic_CipherFnExtract"
 
-    
-    
-    
     private val PLAYER_HASH_PATTERNS = listOf(
         Regex("""jsUrl['":\s]+[^"']*?/player/([a-f0-9]{8})/"""),
         Regex("""player_ias\.vflset/[^/]+/([a-f0-9]{8})/"""),
@@ -16,9 +13,9 @@ object FunctionNameExtractor {
     )
 
     private val SIG_FUNCTION_PATTERNS = listOf(
-        
+
         Regex("""&&\s*\(\s*[a-zA-Z0-9$]+\s*=\s*([a-zA-Z0-9$]+)\s*\(\s*(\d+)\s*,\s*decodeURIComponent\s*\(\s*[a-zA-Z0-9$]+\s*\)"""),
-        
+
         Regex("""\b[cs]\s*&&\s*[adf]\.set\([^,]+\s*,\s*encodeURIComponent\(([a-zA-Z0-9$]+)\("""),
         Regex("""\b[a-zA-Z0-9]+\s*&&\s*[a-zA-Z0-9]+\.set\([^,]+\s*,\s*encodeURIComponent\(([a-zA-Z0-9$]+)\("""),
         Regex("""\bm=([a-zA-Z0-9${'$'}]{2,})\(decodeURIComponent\(h\.s\)\)"""),
@@ -26,17 +23,14 @@ object FunctionNameExtractor {
         Regex("""\bc\s*&&\s*[a-z]\.set\([^,]+\s*,\s*encodeURIComponent\(([a-zA-Z0-9$]+)\("""),
     )
 
-    
-    
-    
     private val N_FUNCTION_PATTERNS = listOf(
-        
+
         Regex("""\.get\("n"\)\)&&\(b=([a-zA-Z0-9$]+)(?:\[(\d+)\])?\(([a-zA-Z0-9])\)"""),
-        
+
         Regex("""\.get\("n"\)\)\s*&&\s*\(([a-zA-Z0-9$]+)\s*=\s*([a-zA-Z0-9$]+)(?:\[(\d+)\])?\(\1\)"""),
-        
+
         Regex("""\(\s*([a-zA-Z0-9$]+)\s*=\s*String\.fromCharCode\(110\)"""),
-        
+
         Regex("""([a-zA-Z0-9$]+)\s*=\s*function\([a-zA-Z0-9]\)\s*\{[^}]*?enhanced_except_"""),
     )
 
@@ -108,14 +102,14 @@ object FunctionNameExtractor {
             if (match != null) {
                 when (index) {
                     0 -> {
-                        
+
                         val name = match.groupValues[1]
                         val arrayIdx = match.groupValues[2].toIntOrNull()
                         Timber.tag(TAG).d("N-function found with pattern $index: $name (arrayIndex=$arrayIdx)")
                         return NFunctionInfo(name, arrayIdx)
                     }
                     1 -> {
-                        
+
                         val name = match.groupValues[2]
                         val arrayIdx = match.groupValues[3].toIntOrNull()
                         Timber.tag(TAG).d("N-function found with pattern $index: $name (arrayIndex=$arrayIdx)")

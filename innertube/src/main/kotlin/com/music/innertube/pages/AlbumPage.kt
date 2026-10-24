@@ -83,7 +83,7 @@ data class AlbumPage(
         }
 
         fun getSong(renderer: MusicResponsiveListItemRenderer, album: AlbumItem? = null): SongItem? {
-            
+
             val libraryTokens = PageHelper.extractLibraryTokensFromMenuItems(renderer.menu?.menuRenderer?.items)
 
             return SongItem(
@@ -103,7 +103,7 @@ data class AlbumPage(
                         id = it.navigationEndpoint?.browseEndpoint?.browseId
                     )
                 }.ifEmpty {
-                    
+
                     album?.artists ?: emptyList()
                 },
                 album = album?.let {

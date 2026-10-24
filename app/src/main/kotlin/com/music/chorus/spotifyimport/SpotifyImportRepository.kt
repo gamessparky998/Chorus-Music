@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.spotifyimport
 
 import android.content.Context
@@ -17,12 +15,14 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import pushkar.chorus.music.R
+import pushkar.chorus.music.constants.ExportedSongIdsKey
 import pushkar.chorus.music.constants.SpotifyAccessTokenExpiresAtKey
 import pushkar.chorus.music.constants.SpotifyAccessTokenKey
 import pushkar.chorus.music.constants.SpotifyAccountAvatarUrlKey
 import pushkar.chorus.music.constants.SpotifyAccountNameKey
 import pushkar.chorus.music.constants.SpotifySpDcKey
 import pushkar.chorus.music.constants.SpotifySpKeyKey
+import androidx.datastore.preferences.core.edit
 import pushkar.chorus.music.db.MusicDatabase
 import pushkar.chorus.music.db.entities.PlaylistEntity
 import pushkar.chorus.music.db.entities.PlaylistSongMap
@@ -570,13 +570,10 @@ class SpotifyImportRepository @Inject constructor(
                 update(entity)
             }
 
-            
-            
             tracks.forEach { metadata ->
                 insert(metadata)
             }
 
-            
             clearPlaylist(source.localPlaylistId)
             tracks.forEachIndexed { index, metadata ->
                 insert(
@@ -589,6 +586,20 @@ class SpotifyImportRepository @Inject constructor(
                 )
             }
             update(entity.copy(lastUpdateTime = now))
+        }
+
+        if (tracks.isNotEmpty()) {
+            runCatching {
+                context.dataStore.edit { preferences ->
+                    val current = preferences[ExportedSongIdsKey].orEmpty()
+                        .split(',')
+                        .map { it.trim() }
+                        .filter { it.isNotBlank() }
+                    val newIds = tracks.map { it.id }
+                    val updated = (newIds + current).distinct()
+                    preferences[ExportedSongIdsKey] = updated.take(2000).joinToString(",")
+                }
+            }
         }
     }
 

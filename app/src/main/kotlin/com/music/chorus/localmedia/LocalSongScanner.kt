@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.localmedia
 
 import android.content.ContentUris

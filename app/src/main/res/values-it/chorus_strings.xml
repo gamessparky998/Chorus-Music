@@ -188,7 +188,7 @@
     <string name="lyrics_romanize_kyrgyz">Romanizza testo in kirghiso</string>
     <string name="lyrics_romanize_serbian">Romanizza testo in serbo</string>
     <string name="lyrics_romanize_bulgarian">Romanizza testo in bulgaro</string>
-    <string name="line_by_line_option_title">SPERIMENTALE: Determina la lingua linea per linea</string>
+    <string name="line_by_line_option_title">Determina la lingua linea per linea</string>
     <string name="line_by_line_option_desc">La lingua in cirillico verrà determinata linea per linea e non per tutto il brano.</string>
     <string name="line_by_line_dialog_title">Sei sicuro?</string>
     <string name="line_by_line_dialog_enable">Attiva</string>

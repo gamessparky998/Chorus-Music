@@ -1,5 +1,3 @@
-
-
 package pushkar.chorus.music.ui.screens
 
 import android.annotation.SuppressLint
@@ -11,7 +9,6 @@ import android.webkit.WebViewClient
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -46,7 +43,7 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 
 @SuppressLint("SetJavaScriptEnabled")
-@OptIn(ExperimentalMaterial3Api::class, DelicateCoroutinesApi::class)
+@OptIn(DelicateCoroutinesApi::class)
 @Composable
 fun LoginScreen(
     navController: NavController,
@@ -79,10 +76,9 @@ fun LoginScreen(
                             hasCompletedLogin = true
 
                             coroutineScope.launch {
-                                
+
                                 delay(500)
 
-                                
                                 YouTube.cookie = innerTubeCookie
                                 YouTube.dataSyncId = dataSyncId
                                 YouTube.visitorData = visitorData
@@ -96,7 +92,6 @@ fun LoginScreen(
 
                                     Timber.d("Login: Successfully logged in as ${it.name}, restarting app...")
 
-                                    
                                     webView?.apply {
                                         stopLoading()
                                         clearHistory()
@@ -104,14 +99,13 @@ fun LoginScreen(
                                         clearFormData()
                                     }
 
-                                    
                                     val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
                                     intent?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
                                     context.startActivity(intent)
                                     Runtime.getRuntime().exit(0)
                                 }.onFailure {
                                     Timber.e(it, "Login: Authentication validation failed")
-                                    hasCompletedLogin = false 
+                                    hasCompletedLogin = false
                                     reportException(it)
                                 }
                             }

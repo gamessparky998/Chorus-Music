@@ -157,8 +157,6 @@ object Paxsenix {
             throw IllegalStateException("No tracks found on Paxsenix")
         }
 
-        
-        
         val candidates = allResults.take(5)
         val scope = CoroutineScope(Dispatchers.IO)
         val jobs = candidates.map { (result, score) ->
@@ -359,7 +357,6 @@ object Paxsenix {
             }
         }
 
-        
         val candidates = scoredResults.take(3)
         val scope = CoroutineScope(Dispatchers.IO)
         val jobs = candidates.map { (result, _) ->
