@@ -151,6 +151,7 @@ fun UpdateScreen(navController: NavHostController) {
                         isDownloading = true
                         downloadProgress = workInfo.progress.getFloat("progress", 0f)
                     }
+
                     WorkInfo.State.SUCCEEDED -> {
                         isDownloading = false
                         isDownloadComplete = true
@@ -159,16 +160,19 @@ fun UpdateScreen(navController: NavHostController) {
                             downloadedFile = File(filePath)
                         }
                     }
+
                     WorkInfo.State.FAILED -> {
                         isDownloading = false
                         scope.launch {
                             snackbarHostState.showSnackbar(context.getString(R.string.download_failed))
                         }
                     }
+
                     WorkInfo.State.CANCELLED -> {
                         isDownloading = false
                         downloadProgress = 0f
                     }
+
                     else -> {}
                 }
             }
@@ -192,7 +196,10 @@ fun UpdateScreen(navController: NavHostController) {
             checkForUpdate(
                 context = context,
                 onSuccess = { tag, isAvailable, changelog, size, date, description, imageUrl, apkUrl ->
-                    saveLastCheckedTime(context, LocalDateTime.now().format(DateTimeFormatter.ofPattern("d MMMM yyyy, h:mm a")))
+                    saveLastCheckedTime(
+                        context,
+                        LocalDateTime.now().format(DateTimeFormatter.ofPattern("d MMMM yyyy, h:mm a"))
+                    )
                     saveUpdateAvailableState(context, isAvailable)
                     status = if (isAvailable) {
                         ChorusUpdateStatus.Available(
@@ -298,7 +305,9 @@ fun UpdateScreen(navController: NavHostController) {
                                     enabled = !isDownloading
                                 )
                                 AnimatedActionButton(
-                                    text = if (isDownloading) "${(downloadProgress * 100).toInt()}%" else if (isDownloadComplete) stringResource(R.string.install) else stringResource(R.string.update_action_button),
+                                    text = if (isDownloading) "${(downloadProgress * 100).toInt()}%" else if (isDownloadComplete) stringResource(
+                                        R.string.install
+                                    ) else stringResource(R.string.update_action_button),
                                     onClick = {
                                         if (isDownloadComplete) {
                                             val file = downloadedFile
@@ -311,14 +320,19 @@ fun UpdateScreen(navController: NavHostController) {
                                             file.let { f ->
                                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                                                     if (!context.packageManager.canRequestPackageInstalls()) {
-                                                        val intent = Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).apply {
-                                                            data = Uri.parse("package:${context.packageName}")
-                                                        }
+                                                        val intent =
+                                                            Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).apply {
+                                                                data = Uri.parse("package:${context.packageName}")
+                                                            }
                                                         context.startActivity(intent)
                                                         return@let
                                                     }
                                                 }
-                                                val uri = FileProvider.getUriForFile(context, "${context.packageName}.FileProvider", file)
+                                                val uri = FileProvider.getUriForFile(
+                                                    context,
+                                                    "${context.packageName}.FileProvider",
+                                                    file
+                                                )
                                                 val installIntent = Intent(Intent.ACTION_VIEW).apply {
                                                     setDataAndType(uri, "application/vnd.android.package-archive")
                                                     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
@@ -327,14 +341,21 @@ fun UpdateScreen(navController: NavHostController) {
                                                 context.startActivity(installIntent)
                                             }
                                         } else {
-                                            val urlToDownload = currentStatus.apkUrl ?: "https://github.com/slice-of-fun/Chorus-Music/releases/download/${currentStatus.version}/chorusmusic.apk"
+                                            val urlToDownload = currentStatus.apkUrl
+                                                ?: "https://github.com/chorus-mu/Chorus-Music/releases/download/${currentStatus.version}/chorusmusic.apk"
 
                                             val constraints = Constraints.Builder()
                                                 .setRequiredNetworkType(NetworkType.CONNECTED)
                                                 .build()
 
                                             val downloadRequest = OneTimeWorkRequestBuilder<UpdateDownloadWorker>()
-                                                .setInputData(workDataOf("apk_url" to urlToDownload, "version" to currentStatus.version, "file_size" to currentStatus.size))
+                                                .setInputData(
+                                                    workDataOf(
+                                                        "apk_url" to urlToDownload,
+                                                        "version" to currentStatus.version,
+                                                        "file_size" to currentStatus.size
+                                                    )
+                                                )
                                                 .setConstraints(constraints)
                                                 .setBackoffCriteria(
                                                     BackoffPolicy.EXPONENTIAL,
@@ -343,7 +364,11 @@ fun UpdateScreen(navController: NavHostController) {
                                                 )
                                                 .addTag("update_download")
                                                 .build()
-                                            WorkManager.getInstance(context).enqueueUniqueWork("update_download", ExistingWorkPolicy.REPLACE, downloadRequest)
+                                            WorkManager.getInstance(context).enqueueUniqueWork(
+                                                "update_download",
+                                                ExistingWorkPolicy.REPLACE,
+                                                downloadRequest
+                                            )
                                             isDownloading = true
                                         }
                                     },
@@ -534,6 +559,7 @@ fun UpdateScreen(navController: NavHostController) {
 
                                 }
                             }
+
                             else -> {}
                         }
                     }
@@ -643,7 +669,7 @@ suspend fun checkForUpdate(
 ) {
     withContext(Dispatchers.IO) {
         try {
-            val url = URL("https://api.github.com/repos/slice-of-fun/Chorus-Music/releases/latest")
+            val url = URL("https://api.github.com/repos/chorus-mu/Chorus-Music/releases/latest")
             val json = url.openStream().bufferedReader().use { it.readText() }
             val targetRelease = JSONObject(json)
 
@@ -662,7 +688,7 @@ suspend fun checkForUpdate(
                 var imageUrl: String? = null
                 try {
                     val changelogUrl =
-                        URL("https://github.com/slice-of-fun/Chorus-Music/releases/download/$tagWithPrefix/changelog.json")
+                        URL("https://github.com/chorus-mu/Chorus-Music/releases/download/$tagWithPrefix/changelog.json")
                     val changelogJson = changelogUrl.openStream().bufferedReader().use { it.readText() }
                     val changelogData = JSONObject(changelogJson)
 
@@ -744,7 +770,16 @@ suspend fun checkForUpdate(
 
                 if (apkDownloadUrl.isNotEmpty()) {
                     withContext(Dispatchers.Main) {
-                        onSuccess(displayTag, true, changelogList, apkSizeInMB, formattedReleaseDate, description, imageUrl, apkDownloadUrl)
+                        onSuccess(
+                            displayTag,
+                            true,
+                            changelogList,
+                            apkSizeInMB,
+                            formattedReleaseDate,
+                            description,
+                            imageUrl,
+                            apkDownloadUrl
+                        )
                     }
                     return@withContext
                 }
@@ -759,6 +794,7 @@ suspend fun checkForUpdate(
         }
     }
 }
+
 fun String.extractUrls(): List<Pair<IntRange, String>> {
     val urlPattern = Pattern.compile(
         "(?:^|[\\s])((https?://|www\\.|pic\\.)[\\w-]+(\\.[\\w-]+)+([/?].*)?)"

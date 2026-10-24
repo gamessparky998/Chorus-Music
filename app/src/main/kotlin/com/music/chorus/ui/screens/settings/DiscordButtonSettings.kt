@@ -78,7 +78,7 @@ fun DiscordButtonSettings(navController: NavController) {
     val (button2CustomUrl, onButton2CustomUrlChange) =
         rememberPreference(
             key = DiscordActivityButton2CustomUrlKey,
-            defaultValue = "https://slice-of-fun.github.io/Chorus-Music",
+            defaultValue = "https://chorus-mu.github.io/chorusweb",
         )
 
     Scaffold { inner ->

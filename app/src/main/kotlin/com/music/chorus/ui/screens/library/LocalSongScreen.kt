@@ -250,16 +250,9 @@ fun LocalSongScreen(
         )
     }
 
-    val topPadding = if (isEmbedded) {
-        LocalPlayerAwareWindowInsets.current.asPaddingValues().calculateTopPadding()
-    } else {
-        0.dp
-    }
-
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = topPadding)
             .nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
