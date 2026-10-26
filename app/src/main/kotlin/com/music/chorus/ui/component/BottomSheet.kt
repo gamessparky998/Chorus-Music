@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.ui.Alignment
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -172,14 +174,22 @@ fun BottomSheet(
                             } else {
                                 (1f - (state.progress * 4)).coerceIn(0f, 1f)
                             }
-                        }.clickable(
+                        }
+                        .fillMaxWidth()
+                        .height(state.collapsedBound),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight(Alignment.Top)
+                        .clickable(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null,
                             onClick = { if (isExpandable) state.expandSoft() },
-                        ).fillMaxWidth()
-                        .height(state.collapsedBound),
-                content = collapsedContent,
-            )
+                        ),
+                    content = collapsedContent,
+                )
+            }
         }
     }
 

@@ -98,7 +98,11 @@ fun AppBottomBar(
         ) != true
     ) {
         Box(modifier = modifier) {
-            Box(modifier = Modifier.zIndex(2f)) {
+            val isPlayerExpandingOrExpanded = playerBottomSheetState.progress > 0.05f
+            val navBarZIndex = if (isPlayerExpandingOrExpanded) 1f else 3f
+            val playerZIndex = 2f
+
+            Box(modifier = Modifier.zIndex(playerZIndex)) {
                 BottomSheetPlayer(
                     state = playerBottomSheetState,
                     navController = navController,
@@ -118,6 +122,7 @@ fun AppBottomBar(
             if (!isOffline && playerBottomSheetState.progress < 1f && (shouldShowNavigationBar || navigationBarHeight > 0.dp)) {
                 Box(
                     modifier = Modifier
+                        .zIndex(navBarZIndex)
                         .align(Alignment.BottomCenter)
                         .height(bottomInset + FloatingToolbarBottomPadding + NavigationBarHeight)
                         .offset(y = navOffsetY)
