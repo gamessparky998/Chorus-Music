@@ -107,26 +107,26 @@ fun LibraryScreen(navController: NavController) {
             modifier = Modifier.fillMaxSize(),
         ) {
             when (filterType) {
-            LibraryFilter.LIBRARY -> LibraryMixScreen(navController, filterContent)
-            LibraryFilter.PLAYLISTS -> LibraryPlaylistsScreen(navController, filterContent)
-            LibraryFilter.SONGS -> LibrarySongsScreen(
-                navController,
-                { filterType = LibraryFilter.LIBRARY })
+                LibraryFilter.LIBRARY -> LibraryMixScreen(navController, filterContent)
+                LibraryFilter.PLAYLISTS -> LibraryPlaylistsScreen(navController, filterContent)
+                LibraryFilter.SONGS -> LibrarySongsScreen(
+                    navController,
+                    { filterType = LibraryFilter.LIBRARY })
 
-            LibraryFilter.ALBUMS -> LibraryAlbumsScreen(
-                navController,
-                { filterType = LibraryFilter.LIBRARY })
+                LibraryFilter.ALBUMS -> LibraryAlbumsScreen(
+                    navController,
+                    { filterType = LibraryFilter.LIBRARY })
 
-            LibraryFilter.ARTISTS -> LibraryArtistsScreen(
-                navController,
-                { filterType = LibraryFilter.LIBRARY })
+                LibraryFilter.ARTISTS -> LibraryArtistsScreen(
+                    navController,
+                    { filterType = LibraryFilter.LIBRARY })
 
-            LibraryFilter.LOCAL -> LocalSongScreen(
-                navController,
-                { filterType = LibraryFilter.LIBRARY },
-                isEmbedded = true
-            )
-        }
+                LibraryFilter.LOCAL -> LocalSongScreen(
+                    navController,
+                    { filterType = LibraryFilter.LIBRARY },
+                    isEmbedded = true
+                )
+            }
         }
     }
 

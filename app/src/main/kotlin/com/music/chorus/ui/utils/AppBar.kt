@@ -44,13 +44,10 @@ class AppBarScrollBehavior(
             ): Offset {
                 if (!canScroll()) return Offset.Zero
                 state.contentOffset += consumed.y
-                if (state.heightOffset == 0f || state.heightOffset == state.heightOffsetLimit) {
-                    if (consumed.y == 0f && available.y > 0f) {
-
-                        state.contentOffset = 0f
-                    }
+                if (consumed.y == 0f && available.y > 0f) {
+                    state.contentOffset = 0f
                 }
-                state.heightOffset += consumed.y
+                state.heightOffset = 0f
                 return Offset.Zero
             }
         }

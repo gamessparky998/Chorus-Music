@@ -2,6 +2,9 @@ package pushkar.chorus.music.ui.screens.playlist
 
 import pushkar.chorus.music.ui.utils.resize
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -41,6 +44,8 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
+import pushkar.chorus.music.ui.component.TopBarBackButton
+import pushkar.chorus.music.ui.component.TopBarIconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -429,38 +434,32 @@ fun TopPlaylistScreen(
                         )
                     }
                     else -> {
-                        Text(text = name)
                     }
                 }
             },
             navigationIcon = {
-                IconButton(
-                    onClick = {
-                        when {
-                            isSearching -> {
+                if (inSelectMode) {
+                    TopBarIconButton(
+                        onClick = onExitSelectionMode,
+                        painter = painterResource(R.drawable.close),
+                        contentDescription = stringResource(R.string.close),
+                    )
+                } else {
+                    TopBarBackButton(
+                        onClick = {
+                            if (isSearching) {
                                 isSearching = false
                                 query = TextFieldValue()
                                 focusManager.clearFocus()
-                            }
-                            inSelectMode -> {
-                                onExitSelectionMode()
-                            }
-                            else -> {
+                            } else {
                                 navController.navigateUp()
                             }
-                        }
-                    },
-                    onLongClick = {
-                        if (!isSearching && !inSelectMode) {
-                            navController.backToMain()
-                        }
-                    }
-                ) {
-                    Icon(
-                        painter = painterResource(
-                            if (inSelectMode) R.drawable.close else R.drawable.arrow_back
-                        ),
-                        contentDescription = null
+                        },
+                        onLongClick = {
+                            if (!isSearching) {
+                                navController.backToMain()
+                            }
+                        },
                     )
                 }
             },
@@ -477,7 +476,7 @@ fun TopPlaylistScreen(
                             }
                         }
                     )
-                    IconButton(
+                    TopBarIconButton(
                         enabled = selection.isNotEmpty(),
                         onClick = {
                             menuState.show {
@@ -488,23 +487,21 @@ fun TopPlaylistScreen(
                                 )
                             }
                         },
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.more_vert),
-                            contentDescription = null
-                        )
-                    }
+                        painter = painterResource(R.drawable.more_vert),
+                        contentDescription = stringResource(R.string.more_options),
+                    )
                 } else if (!isSearching) {
-                    IconButton(
-                        onClick = { isSearching = true }
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.search),
-                            contentDescription = null
-                        )
-                    }
+                    TopBarIconButton(
+                        onClick = { isSearching = true },
+                        painter = painterResource(R.drawable.search),
+                        contentDescription = stringResource(R.string.search),
+                    )
                 }
-            }
+            },
+            colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
+                containerColor = Color.Transparent,
+                scrolledContainerColor = Color.Transparent
+            )
         )
     }
 }

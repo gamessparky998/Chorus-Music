@@ -83,6 +83,7 @@ class LayerBackdrop internal constructor(
         null
 
     internal var masksSamplers: Boolean = false
+    internal var isRecording: Boolean = false
 
     private var inverseLayerScope: InverseLayerScope? = null
 
@@ -91,37 +92,73 @@ class LayerBackdrop internal constructor(
         coordinates: LayoutCoordinates?,
         layerBlock: (GraphicsLayerScope.() -> Unit)?
     ) {
+        if (isRecording || !hasRecording) return
         val coordinates = coordinates ?: return
         val layerCoordinates = layerCoordinates ?: return
-        val sourceScale = sourceScale
-        withTransform({
-            if (layerBlock != null) {
-                with(obtainInverseLayerScope()) { inverseTransform(density, layerBlock) }
-            }
-            val offset =
-                try {
-                    layerCoordinates.localPositionOf(coordinates)
-                } catch (_: Exception) {
+        if (!coordinates.isAttached || !layerCoordinates.isAttached) return
 
-                    coordinates.positionInWindow() - layerCoordinates.positionInWindow()
+        var ancestorCheck: LayoutCoordinates? = coordinates
+        while (ancestorCheck != null) {
+            if (ancestorCheck == layerCoordinates) return
+            ancestorCheck = ancestorCheck.parentLayoutCoordinates
+        }
+
+        try {
+            val sourceScale = sourceScale
+            withTransform({
+                if (layerBlock != null) {
+                    with(obtainInverseLayerScope()) { inverseTransform(density, layerBlock) }
                 }
-            val sampled = Rect(offset, coordinates.size.toSize())
-            coverageRequest?.invoke(sampled)
-            lensRequest?.let { request ->
-                val scope = density as? BackdropEffectScope
-                val lens = scope?.poolLens
-                val radii = if (lens != null) scope.cornerRadii() else null
-                val outline = scope?.let { it.shape.createOutline(it.size, it.layoutDirection, it) }
-                request(scope ?: coordinates, sampled, lens, radii, outline)
-            }
+                val offset =
+                    try {
+                        if (layerCoordinates.isAttached && coordinates.isAttached) {
+                            layerCoordinates.localPositionOf(coordinates)
+                        } else {
+                            return
+                        }
+                    } catch (_: Throwable) {
+                        try {
+                            if (coordinates.isAttached && layerCoordinates.isAttached) {
+                                coordinates.positionInWindow() - layerCoordinates.positionInWindow()
+                            } else {
+                                return
+                            }
+                        } catch (_: Throwable) {
+                            return
+                        }
+                    }
+                val sampled = Rect(offset, coordinates.size.toSize())
+                coverageRequest?.invoke(sampled)
+                lensRequest?.let { request ->
+                    val scope = density as? BackdropEffectScope
+                    val lens = scope?.poolLens
+                    val radii = if (lens != null) scope.cornerRadii() else null
+                    val outline = scope?.let {
+                        if (it.size.width > 0f && it.size.height > 0f) {
+                            try {
+                                it.shape.createOutline(it.size, it.layoutDirection, it)
+                            } catch (_: Throwable) {
+                                null
+                            }
+                        } else {
+                            null
+                        }
+                    }
+                    request(scope ?: coordinates, sampled, lens, radii, outline)
+                }
 
-            val origin = sourceOrigin
-            translate(origin.x - offset.x, origin.y - offset.y)
-            if (sourceScale != 1f) {
-                scale(1f / sourceScale, 1f / sourceScale, androidx.compose.ui.geometry.Offset.Zero)
+                val origin = sourceOrigin
+                translate(origin.x - offset.x, origin.y - offset.y)
+                if (sourceScale != 1f) {
+                    scale(1f / sourceScale, 1f / sourceScale, androidx.compose.ui.geometry.Offset.Zero)
+                }
+            }) {
+                try {
+                    drawLayer(graphicsLayer)
+                } catch (_: Throwable) {}
             }
-        }) {
-            drawLayer(graphicsLayer)
+        } catch (_: Throwable) {
+            // Safety guard for unattached or changing layout coordinates during theme switches
         }
     }
 

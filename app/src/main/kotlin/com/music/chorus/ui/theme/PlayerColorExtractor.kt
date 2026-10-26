@@ -40,14 +40,32 @@ object PlayerColorExtractor {
             enhanceColorChorusdness(fallbackDominant, 1.1f)
         }
 
+        val secondarySwatch = colorCandidates.filter { it != bestSwatch }
+            .maxByOrNull { calculateColorWeight(it) }
+        val secondaryColor = if (secondarySwatch != null) {
+            enhanceColorChorusdness(Color(secondarySwatch.rgb), 1.2f)
+        } else {
+            val hsv = FloatArray(3)
+            android.graphics.Color.colorToHSV(primaryColor.toArgb(), hsv)
+            hsv[0] = (hsv[0] + 25f) % 360f
+            hsv[1] = (hsv[1] * 0.85f).coerceIn(0.3f, 0.9f)
+            hsv[2] = (hsv[2] * 0.85f).coerceIn(0.4f, 0.85f)
+            Color(android.graphics.Color.HSVToColor(hsv))
+        }
+
+        val tertiaryColor = run {
+            val hsv = FloatArray(3)
+            android.graphics.Color.colorToHSV(primaryColor.toArgb(), hsv)
+            hsv[0] = (hsv[0] - 20f + 360f) % 360f
+            hsv[1] = (hsv[1] * 0.70f).coerceIn(0.25f, 0.8f)
+            hsv[2] = (hsv[2] * 0.65f).coerceIn(0.30f, 0.75f)
+            Color(android.graphics.Color.HSVToColor(hsv))
+        }
+
         listOf(
             primaryColor,
-            primaryColor.copy(
-                red = (primaryColor.red * 0.6f).coerceAtLeast(0f),
-                green = (primaryColor.green * 0.6f).coerceAtLeast(0f),
-                blue = (primaryColor.blue * 0.6f).coerceAtLeast(0f)
-            ),
-            Color.Black
+            secondaryColor,
+            tertiaryColor
         )
     }
 

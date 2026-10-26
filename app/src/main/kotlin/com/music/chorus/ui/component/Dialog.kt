@@ -1,5 +1,6 @@
 package pushkar.chorus.music.ui.component
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -48,6 +49,8 @@ import pushkar.chorus.music.R
 
 import kotlinx.coroutines.delay
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -71,11 +74,7 @@ fun DefaultDialog(
     val isFluid = isFluidTheme()
 
     val dialogShape = if (isFluid) ContinuousRoundedRectangle(26.dp) else AlertDialogDefaults.shape
-    val dialogColor = if (isFluid) {
-        if (isDark) Color(0xEB252528) else Color(0xEBFCFCFD)
-    } else {
-        AlertDialogDefaults.containerColor
-    }
+    val dialogColor = if (isFluid) Color.Transparent else AlertDialogDefaults.containerColor
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -85,7 +84,16 @@ fun DefaultDialog(
             modifier = Modifier
                 .padding(24.dp)
                 .let { mod ->
-                    if (isFluid) mod.clip(dialogShape).fluidGlass(intensity = GlassIntensity.Standard) else mod
+                    if (isFluid) {
+                        mod
+                            .clip(dialogShape)
+                            .fluidGlass(
+                                shape = dialogShape,
+                                intensity = GlassIntensity.Prominent,
+                                surfaceColor = if (isDark) Color(0x661C1C20) else Color(0x80FFFFFF),
+                                surfaceAlpha = if (isDark) 0.45f else 0.55f
+                            )
+                    } else mod
                 },
             shape = dialogShape,
             color = dialogColor,
@@ -127,8 +135,9 @@ fun DefaultDialog(
                 if (buttons != null) {
                     Spacer(Modifier.height(24.dp))
 
-                    FlowRow(
-                        modifier = Modifier.align(Alignment.End)
+                    Row(
+                        modifier = Modifier.align(Alignment.End),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.primary) {
                             ProvideTextStyle(
@@ -210,11 +219,7 @@ fun ListDialog(
     val isDark = isSystemInDarkTheme()
     val isFluid = isFluidTheme()
     val dialogShape = if (isFluid) ContinuousRoundedRectangle(26.dp) else AlertDialogDefaults.shape
-    val dialogColor = if (isFluid) {
-        if (isDark) Color(0xEB252528) else Color(0xEBFCFCFD)
-    } else {
-        AlertDialogDefaults.containerColor
-    }
+    val dialogColor = if (isFluid) Color.Transparent else AlertDialogDefaults.containerColor
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -224,7 +229,16 @@ fun ListDialog(
             modifier = Modifier
                 .padding(24.dp)
                 .let { mod ->
-                    if (isFluid) mod.clip(dialogShape).fluidGlass(intensity = GlassIntensity.Standard) else mod
+                    if (isFluid) {
+                        mod
+                            .clip(dialogShape)
+                            .fluidGlass(
+                                shape = dialogShape,
+                                intensity = GlassIntensity.Prominent,
+                                surfaceColor = if (isDark) Color(0x661C1C20) else Color(0x80FFFFFF),
+                                surfaceAlpha = if (isDark) 0.45f else 0.55f
+                            )
+                    } else mod
                 },
             shape = dialogShape,
             color = dialogColor,
@@ -328,7 +342,7 @@ fun TextFieldDialog(
         }
     ) {
         Column(
-            modifier = Modifier.weight(weight = 1f, fill = false)
+            modifier = Modifier.fillMaxWidth()
         ) {
             if (textFields != null) {
                 textFields.forEachIndexed { index, (label, value) ->

@@ -48,6 +48,8 @@ import com.music.chorus.discord.DiscordOAuthRepository
 import pushkar.chorus.music.ui.component.EditTextPreference
 import pushkar.chorus.music.ui.component.EnumListPreference
 import pushkar.chorus.music.ui.component.IconButton
+import pushkar.chorus.music.ui.component.TopBarBackButton
+import pushkar.chorus.music.ui.component.TopBarIconButton
 import pushkar.chorus.music.ui.component.ListPreference
 import pushkar.chorus.music.ui.component.PreferenceEntry
 
@@ -337,30 +339,24 @@ fun DiscordSettings(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            TopAppBar(
+            CenterAlignedTopAppBar(
                 title = {
-                    Text(text = stringResource(R.string.discord_integration))
+                    Text(
+                        text = stringResource(R.string.discord_integration),
+                        fontWeight = FontWeight.Bold,
+                    )
                 },
                 navigationIcon = {
-                    IconButton(
-                        onClick = navController::navigateUp,
-                        onLongClick = navController::backToMain,
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.arrow_back),
-                            contentDescription = null,
-                        )
-                    }
+                    TopBarBackButton(navController = navController)
                 },
                 actions = {
                     var threeDotMenuExpanded by remember { mutableStateOf(false) }
 
-                    IconButton(onClick = { threeDotMenuExpanded = true }) {
-                        Icon(
-                            painter = painterResource(R.drawable.more_vert),
-                            contentDescription = null,
-                        )
-                    }
+                    TopBarIconButton(
+                        onClick = { threeDotMenuExpanded = true },
+                        painter = painterResource(R.drawable.more_vert),
+                        contentDescription = stringResource(R.string.more_options),
+                    )
 
                     DropdownMenu(
                         expanded = threeDotMenuExpanded,
@@ -383,10 +379,10 @@ fun DiscordSettings(
                 },
                 colors =
                     TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        containerColor = Color.Transparent,
+                        scrolledContainerColor = Color.Transparent,
                     ),
-                scrollBehavior = scrollBehavior
+                scrollBehavior = scrollBehavior,
             )
         },
     ) { innerPadding ->

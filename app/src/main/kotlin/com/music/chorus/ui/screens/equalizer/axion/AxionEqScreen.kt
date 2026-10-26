@@ -35,6 +35,8 @@ import pushkar.chorus.music.R
 import pushkar.chorus.music.eq.data.SavedEQProfile
 import pushkar.chorus.music.ui.component.Material3SettingsGroup
 import pushkar.chorus.music.ui.component.Material3SettingsItem
+import pushkar.chorus.music.ui.component.TopBarIconButton
+import androidx.compose.ui.graphics.Color
 import pushkar.chorus.music.ui.utils.backToMain
 import kotlin.math.abs
 import racra.compose.smooth_corner_rect_library.AbsoluteSmoothCornerShape
@@ -50,19 +52,30 @@ fun AxionEqScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.chorus_equalizer)) },
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(R.string.chorus_equalizer),
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
+                },
                 navigationIcon = {
-                    pushkar.chorus.music.ui.component.IconButton(
-                        onClick = onBackClick,
-                        onLongClick = {}
+                    TopBarIconButton(
+                        onClick = onBackClick
                     ) {
                         Icon(
-                            painter = androidx.compose.ui.res.painterResource(R.drawable.arrow_back),
-                            contentDescription = null
+                            painter = painterResource(R.drawable.arrow_back),
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent,
+                    scrolledContainerColor = Color.Transparent
+                )
             )
         }
     ) { innerPadding ->

@@ -125,6 +125,21 @@ class PlayerConnection(
     val currentLyrics = mediaMetadata.flatMapLatest { mediaMetadata ->
         database.lyrics(mediaMetadata?.id)
     }
+    val lyricsAvailability = combine(mediaMetadata, currentLyrics) { metadata, lyricsEntity ->
+        when {
+            metadata == null -> LyricsAvailability.Idle
+            lyricsEntity == null -> LyricsAvailability.Checking
+            lyricsEntity.lyrics == pushkar.chorus.music.db.entities.LyricsEntity.LYRICS_NOT_FOUND -> LyricsAvailability.Unavailable
+            lyricsEntity.lyrics.isBlank() -> LyricsAvailability.Unavailable
+            else -> {
+                val syncLevel = pushkar.chorus.music.lyrics.LyricsSyncLevel.detect(lyricsEntity.lyrics)
+                LyricsAvailability.Available(
+                    isSynced = syncLevel != pushkar.chorus.music.lyrics.LyricsSyncLevel.PLAIN,
+                    syncLevel = syncLevel
+                )
+            }
+        }
+    }.stateIn(scope, SharingStarted.Lazily, LyricsAvailability.Idle)
     val currentFormat =
         mediaMetadata.flatMapLatest { mediaMetadata ->
             database.format(mediaMetadata?.id)
@@ -519,3 +534,11 @@ class PlayerConnection(
         }
     }
 }
+
+sealed interface LyricsAvailability {
+    data object Idle : LyricsAvailability
+    data object Checking : LyricsAvailability
+    data class Available(val isSynced: Boolean, val syncLevel: pushkar.chorus.music.lyrics.LyricsSyncLevel) : LyricsAvailability
+    data object Unavailable : LyricsAvailability
+}
+

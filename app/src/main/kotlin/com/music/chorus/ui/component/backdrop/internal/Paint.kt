@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package pushkar.chorus.music.ui.component.backdrop.internal
 
 import android.graphics.BlurMaskFilter
@@ -14,3 +16,4 @@ internal fun Paint.blur(radius: Float) {
 internal fun Paint.setRuntimeShader(runtimeShader: RuntimeShader?) {
     this.asFrameworkPaint().shader = runtimeShader?.asAndroidRuntimeShader()
 }
+

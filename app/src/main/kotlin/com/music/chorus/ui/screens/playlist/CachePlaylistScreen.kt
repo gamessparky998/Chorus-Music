@@ -22,6 +22,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.foundation.shape.RoundedCornerShape
 import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
 import pushkar.chorus.music.ui.theme.isFluidTheme
@@ -37,6 +41,8 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
+import pushkar.chorus.music.ui.component.TopBarBackButton
+import pushkar.chorus.music.ui.component.TopBarIconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -378,40 +384,32 @@ fun CachePlaylistScreen(
                     }
 
                     else -> {
-                        Text(
-                            stringResource(R.string.cached_playlist),
-                            style = MaterialTheme.typography.titleLarge
-                        )
                     }
                 }
             },
             navigationIcon = {
-                IconButton(onClick = {
-                    when {
-                        isSearching -> {
-                            isSearching = false
-                            query = TextFieldValue()
-                            focusManager.clearFocus()
-                        }
-
-                        inSelectMode -> {
-                            onExitSelectionMode()
-                        }
-
-                        else -> {
-                            navController.navigateUp()
-                        }
-                    }
-                }, onLongClick = {
-                    if (!isSearching && !inSelectMode) {
-                        navController.backToMain()
-                    }
-                }) {
-                    Icon(
-                        painter = painterResource(
-                            if (inSelectMode) R.drawable.close else R.drawable.arrow_back
-                        ),
-                        contentDescription = null
+                if (inSelectMode) {
+                    TopBarIconButton(
+                        onClick = onExitSelectionMode,
+                        painter = painterResource(R.drawable.close),
+                        contentDescription = stringResource(R.string.close),
+                    )
+                } else {
+                    TopBarBackButton(
+                        onClick = {
+                            if (isSearching) {
+                                isSearching = false
+                                query = TextFieldValue()
+                                focusManager.clearFocus()
+                            } else {
+                                navController.navigateUp()
+                            }
+                        },
+                        onLongClick = {
+                            if (!isSearching) {
+                                navController.backToMain()
+                            }
+                        },
                     )
                 }
             },
@@ -428,7 +426,7 @@ fun CachePlaylistScreen(
                             }
                         }
                     )
-                    IconButton(
+                    TopBarIconButton(
                         enabled = selection.isNotEmpty(),
                         onClick = {
                             menuState.show {
@@ -438,22 +436,22 @@ fun CachePlaylistScreen(
                                     clearAction = onExitSelectionMode
                                 )
                             }
-                        }
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.more_vert),
-                            contentDescription = null
-                        )
-                    }
+                        },
+                        painter = painterResource(R.drawable.more_vert),
+                        contentDescription = stringResource(R.string.more_options),
+                    )
                 } else if (!isSearching) {
-                    IconButton(onClick = { isSearching = true }) {
-                        Icon(
-                            painter = painterResource(R.drawable.search),
-                            contentDescription = null
-                        )
-                    }
+                    TopBarIconButton(
+                        onClick = { isSearching = true },
+                        painter = painterResource(R.drawable.search),
+                        contentDescription = stringResource(R.string.search),
+                    )
                 }
-            }
+            },
+            colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
+                containerColor = Color.Transparent,
+                scrolledContainerColor = Color.Transparent
+            )
         )
     }
 }

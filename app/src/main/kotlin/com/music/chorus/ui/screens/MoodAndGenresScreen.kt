@@ -11,14 +11,21 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.fluid.foundation.GlassIntensity
+import pushkar.chorus.music.ui.fluid.foundation.fluidGlass
 import pushkar.chorus.music.ui.theme.isFluidTheme
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import pushkar.chorus.music.ui.component.TopBarBackButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -102,19 +109,21 @@ fun MoodAndGenresScreen(
         }
     }
 
-    TopAppBar(
-        title = { Text(stringResource(R.string.mood_and_genres)) },
-        navigationIcon = {
-            IconButton(
-                onClick = navController::navigateUp,
-                onLongClick = navController::backToMain,
-            ) {
-                Icon(
-                    painterResource(R.drawable.arrow_back),
-                    contentDescription = null,
-                )
-            }
+    CenterAlignedTopAppBar(
+        title = {
+            Text(
+                text = stringResource(R.string.mood_and_genres),
+                fontWeight = FontWeight.Bold,
+            )
         },
+        navigationIcon = {
+            TopBarBackButton(navController = navController)
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = Color.Transparent,
+            scrolledContainerColor = Color.Transparent,
+        ),
+        scrollBehavior = scrollBehavior,
     )
 }
 
@@ -133,21 +142,40 @@ fun MoodAndGenresButton(
     val backgroundColor = androidx.compose.runtime.remember(title) {
         colors[kotlin.math.abs(title.hashCode()) % colors.size]
     }
+    val isFluid = isFluidTheme()
+    val isDark = isSystemInDarkTheme()
+    val shape = if (isFluid) ContinuousRoundedRectangle(14.dp) else RoundedCornerShape(6.dp)
+
+    val buttonModifier = if (isFluid) {
+        modifier
+            .height(MoodAndGenresButtonHeight)
+            .clip(shape)
+            .fluidGlass(
+                shape = shape,
+                intensity = GlassIntensity.Standard,
+                surfaceColor = backgroundColor,
+                surfaceAlpha = if (isDark) 0.35f else 0.20f
+            )
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp)
+    } else {
+        modifier
+            .height(MoodAndGenresButtonHeight)
+            .clip(shape)
+            .background(backgroundColor)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp)
+    }
 
     Box(
         contentAlignment = Alignment.CenterStart,
-        modifier =
-        modifier
-            .height(MoodAndGenresButtonHeight)
-            .clip(if (isFluidTheme()) ContinuousRoundedRectangle(12.dp) else RoundedCornerShape(6.dp))
-            .background(backgroundColor)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp),
+        modifier = buttonModifier,
     ) {
         Text(
             text = title,
             style = MaterialTheme.typography.labelLarge,
-            color = androidx.compose.ui.graphics.Color.White,
+            fontWeight = if (isFluid) FontWeight.SemiBold else FontWeight.Normal,
+            color = if (isFluid && !isDark) Color(0xFF141416) else Color.White,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )

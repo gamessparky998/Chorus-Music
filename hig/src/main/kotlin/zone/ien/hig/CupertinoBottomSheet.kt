@@ -175,7 +175,7 @@ sealed interface PresentationDetent {
         override fun calculate(
             density: Density,
             height: Float,
-        ): Float = (density.run { this@Height.height.toPx() } * height).coerceAtMost(height)
+        ): Float = (density.run { this@Height.height.toPx() }).coerceAtMost(height)
 
         override fun toString(): String = "Height(height=$height)"
     }

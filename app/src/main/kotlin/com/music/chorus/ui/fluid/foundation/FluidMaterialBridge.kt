@@ -6,6 +6,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -14,49 +15,56 @@ import androidx.compose.ui.unit.sp
 @Stable
 fun fluidColorScheme(colors: FluidColors): ColorScheme {
     val base = if (colors.isDark) darkColorScheme() else lightColorScheme()
-    return base.copy(
-        primary = colors.accent,
-        onPrimary = colors.onAccent,
-        primaryContainer = colors.accent.copy(alpha = 0.18f),
-        onPrimaryContainer = colors.accent,
-        inversePrimary = colors.accent,
+    val accentColor = colors.accent
+    val isDark = colors.isDark
+    val textPrimary = if (isDark) Color.White else Color(0xFF1C1C1E)
+    val textSecondary = if (isDark) Color(0x99EBEBF5) else Color(0x993C3C43)
 
-        secondary = colors.accent,
+    val dynamicGlassBase = if (isDark) Color(0xFF282832) else Color(0xFFF2F2F7)
+
+    return base.copy(
+        primary = accentColor,
+        onPrimary = colors.onAccent,
+        primaryContainer = accentColor.copy(alpha = if (isDark) 0.32f else 0.20f),
+        onPrimaryContainer = if (isDark) Color.White else Color(0xFF141416),
+        inversePrimary = colors.systemBackground,
+
+        secondary = if (!accentColor.isHueless()) accentColor.copy(alpha = 0.85f) else textSecondary,
         onSecondary = colors.onAccent,
-        secondaryContainer = colors.secondarySystemFill,
-        onSecondaryContainer = colors.label,
+        secondaryContainer = dynamicGlassBase.copy(alpha = if (isDark) 0.55f else 0.65f),
+        onSecondaryContainer = textPrimary,
 
         tertiary = colors.systemIndigo,
         onTertiary = colors.onAccent,
         tertiaryContainer = colors.tertiarySystemFill,
-        onTertiaryContainer = colors.label,
+        onTertiaryContainer = textPrimary,
 
         background = colors.systemGroupedBackground,
-        onBackground = colors.label,
+        onBackground = textPrimary,
 
         surface = colors.systemBackground,
-        onSurface = colors.label,
-        surfaceVariant = colors.secondarySystemGroupedBackground,
-        onSurfaceVariant = colors.secondaryLabel,
-        surfaceTint = colors.accent,
-        inverseSurface = colors.label,
+        onSurface = textPrimary,
+        surfaceVariant = dynamicGlassBase.copy(alpha = if (isDark) 0.40f else 0.50f),
+        onSurfaceVariant = textSecondary,
+        surfaceTint = Color.Transparent,
+        inverseSurface = textPrimary,
         inverseOnSurface = colors.systemBackground,
 
         surfaceDim = colors.systemGroupedBackground,
         surfaceBright = colors.systemBackground,
         surfaceContainerLowest = colors.systemBackground,
-        surfaceContainerLow = colors.secondarySystemGroupedBackground,
-        surfaceContainer = colors.secondarySystemGroupedBackground,
-        surfaceContainerHigh = colors.tertiarySystemGroupedBackground,
-        surfaceContainerHighest = colors.tertiarySystemGroupedBackground,
+        surfaceContainerLow = dynamicGlassBase.copy(alpha = if (isDark) 0.45f else 0.55f),
+        surfaceContainer = dynamicGlassBase.copy(alpha = if (isDark) 0.65f else 0.75f),
+        surfaceContainerHigh = dynamicGlassBase.copy(alpha = if (isDark) 0.80f else 0.88f),
+        surfaceContainerHighest = dynamicGlassBase.copy(alpha = if (isDark) 0.92f else 0.96f),
 
         error = colors.systemRed,
         onError = colors.onAccent,
         errorContainer = colors.systemRed.copy(alpha = 0.18f),
         onErrorContainer = colors.systemRed,
 
-        outline = colors.separator,
-        outlineVariant = colors.opaqueSeparator,
+        outline = if (isDark) Color.White.copy(alpha = 0.20f) else Color.Black.copy(alpha = 0.15f),
+        outlineVariant = if (isDark) Color.White.copy(alpha = 0.10f) else Color.Black.copy(alpha = 0.08f),
         scrim = Color.Black.copy(alpha = 0.32f),
     )
 }

@@ -1008,4 +1008,8 @@
     <string name="download_quality_title">Download Quality</string>
     <string name="legacy_icon">Legacy Icon</string>
     <string name="legacy_icon_desc">Revert the app icon back to the original legacy design</string>
+    <string name="library">Library</string>
+    <string name="top_playlist">Top</string>
+    <string name="uploaded">Uploaded</string>
+    <string name="recently_added">Recently Added</string>
 </resources>

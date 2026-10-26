@@ -27,23 +27,41 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.fluid.foundation.GlassIntensity
+import pushkar.chorus.music.ui.fluid.foundation.fluidGlass
+import pushkar.chorus.music.ui.theme.isFluidTheme
+
+import pushkar.chorus.music.ui.component.backdrop.Backdrop
+import pushkar.chorus.music.ui.fluid.component.FluidCenteredPopup
+import pushkar.chorus.music.ui.fluid.foundation.LocalAppBackdrop
+import androidx.compose.runtime.CompositionLocalProvider
+
 val LocalBottomSheetPageState = compositionLocalOf { BottomSheetPageState() }
 
 @Stable
 class BottomSheetPageState(
     isVisible: Boolean = false,
     content: @Composable ColumnScope.() -> Unit = {},
+    backdrop: Backdrop? = null,
 ) {
     var isVisible by mutableStateOf(isVisible)
     var content by mutableStateOf(content)
+    var backdrop by mutableStateOf(backdrop)
 
     fun show(content: @Composable ColumnScope.() -> Unit) {
-        isVisible = true
+        show(null, content)
+    }
+
+    fun show(backdrop: Backdrop? = null, content: @Composable ColumnScope.() -> Unit) {
+        this.backdrop = backdrop
         this.content = content
+        this.isVisible = true
     }
 
     fun dismiss() {
         isVisible = false
+        backdrop = null
     }
 }
 
@@ -55,6 +73,29 @@ fun BottomSheetPage(
 ) {
     val focusManager = LocalFocusManager.current
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+    val isFluid = isFluidTheme()
+
+    if (isFluid) {
+        val targetBackdrop = state.backdrop ?: LocalAppBackdrop.current
+        CompositionLocalProvider(LocalAppBackdrop provides targetBackdrop) {
+            FluidCenteredPopup(
+                isVisible = state.isVisible,
+                onDismissRequest = {
+                    focusManager.clearFocus()
+                    state.dismiss()
+                },
+                modifier = modifier,
+                maxHeightRatio = 0.90f,
+                maxWidth = 480.dp
+            ) {
+                state.content(this)
+            }
+        }
+        return
+    }
+
+    val sheetShape = androidx.compose.material3.BottomSheetDefaults.ExpandedShape
+    val containerColor = background
 
     AnimatedBottomSheet(
         isVisible = state.isVisible,
@@ -63,18 +104,22 @@ fun BottomSheetPage(
             state.isVisible = false
         },
         sheetState = sheetState,
-        containerColor = background,
+        shape = sheetShape,
+        containerColor = containerColor,
         contentColor = MaterialTheme.colorScheme.onSurface,
         dragHandle = {
+            val handleColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
             Box(
                 modifier = Modifier
                     .padding(vertical = 12.dp)
                     .size(width = 32.dp, height = 4.dp)
                     .clip(RoundedCornerShape(2.dp))
-                    .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f))
+                    .background(handleColor)
             )
         },
-        modifier = modifier.fillMaxHeight()
+        modifier = modifier
+            .fillMaxHeight()
+            .clip(sheetShape)
     ) {
         Column(
             modifier = Modifier

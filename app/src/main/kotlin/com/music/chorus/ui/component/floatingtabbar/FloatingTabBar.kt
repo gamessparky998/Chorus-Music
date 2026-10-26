@@ -976,8 +976,20 @@ object FloatingTabBarDefaults {
 
     @Composable
     fun colors(
-        backgroundColor: Color = if (isFluidTabBar()) Color(0x33787880) else MaterialTheme.colorScheme.surfaceContainerHigh,
-        accessoryBackgroundColor: Color = if (isFluidTabBar()) Color(0x33787880) else MaterialTheme.colorScheme.surfaceContainerHigh,
+        backgroundColor: Color = if (isFluidTabBar()) {
+            if (pushkar.chorus.music.ui.fluid.foundation.glassUsesDarkAppearance()) {
+                Color.White.copy(alpha = 0.12f)
+            } else {
+                Color(0xFF3C3C43).copy(alpha = 0.10f)
+            }
+        } else MaterialTheme.colorScheme.surfaceContainerHigh,
+        accessoryBackgroundColor: Color = if (isFluidTabBar()) {
+            if (pushkar.chorus.music.ui.fluid.foundation.glassUsesDarkAppearance()) {
+                Color.White.copy(alpha = 0.12f)
+            } else {
+                Color(0xFF3C3C43).copy(alpha = 0.10f)
+            }
+        } else MaterialTheme.colorScheme.surfaceContainerHigh,
     ): FloatingTabBarColors = FloatingTabBarColors(
         backgroundColor = backgroundColor,
         accessoryBackgroundColor = accessoryBackgroundColor,

@@ -1,6 +1,8 @@
 package pushkar.chorus.music.ui.player
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -887,25 +889,63 @@ private fun HiddenThumbnailPlaceholder(
 private fun ThumbnailImage(
     artworkUri: String?,
     cropArtwork: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    crossfadeMillis: Int = 450,
 ) {
+    val resolvedCrossfadeMillis = crossfadeMillis.coerceIn(450, 4_000)
+    var currentUrl by remember { mutableStateOf(artworkUri) }
+    var outgoingUrl by remember { mutableStateOf<String?>(null) }
+    val morph = remember { Animatable(1f) }
+
+    LaunchedEffect(artworkUri) {
+        if (artworkUri == currentUrl) return@LaunchedEffect
+        if (currentUrl != null) {
+            outgoingUrl = currentUrl
+            morph.snapTo(0f)
+        }
+        currentUrl = artworkUri
+        morph.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(resolvedCrossfadeMillis, easing = FastOutSlowInEasing)
+        )
+        outgoingUrl = null
+    }
+
     Box(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surfaceVariant)
     ) {
-        var currentUrl by remember(artworkUri) {
-            mutableStateOf(artworkUri)
+        val context = LocalContext.current
+        val contentScale = if (cropArtwork) ContentScale.Crop else ContentScale.Fit
+
+        if (outgoingUrl != null && morph.value < 1f) {
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(outgoingUrl)
+                    .memoryCachePolicy(CachePolicy.ENABLED)
+                    .diskCachePolicy(CachePolicy.ENABLED)
+                    .networkCachePolicy(CachePolicy.ENABLED)
+                    .build(),
+                contentDescription = null,
+                contentScale = contentScale,
+                error = painterResource(R.drawable.ic_launcher_nobg),
+                fallback = painterResource(R.drawable.ic_launcher_nobg),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer { alpha = 1f - morph.value }
+            )
         }
+
         AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
+            model = ImageRequest.Builder(context)
                 .data(currentUrl)
                 .memoryCachePolicy(CachePolicy.ENABLED)
                 .diskCachePolicy(CachePolicy.ENABLED)
                 .networkCachePolicy(CachePolicy.ENABLED)
                 .build(),
             contentDescription = null,
-            contentScale = if (cropArtwork) ContentScale.Crop else ContentScale.Fit,
+            contentScale = contentScale,
             error = painterResource(R.drawable.ic_launcher_nobg),
             fallback = painterResource(R.drawable.ic_launcher_nobg),
             onError = {
@@ -914,7 +954,9 @@ private fun ThumbnailImage(
                     currentUrl = url.replace("maxresdefault.jpg", "hqdefault.jpg")
                 }
             },
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer { alpha = morph.value }
         )
     }
 }

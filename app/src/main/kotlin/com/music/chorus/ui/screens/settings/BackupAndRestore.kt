@@ -11,10 +11,12 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.Switch
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -227,10 +229,15 @@ fun BackupAndRestore(
         BackupSubScreen.IMPORT -> "Import"
     }
 
-    TopAppBar(
-        title = { Text(titleRes) },
+    androidx.compose.material3.CenterAlignedTopAppBar(
+        title = {
+            Text(
+                text = titleRes,
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+            )
+        },
         navigationIcon = {
-            IconButton(
+            pushkar.chorus.music.ui.component.TopBarBackButton(
                 onClick = {
                     if (currentScreen != BackupSubScreen.MAIN) {
                         currentScreen = BackupSubScreen.MAIN
@@ -238,14 +245,14 @@ fun BackupAndRestore(
                         navController.navigateUp()
                     }
                 },
-                onLongClick = navController::backToMain,
-            ) {
-                Icon(
-                    painterResource(R.drawable.arrow_back),
-                    contentDescription = null,
-                )
-            }
-        }
+                onLongClick = { navController.backToMain() },
+            )
+        },
+        actions = {},
+        colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
+            containerColor = androidx.compose.ui.graphics.Color.Transparent,
+            scrolledContainerColor = androidx.compose.ui.graphics.Color.Transparent,
+        )
     )
 
     AddToPlaylistDialogOnline(

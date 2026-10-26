@@ -91,7 +91,7 @@ internal class HighlightNode(
 
     override fun ContentDrawScope.draw() {
         val highlight = highlight()
-        if (highlight == null || highlight.width.value <= 0f) {
+        if (highlight == null || highlight.width.value <= 0f || size.width <= 0f || size.height <= 0f) {
             return drawContent()
         }
 
@@ -109,41 +109,43 @@ internal class HighlightNode(
                     ceil(size.height).toInt() + 2
                 )
 
-            val outline = shapeProvider.shape.createOutline(size, layoutDirection, density)
-            val clipPath =
-                if (outline is Outline.Rounded) {
-                    clipPath ?: Path().also { clipPath = it }
-                } else {
-                    null
-                }
-
-            highlightLayer.alpha = highlight.alpha
-            highlightLayer.blendMode = highlight.style.blendMode
-            val prev = recordedHighlight
-            if (prev == null || prev.width != highlight.width ||
-                prev.blurRadius != highlight.blurRadius || prev.style != highlight.style ||
-                safeSize != recordedSize ||
-                outline != recordedOutline || density.density != recordedDensity
-            ) {
-                configurePaint(highlight)
-                highlightLayer.record(safeSize) {
-                    translate(1f, 1f) {
-                        val canvas = drawContext.canvas
-                        canvas.save()
-                        canvas.clipOutline(outline, clipPath)
-                        canvas.drawOutline(outline, paint)
-                        canvas.restore()
+            try {
+                val outline = shapeProvider.shape.createOutline(size, layoutDirection, density)
+                val clipPath =
+                    if (outline is Outline.Rounded) {
+                        clipPath ?: Path().also { clipPath = it }
+                    } else {
+                        null
                     }
-                }
-                recordedHighlight = highlight
-                recordedSize = safeSize
-                recordedOutline = outline
-                recordedDensity = density.density
-            }
 
-            translate(-1f, -1f) {
-                drawLayer(highlightLayer)
-            }
+                highlightLayer.alpha = highlight.alpha
+                highlightLayer.blendMode = highlight.style.blendMode
+                val prev = recordedHighlight
+                if (prev == null || prev.width != highlight.width ||
+                    prev.blurRadius != highlight.blurRadius || prev.style != highlight.style ||
+                    safeSize != recordedSize ||
+                    outline != recordedOutline || density.density != recordedDensity
+                ) {
+                    configurePaint(highlight)
+                    highlightLayer.record(safeSize) {
+                        translate(1f, 1f) {
+                            val canvas = drawContext.canvas
+                            canvas.save()
+                            canvas.clipOutline(outline, clipPath)
+                            canvas.drawOutline(outline, paint)
+                            canvas.restore()
+                        }
+                    }
+                    recordedHighlight = highlight
+                    recordedSize = safeSize
+                    recordedOutline = outline
+                    recordedDensity = density.density
+                }
+
+                translate(-1f, -1f) {
+                    drawLayer(highlightLayer)
+                }
+            } catch (_: Throwable) {}
         }
     }
 

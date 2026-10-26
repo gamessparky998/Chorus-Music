@@ -138,17 +138,27 @@ fun InstallPlayerMorphLayers() {
     }
 }
 
+private var isRecordingPlayerLayer = false
+
 fun Modifier.recordPlayerLayer(
     layer: () -> GraphicsLayer?,
     drawInPlace: () -> Boolean,
     markReady: () -> Unit = {},
 ): Modifier = drawWithContent {
     val target = layer()
-    if (target == null) {
+    if (target == null || isRecordingPlayerLayer) {
         drawContent()
         return@drawWithContent
     }
-    target.record { this@drawWithContent.drawContent() }
+    isRecordingPlayerLayer = true
+    try {
+        target.record { this@drawWithContent.drawContent() }
+    } catch (_: Exception) {
+        drawContent()
+        return@drawWithContent
+    } finally {
+        isRecordingPlayerLayer = false
+    }
     if (target.size.width > 0 && target.size.height > 0) markReady()
     if (drawInPlace()) {
         target.alpha = 1f

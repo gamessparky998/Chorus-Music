@@ -10,6 +10,8 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import pushkar.chorus.music.ui.utils.bounceClick
+import pushkar.chorus.music.ui.utils.combinedBounceClick
 import androidx.compose.foundation.border
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
@@ -316,7 +318,7 @@ fun CommunityPlaylistCard(
                             .fillMaxWidth()
                             .padding(vertical = 4.dp)
                             .clip(if (isFluidTheme()) ContinuousRoundedRectangle(12.dp) else RoundedCornerShape(12.dp))
-                            .combinedClickable(onClick = { onSongClick(song) }),
+                            .combinedBounceClick(onClick = { onSongClick(song) }),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
@@ -465,7 +467,7 @@ fun DailyDiscoverCard(
         modifier = modifier
             .fillMaxSize()
             .clip(if (isFluidTheme()) ContinuousRoundedRectangle(28.dp) else RoundedCornerShape(28.dp))
-            .combinedClickable(
+            .combinedBounceClick(
                 onClick = onClick,
                 onLongClick = {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -676,7 +678,7 @@ fun HomeScreen(
                 song = it,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .combinedClickable(
+                    .combinedBounceClick(
                         onClick = {
                             if (it.id == mediaMetadata?.id) {
                                 playerConnection.togglePlayPause()
@@ -710,7 +712,7 @@ fun HomeScreen(
                 coroutineScope = scope,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .combinedClickable(
+                    .combinedBounceClick(
                         onClick = {
                             navController.navigate("album/${it.id}")
                         },
@@ -731,7 +733,7 @@ fun HomeScreen(
                 artist = it,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .combinedClickable(
+                    .combinedBounceClick(
                         onClick = {
                             navController.navigate("artist/${it.id}")
                         },
@@ -762,7 +764,7 @@ fun HomeScreen(
             coroutineScope = scope,
             thumbnailRatio = 1f,
             modifier = Modifier
-                .combinedClickable(
+                .combinedBounceClick(
                     onClick = {
                         when (item) {
                             is SongItem -> playerConnection.playQueue(
@@ -1007,7 +1009,7 @@ fun HomeScreen(
                                         coroutineScope = scope,
                                         thumbnailRatio = 1f,
                                         modifier = Modifier
-                                            .combinedClickable(
+                                            .combinedBounceClick(
                                                 onClick = {
                                                     if (song.id == mediaMetadata?.id) {
                                                         playerConnection.togglePlayPause()
@@ -1204,7 +1206,7 @@ fun HomeScreen(
                                                                         isPlaying = isPlaying,
                                                                         modifier = Modifier
                                                                             .fillMaxSize()
-                                                                            .combinedClickable(
+                                                                            .combinedBounceClick(
                                                                                 onClick = {
                                                                                     when (item) {
                                                                                         is SongItem -> playerConnection.playQueue(
@@ -1356,7 +1358,7 @@ fun HomeScreen(
                                                     if (isFluidTheme()) ContinuousRoundedRectangle(28.dp) else MaterialTheme.shapes.extraLarge
                                                 )
                                                 .focusable()
-                                                .combinedClickable(
+                                                .combinedBounceClick(
                                                     onClick = {
                                                         if (isActive) {
                                                             playerConnection.togglePlayPause()
@@ -1692,7 +1694,7 @@ fun HomeScreen(
                                                 },
                                                 modifier = Modifier
                                                     .width(horizontalLazyGridItemWidth)
-                                                    .combinedClickable(
+                                                    .combinedBounceClick(
                                                         onClick = {
                                                             if (song!!.id == mediaMetadata?.id) {
                                                                 playerConnection.togglePlayPause()
@@ -1742,7 +1744,7 @@ fun HomeScreen(
                                         },
                                         onClick = {
                                             when (recommendation.title) {
-                                                is Song -> navController.navigate("album/${recommendation.title.album!!.id}")
+                                                is Song -> recommendation.title.album?.id?.let { navController.navigate("album/$it") }
                                                 is Album -> navController.navigate("album/${recommendation.title.id}")
                                                 is Artist -> navController.navigate("artist/${recommendation.title.id}")
                                                 is Playlist -> {}
@@ -1858,7 +1860,7 @@ fun HomeScreen(
                                                     },
                                                     modifier = Modifier
                                                         .width(horizontalLazyGridItemWidth)
-                                                        .combinedClickable(
+                                                        .combinedBounceClick(
                                                             onClick = {
                                                                 if (song.id == mediaMetadata?.id) {
                                                                     playerConnection.togglePlayPause()

@@ -62,7 +62,7 @@ object LrcLib {
         val request = Request.Builder().url(url).header("User-Agent", AGENT).build()
         providerHttpClient.newCall(request).execute().use { response ->
             if (!response.isSuccessful) return null
-            return response.body?.string()
+            return response.body.string()
         }
     }
 

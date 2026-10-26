@@ -30,20 +30,20 @@ import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.BrightnessAuto
-import androidx.compose.material.icons.rounded.Contrast
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.LightMode
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import pushkar.chorus.music.ui.component.TopBarBackButton
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -114,10 +114,10 @@ fun ThemeScreen(
 highlightKey: String? = null) {
     val (appThemeMode, onAppThemeModeChange) = rememberEnumPreference(AppThemeModeKey, defaultValue = AppThemeMode.MaterialUI)
     val (darkMode, onDarkModeChange) = rememberEnumPreference(DarkModeKey, DarkMode.AUTO)
-    val (pureBlack, onPureBlackChangeRaw) = rememberPreference(PureBlackKey, defaultValue = false)
+    val (pureBlack, onPureBlackChangeRaw) = rememberPreference(PureBlackKey, defaultValue = true)
     val (_, onPureBlackMiniPlayerChange) = rememberPreference(
         PureBlackMiniPlayerKey,
-        defaultValue = false
+        defaultValue = true
     )
 
     val onPureBlackChange: (Boolean) -> Unit = { enabled ->
@@ -139,16 +139,14 @@ highlightKey: String? = null) {
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            CenterAlignedTopAppBar(
                 title = { Text(stringResource(R.string.theme_colors), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(painterResource(R.drawable.arrow_back), contentDescription = stringResource(R.string.cd_back))
-                    }
+                    TopBarBackButton(navController = navController)
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Transparent,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surface
+                    scrolledContainerColor = Color.Transparent,
                 )
             )
         }
@@ -215,17 +213,17 @@ highlightKey: String? = null) {
                 )
 
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    ThemeModeCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        title = stringResource(R.string.dark_theme_follow_system),
+                        icon = Icons.Rounded.BrightnessAuto,
+                        isSelected = darkMode == DarkMode.AUTO,
+                        onClick = { onDarkModeChange(DarkMode.AUTO); onPureBlackChange(true) }
+                    )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        ThemeModeCard(
-                            modifier = Modifier.weight(1f),
-                            title = stringResource(R.string.dark_theme_follow_system),
-                            icon = Icons.Rounded.BrightnessAuto,
-                            isSelected = darkMode == DarkMode.AUTO,
-                            onClick = { onDarkModeChange(DarkMode.AUTO); onPureBlackChange(false) }
-                        )
                         ThemeModeCard(
                             modifier = Modifier.weight(1f),
                             title = "Light",
@@ -233,23 +231,11 @@ highlightKey: String? = null) {
                             isSelected = darkMode == DarkMode.OFF,
                             onClick = { onDarkModeChange(DarkMode.OFF); onPureBlackChange(false) }
                         )
-                    }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
                         ThemeModeCard(
                             modifier = Modifier.weight(1f),
                             title = "Dark",
                             icon = Icons.Rounded.DarkMode,
-                            isSelected = darkMode == DarkMode.ON && !pureBlack,
-                            onClick = { onDarkModeChange(DarkMode.ON); onPureBlackChange(false) }
-                        )
-                        ThemeModeCard(
-                            modifier = Modifier.weight(1f),
-                            title = "AMOLED",
-                            icon = Icons.Rounded.Contrast,
-                            isSelected = pureBlack,
+                            isSelected = darkMode == DarkMode.ON,
                             onClick = { onDarkModeChange(DarkMode.ON); onPureBlackChange(true) }
                         )
                     }

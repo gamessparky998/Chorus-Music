@@ -30,6 +30,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.fluid.foundation.GlassIntensity
+import pushkar.chorus.music.ui.fluid.foundation.fluidGlass
 import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -208,11 +210,13 @@ fun SearchScreen(
         label = "SearchBarTopPadding"
     )
 
-    val onSearch: (String) -> Unit = remember {
+    val onSearch: (String) -> Unit = remember(navController, playerConnection, pauseSearchHistory, coroutineScope, database) {
         { searchQuery ->
-            if (searchQuery.isNotEmpty()) {
+            val trimmed = searchQuery.trim()
+            if (trimmed.isNotEmpty()) {
+                keyboardController?.hide()
                 focusManager.clearFocus()
-                when (val parsedUrl = YouTubeUrlParser.parse(searchQuery)) {
+                when (val parsedUrl = YouTubeUrlParser.parse(trimmed)) {
                     is YouTubeUrlParser.ParsedUrl.Video -> {
                         playerConnection?.playQueue(
                             YouTubeQueue(
@@ -226,14 +230,21 @@ fun SearchScreen(
                     }
 
                     null -> {
-                        navController.navigate("search/${URLEncoder.encode(searchQuery, "UTF-8")}")
+                        val encoded = URLEncoder.encode(trimmed, "UTF-8")
+                        navController.navigate("search/$encoded") {
+                            launchSingleTop = true
+                        }
                     }
                 }
 
                 if (!pauseSearchHistory) {
                     coroutineScope.launch(Dispatchers.IO) {
-                        database.query {
-                            insert(SearchHistory(query = searchQuery))
+                        try {
+                            database.query {
+                                insert(SearchHistory(query = trimmed))
+                            }
+                        } catch (e: Exception) {
+                            pushkar.chorus.music.utils.reportException(e)
                         }
                     }
                 }
@@ -241,11 +252,13 @@ fun SearchScreen(
         }
     }
 
-    val onSearchFromSuggestion: (String) -> Unit = remember {
+    val onSearchFromSuggestion: (String) -> Unit = remember(navController, playerConnection, pauseSearchHistory, coroutineScope, database) {
         { searchQuery ->
-            if (searchQuery.isNotEmpty()) {
+            val trimmed = searchQuery.trim()
+            if (trimmed.isNotEmpty()) {
+                keyboardController?.hide()
                 focusManager.clearFocus()
-                when (val parsedUrl = YouTubeUrlParser.parse(searchQuery)) {
+                when (val parsedUrl = YouTubeUrlParser.parse(trimmed)) {
                     is YouTubeUrlParser.ParsedUrl.Video -> {
                         playerConnection?.playQueue(
                             YouTubeQueue(
@@ -259,14 +272,21 @@ fun SearchScreen(
                     }
 
                     null -> {
-                        navController.navigate("search/${URLEncoder.encode(searchQuery, "UTF-8")}")
+                        val encoded = URLEncoder.encode(trimmed, "UTF-8")
+                        navController.navigate("search/$encoded") {
+                            launchSingleTop = true
+                        }
                     }
                 }
 
                 if (!pauseSearchHistory) {
                     coroutineScope.launch(Dispatchers.IO) {
-                        database.query {
-                            insert(SearchHistory(query = searchQuery))
+                        try {
+                            database.query {
+                                insert(SearchHistory(query = trimmed))
+                            }
+                        } catch (e: Exception) {
+                            pushkar.chorus.music.utils.reportException(e)
                         }
                     }
                 }
@@ -280,6 +300,9 @@ fun SearchScreen(
                 modifier = Modifier
                     .background(if (pureBlack) Color.Black else MaterialTheme.colorScheme.surface)
             ) {
+                val isFluid = isFluidTheme()
+                val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+
                 SearchBar(
                     inputField = {
                         BasicTextField(
@@ -292,14 +315,19 @@ fun SearchScreen(
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                             keyboardActions = KeyboardActions(onSearch = {
-                                onSearch(query.text)
-                                searchActive = false
+                                keyboardController?.hide()
+                                focusManager.clearFocus()
+                                val trimmed = query.text.trim()
+                                if (trimmed.isNotEmpty()) {
+                                    onSearch(trimmed)
+                                    searchActive = false
+                                }
                             }),
                             textStyle = TextStyle(
-                                color = MaterialTheme.colorScheme.onSurface,
+                                color = if (isFluid && !isDark) Color(0xFF141416) else MaterialTheme.colorScheme.onSurface,
                                 fontSize = 16.sp
                             ),
-                            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                            cursorBrush = SolidColor(if (isFluid) (if (isDark) Color.White else Color(0xFF007AFF)) else MaterialTheme.colorScheme.primary),
                             decorationBox = { innerTextField ->
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
@@ -318,7 +346,7 @@ fun SearchScreen(
                                         Icon(
                                             painter = painterResource(if (searchActive) R.drawable.arrow_back else R.drawable.search),
                                             contentDescription = if (searchActive) stringResource(R.string.dismiss) else null,
-                                            tint = MaterialTheme.colorScheme.onSurface
+                                            tint = if (isFluid && !isDark) Color(0xFF141416) else MaterialTheme.colorScheme.onSurface
                                         )
                                     }
                                     Box(
@@ -335,7 +363,7 @@ fun SearchScreen(
                                                     }
                                                 ),
                                                 style = TextStyle(
-                                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                                    color = if (isFluid && !isDark) Color(0xFF666666) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                                                     fontSize = 16.sp
                                                 )
                                             )
@@ -348,7 +376,7 @@ fun SearchScreen(
                                                 Icon(
                                                     painter = painterResource(R.drawable.close),
                                                     contentDescription = null,
-                                                    tint = MaterialTheme.colorScheme.onSurface
+                                                    tint = if (isFluid && !isDark) Color(0xFF141416) else MaterialTheme.colorScheme.onSurface
                                                 )
                                             }
                                         }
@@ -366,7 +394,7 @@ fun SearchScreen(
                                                     }
                                                 ),
                                                 contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.onSurface
+                                                tint = if (isFluid && !isDark) Color(0xFF141416) else MaterialTheme.colorScheme.onSurface
                                             )
                                         }
                                     }
@@ -377,12 +405,27 @@ fun SearchScreen(
                     expanded = searchActive,
                     onExpandedChange = { searchActive = it },
                     colors = SearchBarDefaults.colors(
-                        containerColor = if (pureBlack) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant
+                        containerColor = if (isFluid) {
+                            if (isDark) Color(0x332C2C2E) else Color(0x66FFFFFF)
+                        } else if (pureBlack) {
+                            Color(0x22FFFFFF)
+                        } else {
+                            MaterialTheme.colorScheme.surfaceVariant
+                        }
                     ),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = searchBarHorizontalPadding)
                         .padding(top = searchBarTopPadding)
+                        .let { mod ->
+                            if (isFluid && !searchActive) {
+                                val barShape = ContinuousRoundedRectangle(24.dp)
+                                mod.clip(barShape).fluidGlass(
+                                    shape = barShape,
+                                    intensity = GlassIntensity.Standard
+                                )
+                            } else mod
+                        }
                 ) {
                     if (showSearchContent) {
                         when (searchSource) {
@@ -425,13 +468,14 @@ fun SearchScreen(
                 ) {
                     Column {
                         Spacer(modifier = Modifier.height(8.dp))
+                        val safeTabIndex = selectedTabIndex.coerceIn(0, 2)
                         SecondaryTabRow(
-                            selectedTabIndex = selectedTabIndex,
+                            selectedTabIndex = safeTabIndex,
                             containerColor = Color.Transparent,
                             indicator = {
                                 Box(
                                     modifier = Modifier
-                                        .tabIndicatorOffset(selectedTabIndex)
+                                        .tabIndicatorOffset(safeTabIndex)
                                         .fillMaxWidth(),
                                     contentAlignment = Alignment.BottomCenter
                                 ) {
@@ -562,12 +606,31 @@ fun ExploreTabContent(
                         val baseColor = androidx.compose.ui.graphics.Color(item.stripeColor).takeOrElse {
                             MaterialTheme.colorScheme.surfaceContainer
                         }
+                        val isFluid = isFluidTheme()
+                        val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+                        val cardShape = if (isFluid) ContinuousRoundedRectangle(16.dp) else RoundedCornerShape(8.dp)
 
-                        Box(
-                            modifier = Modifier
+                        val cardModifier = if (isFluid) {
+                            Modifier
                                 .weight(1f)
                                 .aspectRatio(1.5f)
-                                .clip(if (isFluidTheme()) ContinuousRoundedRectangle(12.dp) else RoundedCornerShape(8.dp))
+                                .clip(cardShape)
+                                .fluidGlass(
+                                    shape = cardShape,
+                                    intensity = GlassIntensity.Standard,
+                                    surfaceColor = baseColor,
+                                    surfaceAlpha = if (isDark) 0.38f else 0.22f
+                                )
+                                .clickable {
+                                    navController.navigate(
+                                        "youtube_browse/${item.endpoint.browseId}?params=${item.endpoint.params}"
+                                    )
+                                }
+                        } else {
+                            Modifier
+                                .weight(1f)
+                                .aspectRatio(1.5f)
+                                .clip(cardShape)
                                 .background(
                                     brush = androidx.compose.ui.graphics.Brush.linearGradient(
                                         colors = listOf(
@@ -581,12 +644,16 @@ fun ExploreTabContent(
                                         "youtube_browse/${item.endpoint.browseId}?params=${item.endpoint.params}"
                                     )
                                 }
+                        }
+
+                        Box(
+                            modifier = cardModifier
                         ) {
                             Text(
                                 text = item.title,
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                                color = androidx.compose.ui.graphics.Color.White,
+                                color = if (isFluid && !isDark) androidx.compose.ui.graphics.Color(0xFF141416) else androidx.compose.ui.graphics.Color.White,
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier
@@ -600,7 +667,7 @@ fun ExploreTabContent(
                                     .offset(x = 16.dp, y = 16.dp)
                                     .size(64.dp)
                                     .graphicsLayer { rotationZ = 25f }
-                                    .clip(if (isFluidTheme()) ContinuousRoundedRectangle(12.dp) else RoundedCornerShape(8.dp))
+                                    .clip(if (isFluid) ContinuousRoundedRectangle(12.dp) else RoundedCornerShape(8.dp))
                                     .background(androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.3f))
                             )
                         }

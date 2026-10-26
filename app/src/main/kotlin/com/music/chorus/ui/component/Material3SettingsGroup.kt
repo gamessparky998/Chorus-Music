@@ -27,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
@@ -91,8 +92,8 @@ fun Material3SettingsGroup(
                 }
 
                 val cardContainerColor = when {
-                    item.isHighlighted -> if (isFluid) FluidTheme.tint.copy(alpha = 0.25f) else MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-                    isFluid -> if (isDark) androidx.compose.ui.graphics.Color(0xB31C1C1E) else androidx.compose.ui.graphics.Color(0xCCFFFFFF)
+                    isFluid -> Color.Transparent
+                    item.isHighlighted -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
                     else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
                 }
 
@@ -101,7 +102,18 @@ fun Material3SettingsGroup(
                         .fillMaxWidth()
                         .animateContentSize()
                         .let { mod ->
-                            if (isFluid) mod.clip(shape).fluidGlass(intensity = GlassIntensity.Subtle) else mod
+                            if (isFluid) {
+                                mod
+                                    .clip(shape)
+                                    .fluidGlass(
+                                        shape = shape,
+                                        intensity = GlassIntensity.Standard,
+                                        surfaceColor = if (item.isHighlighted) MaterialTheme.colorScheme.primary else Color.Unspecified,
+                                        surfaceAlpha = if (item.isHighlighted) 0.25f else if (isDark) 0.18f else 0.10f
+                                    )
+                            } else {
+                                mod
+                            }
                         },
                     shape = shape,
                     colors = CardDefaults.cardColors(containerColor = cardContainerColor),
@@ -150,20 +162,33 @@ private fun Material3SettingsItemRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
 
+        val resolvedIconShape = item.iconShape ?: if (isFluid) ContinuousRoundedRectangle(12.dp) else RoundedCornerShape(12.dp)
+
         if (item.customIcon != null) {
             Box(
                 modifier = Modifier
                     .size(if (compact) 34.dp else 40.dp)
-                    .clip(item.iconShape ?: RoundedCornerShape(12.dp))
-                    .background(
-                        if (item.tintIcon) {
-                            MaterialTheme.colorScheme.primary.copy(
-                                alpha = if (item.isHighlighted) 0.15f else 0.1f
+                    .clip(resolvedIconShape)
+                    .let { mod ->
+                        if (isFluid && item.tintIcon) {
+                            mod.fluidGlass(
+                                shape = resolvedIconShape,
+                                intensity = GlassIntensity.Subtle,
+                                surfaceColor = MaterialTheme.colorScheme.primary,
+                                surfaceAlpha = if (item.isHighlighted) 0.28f else 0.16f
                             )
                         } else {
-                            androidx.compose.ui.graphics.Color.Transparent
+                            mod.background(
+                                if (item.tintIcon) {
+                                    MaterialTheme.colorScheme.primary.copy(
+                                        alpha = if (item.isHighlighted) 0.15f else 0.1f
+                                    )
+                                } else {
+                                    androidx.compose.ui.graphics.Color.Transparent
+                                }
+                            )
                         }
-                    ),
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 item.customIcon.invoke()
@@ -173,16 +198,27 @@ private fun Material3SettingsItemRow(
             Box(
                 modifier = Modifier
                     .size(if (compact) 34.dp else 40.dp)
-                    .clip(item.iconShape ?: RoundedCornerShape(12.dp))
-                    .background(
-                        if (item.tintIcon) {
-                            MaterialTheme.colorScheme.primary.copy(
-                                alpha = if (item.isHighlighted) 0.15f else 0.1f
+                    .clip(resolvedIconShape)
+                    .let { mod ->
+                        if (isFluid && item.tintIcon) {
+                            mod.fluidGlass(
+                                shape = resolvedIconShape,
+                                intensity = GlassIntensity.Subtle,
+                                surfaceColor = MaterialTheme.colorScheme.primary,
+                                surfaceAlpha = if (item.isHighlighted) 0.28f else 0.16f
                             )
                         } else {
-                            androidx.compose.ui.graphics.Color.Transparent
+                            mod.background(
+                                if (item.tintIcon) {
+                                    MaterialTheme.colorScheme.primary.copy(
+                                        alpha = if (item.isHighlighted) 0.15f else 0.1f
+                                    )
+                                } else {
+                                    androidx.compose.ui.graphics.Color.Transparent
+                                }
+                            )
                         }
-                    ),
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 if (item.showBadge) {

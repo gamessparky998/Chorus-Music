@@ -21,7 +21,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import pushkar.chorus.music.R
 import pushkar.chorus.music.LocalPlayerAwareWindowInsets
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import pushkar.chorus.music.ui.component.TopBarBackButton
 import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
 import pushkar.chorus.music.ui.theme.isFluidTheme
 import kotlinx.coroutines.Dispatchers
@@ -135,17 +137,22 @@ highlightKey: String? = null) {
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.service_uptime)) },
-                navigationIcon = {
-                    IconButton(onClick = navController::navigateUp) {
-                        Icon(
-                            painter = painterResource(R.drawable.arrow_back),
-                            contentDescription = null
-                        )
-                    }
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(R.string.service_uptime),
+                        fontWeight = FontWeight.Bold,
+                    )
                 },
-                scrollBehavior = scrollBehavior
+                navigationIcon = {
+                    TopBarBackButton(navController = navController)
+                },
+                colors =
+                    TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent,
+                        scrolledContainerColor = Color.Transparent,
+                    ),
+                scrollBehavior = scrollBehavior,
             )
         },
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),

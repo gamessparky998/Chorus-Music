@@ -46,6 +46,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
 import pushkar.chorus.music.ui.theme.isFluidTheme
+import pushkar.chorus.music.ui.fluid.foundation.BounceIndication
+import pushkar.chorus.music.ui.fluid.foundation.GlassIntensity
+import pushkar.chorus.music.ui.fluid.foundation.fluidGlass
+import pushkar.chorus.music.ui.fluid.foundation.glassUsesDarkAppearance
+import pushkar.chorus.music.ui.fluid.foundation.isGlassAllowed
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilledIconToggleButton
@@ -132,6 +138,9 @@ import pushkar.chorus.music.ui.menu.QueueMenu
 import pushkar.chorus.music.ui.menu.SelectionMediaMetadataMenu
 import pushkar.chorus.music.ui.screens.CommentSheet
 import pushkar.chorus.music.ui.utils.ShowMediaInfo
+import pushkar.chorus.music.ui.component.GlassCircleButton
+import pushkar.chorus.music.ui.fluid.foundation.LocalAppBackdrop
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import pushkar.chorus.music.utils.listItemShape
 import pushkar.chorus.music.utils.makeTimeString
 import pushkar.chorus.music.utils.rememberPreference
@@ -237,6 +246,7 @@ fun Queue(
     val shuffleModeEnabled by playerConnection.shuffleModeEnabled.collectAsState()
 
     val currentFormat by playerConnection.currentFormat.collectAsState(initial = null)
+    val currentBackdrop = LocalAppBackdrop.current
 
     val selectedSongs = remember { mutableStateListOf<MediaMetadata>() }
     val selectedItems = remember { mutableStateListOf<Timeline.Window>() }
@@ -304,7 +314,16 @@ fun Queue(
         state = state,
         modifier = modifier,
         background = {
-            Box(Modifier.fillMaxSize().background(Color.Unspecified))
+            if (isFluidTheme()) {
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .fluidGlass(intensity = GlassIntensity.Prominent)
+                        .background(if (glassUsesDarkAppearance()) Color(0x66141416) else Color(0x66F0F0F3))
+                )
+            } else {
+                Box(Modifier.fillMaxSize().background(Color.Unspecified))
+            }
         },
         collapsedContent = {
 
@@ -373,20 +392,18 @@ fun Queue(
                     playerBackground = playerBackground
                 )
 
-                if (hasLyrics) {
-                    PlayerQueueButton(
-                        icon = R.drawable.lyrics,
-                        onClick = { onToggleLyrics() },
-                        isActive = showInlineLyrics,
-                        shape = middleShape,
-                        modifier = Modifier.size(buttonSize),
-                        textButtonColor = textButtonColor,
-                        iconButtonColor = iconButtonColor,
-                        iconSize = iconSize,
-                        textBackgroundColor = TextBackgroundColor,
-                        playerBackground = playerBackground
-                    )
-                }
+                PlayerQueueButton(
+                    icon = R.drawable.lyrics,
+                    onClick = { onToggleLyrics() },
+                    isActive = showInlineLyrics,
+                    shape = middleShape,
+                    modifier = Modifier.size(buttonSize),
+                    textButtonColor = textButtonColor,
+                    iconButtonColor = if (hasLyrics || showInlineLyrics) iconButtonColor else iconButtonColor.copy(alpha = 0.6f),
+                    iconSize = iconSize,
+                    textBackgroundColor = TextBackgroundColor,
+                    playerBackground = playerBackground
+                )
 
                 if (showCommentButton) {
                     PlayerQueueButton(
@@ -514,7 +531,7 @@ fun Queue(
         val mutableQueueWindows = remember { mutableStateListOf<Timeline.Window>() }
         val queueLength =
             remember(queueWindows) {
-                queueWindows.sumOf { it.mediaItem.metadata!!.duration }
+                queueWindows.sumOf { it.mediaItem.metadata?.duration ?: 0 }
             }
 
         val coroutineScope = rememberCoroutineScope()
@@ -588,11 +605,20 @@ fun Queue(
             }
         }
 
+        val isFluid = isFluidTheme()
         Column(
             modifier =
                 Modifier
                     .fillMaxSize()
-                    .background(background),
+                    .then(
+                        if (isFluid) {
+                            Modifier
+                                .fluidGlass(intensity = GlassIntensity.Prominent)
+                                .background(if (glassUsesDarkAppearance()) Color(0x66141416) else Color(0x66F0F0F3))
+                        } else {
+                            Modifier.background(background)
+                        }
+                    ),
         ) {
             Column(
                 modifier =
@@ -643,23 +669,44 @@ fun Queue(
                         if (currentSong?.song?.liked == true) stringResource(R.string.action_remove_like) else stringResource(
                             R.string.action_like
                         )
+                    val isFluid = isFluidTheme()
+                    val isLiked = currentSong?.song?.liked == true
+
                     TooltipBox(
                         positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
                         tooltip = { PlainTooltip { Text(likeDescription) } },
                         state = rememberTooltipState(),
                     ) {
-                        FilledTonalIconButton(
-                            onClick = playerConnection::toggleLike,
-                            modifier = Modifier.padding(end = 8.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(
-                                    if (currentSong?.song?.liked == true) R.drawable.favorite
-                                    else R.drawable.favorite_border
-                                ),
-                                contentDescription = likeDescription,
-                                tint = if (currentSong?.song?.liked == true) MaterialTheme.colorScheme.error else LocalContentColor.current
-                            )
+                        if (isFluid) {
+                            GlassCircleButton(
+                                onClick = playerConnection::toggleLike,
+                                size = 40.dp,
+                                surfaceColor = if (isLiked) MaterialTheme.colorScheme.error.copy(alpha = 0.16f) else Color.Transparent,
+                                modifier = Modifier.padding(end = 8.dp)
+                            ) {
+                                Icon(
+                                    painter = painterResource(
+                                        if (isLiked) R.drawable.favorite
+                                        else R.drawable.favorite_border
+                                    ),
+                                    contentDescription = likeDescription,
+                                    tint = if (isLiked) MaterialTheme.colorScheme.error else LocalContentColor.current
+                                )
+                            }
+                        } else {
+                            FilledTonalIconButton(
+                                onClick = playerConnection::toggleLike,
+                                modifier = Modifier.padding(end = 8.dp)
+                            ) {
+                                Icon(
+                                    painter = painterResource(
+                                        if (isLiked) R.drawable.favorite
+                                        else R.drawable.favorite_border
+                                    ),
+                                    contentDescription = likeDescription,
+                                    tint = if (isLiked) MaterialTheme.colorScheme.error else LocalContentColor.current
+                                )
+                            }
                         }
                     }
 
@@ -670,17 +717,49 @@ fun Queue(
                         tooltip = { PlainTooltip { Text(lockDescription) } },
                         state = rememberTooltipState(),
                     ) {
-                        FilledTonalIconButton(
-                            onClick = { locked = !locked },
-                            modifier = Modifier.padding(end = 8.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(if (locked) R.drawable.lock else R.drawable.lock_open),
-                                contentDescription = lockDescription,
-                            )
+                        if (isFluid) {
+                            GlassCircleButton(
+                                onClick = { locked = !locked },
+                                size = 40.dp,
+                                surfaceColor = if (locked) MaterialTheme.colorScheme.primary.copy(alpha = 0.16f) else Color.Transparent,
+                                modifier = Modifier.padding(end = 8.dp)
+                            ) {
+                                Icon(
+                                    painter = painterResource(if (locked) R.drawable.lock else R.drawable.lock_open),
+                                    contentDescription = lockDescription,
+                                    tint = if (locked) MaterialTheme.colorScheme.primary else LocalContentColor.current
+                                )
+                            }
+                        } else {
+                            FilledTonalIconButton(
+                                onClick = { locked = !locked },
+                                modifier = Modifier.padding(end = 8.dp)
+                            ) {
+                                Icon(
+                                    painter = painterResource(if (locked) R.drawable.lock else R.drawable.lock_open),
+                                    contentDescription = lockDescription,
+                                )
+                            }
                         }
                     }
 
+                }
+
+                val isDark = isSystemInDarkTheme()
+                val queueToggleColors = if (isFluid) {
+                    ToggleButtonDefaults.toggleButtonColors(
+                        containerColor = if (isDark) Color.White.copy(alpha = 0.08f) else Color.Black.copy(alpha = 0.05f),
+                        contentColor = MaterialTheme.colorScheme.onSurface,
+                        checkedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = if (isDark) 0.35f else 0.22f),
+                        checkedContentColor = MaterialTheme.colorScheme.primary
+                    )
+                } else {
+                    ToggleButtonDefaults.toggleButtonColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        checkedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                        checkedContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
                 }
 
                 FlowRow(
@@ -696,12 +775,7 @@ fun Queue(
                         },
                         enabled = !isListenTogetherGuest,
                         shapes = ButtonGroupDefaults.connectedLeadingButtonShapes(),
-                        colors = ToggleButtonDefaults.toggleButtonColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                            checkedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                            checkedContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        ),
+                        colors = queueToggleColors,
                         modifier = Modifier
                             .weight(1f)
                             .height(56.dp),
@@ -727,12 +801,7 @@ fun Queue(
                         },
                         enabled = !isListenTogetherGuest,
                         shapes = ButtonGroupDefaults.connectedMiddleButtonShapes(),
-                        colors = ToggleButtonDefaults.toggleButtonColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                            checkedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                            checkedContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        ),
+                        colors = queueToggleColors,
                         modifier = Modifier
                             .weight(1f)
                             .height(56.dp),
@@ -766,12 +835,7 @@ fun Queue(
                         },
                         enabled = !isListenTogetherGuest,
                         shapes = ButtonGroupDefaults.connectedTrailingButtonShapes(),
-                        colors = ToggleButtonDefaults.toggleButtonColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                            checkedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                            checkedContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        ),
+                        colors = queueToggleColors,
                         modifier = Modifier
                             .weight(1f)
                             .height(56.dp),
@@ -884,7 +948,7 @@ fun Queue(
                         IconButton(
                             enabled = count > 0,
                             onClick = {
-                                menuState.show {
+                                menuState.show(backdrop = currentBackdrop) {
                                     SelectionMediaMetadataMenu(
                                         songSelection = selectedSongs,
                                         onDismiss = menuState::dismiss,
@@ -986,44 +1050,46 @@ fun Queue(
                                 }
                             }
 
-                            val content: @Composable () -> Unit = {
-                                Row(
-                                    horizontalArrangement = Arrangement.Center,
-                                    modifier = Modifier.animateItem(),
-                                ) {
-                                    MediaMetadataListItem(
-                                        mediaMetadata = window.mediaItem.metadata!!,
-                                        isSelected = false,
-                                        isActive = isActive,
-                                        isPlaying = isPlaying && isActive,
-                                        shape = listItemShape(index, mutableQueueWindows.size),
-                                        trailingContent = {
-                                            if (inSelectMode) {
-                                                Checkbox(
-                                                    checked = window.mediaItem.mediaId in selection,
-                                                    onCheckedChange = onCheckedChange
-                                                )
-                                            } else {
-                                                if (!isListenTogetherGuest) {
-                                                    IconButton(
-                                                        onClick = {
-                                                            menuState.show {
-                                                                QueueMenu(
-                                                                    mediaMetadata = window.mediaItem.metadata!!,
-                                                                    navController = navController,
-                                                                    playerBottomSheetState = playerBottomSheetState,
-                                                                    onShowDetailsDialog = {
-                                                                        window.mediaItem.mediaId.let {
-                                                                            bottomSheetPageState.show {
-                                                                                ShowMediaInfo(it)
+                            val windowMetadata = window.mediaItem.metadata
+                            if (windowMetadata != null) {
+                                val content: @Composable () -> Unit = {
+                                    Row(
+                                        horizontalArrangement = Arrangement.Center,
+                                        modifier = Modifier.animateItem(),
+                                    ) {
+                                        MediaMetadataListItem(
+                                            mediaMetadata = windowMetadata,
+                                            isSelected = false,
+                                            isActive = isActive,
+                                            isPlaying = isPlaying && isActive,
+                                            shape = listItemShape(index, mutableQueueWindows.size),
+                                            trailingContent = {
+                                                if (inSelectMode) {
+                                                    Checkbox(
+                                                        checked = window.mediaItem.mediaId in selection,
+                                                        onCheckedChange = onCheckedChange
+                                                    )
+                                                } else {
+                                                    if (!isListenTogetherGuest) {
+                                                        IconButton(
+                                                            onClick = {
+                                                                menuState.show(backdrop = currentBackdrop) {
+                                                                    QueueMenu(
+                                                                        mediaMetadata = windowMetadata,
+                                                                        navController = navController,
+                                                                        playerBottomSheetState = playerBottomSheetState,
+                                                                        onShowDetailsDialog = {
+                                                                            window.mediaItem.mediaId.let {
+                                                                                bottomSheetPageState.show(backdrop = currentBackdrop) {
+                                                                                    ShowMediaInfo(it)
+                                                                                }
                                                                             }
-                                                                        }
-                                                                    },
-                                                                    onDismiss = menuState::dismiss,
-                                                                )
+                                                                        },
+                                                                        onDismiss = menuState::dismiss,
+                                                                    )
+                                                                }
                                                             }
-                                                        }
-                                                    ) {
+                                                        ) {
                                                         Icon(
                                                             painter = painterResource(R.drawable.more_vert),
                                                             contentDescription = null,
@@ -1098,7 +1164,6 @@ fun Queue(
                                     )
                                 }
                             }
-
                             if (locked) {
                                 content()
                             } else {
@@ -1111,6 +1176,7 @@ fun Queue(
                             }
                         }
                     }
+                }
 
                     if (automix.isNotEmpty()) {
                         item(key = "automix_divider") {
@@ -1125,67 +1191,70 @@ fun Queue(
                             items = automix,
                             key = { _, it -> it.mediaId },
                         ) { index, item ->
-                            Row(
-                                horizontalArrangement = Arrangement.Center,
-                            ) {
-                                MediaMetadataListItem(
-                                    mediaMetadata = item.metadata!!,
-                                    shape = listItemShape(index, automix.size),
-                                    trailingContent = {
-                                        if (!isListenTogetherGuest) {
-                                            IconButton(
-                                                onClick = {
-                                                    playerConnection.service.playNextAutomix(
-                                                        item,
-                                                        index,
-                                                    )
-                                                },
-                                            ) {
-                                                Icon(
-                                                    painter = painterResource(R.drawable.playlist_play),
-                                                    contentDescription = null,
-                                                )
-                                            }
-                                            IconButton(
-                                                onClick = {
-                                                    playerConnection.service.addToQueueAutomix(
-                                                        item,
-                                                        index,
-                                                    )
-                                                },
-                                            ) {
-                                                Icon(
-                                                    painter = painterResource(R.drawable.queue_music),
-                                                    contentDescription = null,
-                                                )
-                                            }
-                                        }
-                                    },
-                                    modifier =
-                                        Modifier
-                                            .fillMaxWidth()
-                                            .combinedClickable(
-                                                onClick = {},
-                                                onLongClick = {
-                                                    menuState.show {
-                                                        QueueMenu(
-                                                            mediaMetadata = item.metadata!!,
-                                                            navController = navController,
-                                                            playerBottomSheetState = playerBottomSheetState,
-                                                            onShowDetailsDialog = {
-                                                                item.mediaId.let {
-                                                                    bottomSheetPageState.show {
-                                                                        ShowMediaInfo(it)
-                                                                    }
-                                                                }
-                                                            },
-                                                            onDismiss = menuState::dismiss,
+                            val itemMetadata = item.metadata
+                            if (itemMetadata != null) {
+                                Row(
+                                    horizontalArrangement = Arrangement.Center,
+                                ) {
+                                    MediaMetadataListItem(
+                                        mediaMetadata = itemMetadata,
+                                        shape = listItemShape(index, automix.size),
+                                        trailingContent = {
+                                            if (!isListenTogetherGuest) {
+                                                IconButton(
+                                                    onClick = {
+                                                        playerConnection.service.playNextAutomix(
+                                                            item,
+                                                            index,
                                                         )
-                                                    }
-                                                },
-                                            )
-                                            .animateItem(),
-                                )
+                                                    },
+                                                ) {
+                                                    Icon(
+                                                        painter = painterResource(R.drawable.playlist_play),
+                                                        contentDescription = null,
+                                                    )
+                                                }
+                                                IconButton(
+                                                    onClick = {
+                                                        playerConnection.service.addToQueueAutomix(
+                                                            item,
+                                                            index,
+                                                        )
+                                                    },
+                                                ) {
+                                                    Icon(
+                                                        painter = painterResource(R.drawable.queue_music),
+                                                        contentDescription = null,
+                                                    )
+                                                }
+                                            }
+                                        },
+                                        modifier =
+                                            Modifier
+                                                .fillMaxWidth()
+                                                .combinedClickable(
+                                                    onClick = {},
+                                                    onLongClick = {
+                                                        menuState.show(backdrop = currentBackdrop) {
+                                                            QueueMenu(
+                                                                mediaMetadata = itemMetadata,
+                                                                navController = navController,
+                                                                playerBottomSheetState = playerBottomSheetState,
+                                                                onShowDetailsDialog = {
+                                                                    item.mediaId.let {
+                                                                        bottomSheetPageState.show(backdrop = currentBackdrop) {
+                                                                            ShowMediaInfo(it)
+                                                                        }
+                                                                    }
+                                                                },
+                                                                onDismiss = menuState::dismiss,
+                                                            )
+                                                        }
+                                                    },
+                                                )
+                                                .animateItem(),
+                                    )
+                                }
                             }
                         }
                     }
@@ -1231,22 +1300,58 @@ private fun PlayerQueueButton(
     textBackgroundColor: Color,
     playerBackground: PlayerBackgroundStyle
 ) {
-    val buttonModifier = Modifier
-        .clip(shape)
-        .clickable(enabled = enabled, onClick = onClick)
-
+    val isFluid = isFluidTheme()
+    val isDark = glassUsesDarkAppearance()
+    val useGlass = isFluid && isGlassAllowed()
     val alphaFactor = if (enabled) 1f else 0.35f
+    val interactionSource = remember { MutableInteractionSource() }
 
-    val appliedModifier = if (isActive) {
-        modifier.then(buttonModifier.background(textButtonColor)).alpha(alphaFactor)
+    val appliedModifier = if (isFluid) {
+        val activeRim = if (isActive) Color.White.copy(alpha = 0.6f) else Color.Unspecified
+        if (useGlass) {
+            modifier
+                .clip(shape)
+                .fluidGlass(
+                    shape = shape,
+                    intensity = if (isActive) GlassIntensity.Prominent else GlassIntensity.Standard,
+                    rimTintColor = activeRim
+                )
+                .clickable(
+                    enabled = enabled,
+                    onClick = onClick,
+                    indication = BounceIndication,
+                    interactionSource = interactionSource
+                )
+                .alpha(alphaFactor)
+        } else {
+            modifier
+                .clip(shape)
+                .background(if (isActive) Color.White.copy(alpha = 0.25f) else Color.White.copy(alpha = 0.12f))
+                .border(1.dp, Color.White.copy(alpha = if (isActive) 0.45f else 0.2f), shape)
+                .clickable(
+                    enabled = enabled,
+                    onClick = onClick,
+                    indication = BounceIndication,
+                    interactionSource = interactionSource
+                )
+                .alpha(alphaFactor)
+        }
     } else {
-        modifier.then(
-            buttonModifier.border(
-                width = 1.dp,
-                color = textButtonColor.copy(alpha = 0.3f),
-                shape = shape
-            )
-        ).alpha(alphaFactor)
+        val buttonModifier = Modifier
+            .clip(shape)
+            .clickable(enabled = enabled, onClick = onClick)
+
+        if (isActive) {
+            modifier.then(buttonModifier.background(textButtonColor)).alpha(alphaFactor)
+        } else {
+            modifier.then(
+                buttonModifier.border(
+                    width = 1.dp,
+                    color = textButtonColor.copy(alpha = 0.3f),
+                    shape = shape
+                )
+            ).alpha(alphaFactor)
+        }
     }
 
     Box(
@@ -1254,9 +1359,14 @@ private fun PlayerQueueButton(
         contentAlignment = Alignment.Center
     ) {
         if (text != null) {
+            val textCol = if (useGlass) {
+                if (isDark) Color.White else Color(0xFF111111)
+            } else {
+                iconButtonColor.copy(alpha = if (enabled) 1f else 0.6f)
+            }
             Text(
                 text = text,
-                color = iconButtonColor.copy(alpha = if (enabled) 1f else 0.6f),
+                color = textCol,
                 fontSize = 10.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -1266,7 +1376,13 @@ private fun PlayerQueueButton(
                     .basicMarquee()
             )
         } else {
-            val baseTint = if (isActive) {
+            val baseTint = if (useGlass) {
+                if (isActive) {
+                    if (isDark) Color.White else Color(0xFF007AFF)
+                } else {
+                    if (isDark) Color.White.copy(alpha = 0.75f) else Color(0xFF333333)
+                }
+            } else if (isActive) {
                 iconButtonColor
             } else {
                 when (playerBackground) {

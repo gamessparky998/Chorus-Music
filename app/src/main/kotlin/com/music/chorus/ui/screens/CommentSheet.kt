@@ -23,7 +23,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.ui.graphics.Color
 import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.fluid.foundation.GlassIntensity
+import pushkar.chorus.music.ui.fluid.foundation.fluidGlass
 import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -89,12 +92,17 @@ fun CommentSheet(
         }
     }
 
+    val isFluid = isFluidTheme()
+    val sheetShape = if (isFluid) ContinuousRoundedRectangle(topStart = 32.dp, topEnd = 32.dp) else BottomSheetDefaults.ExpandedShape
+    val sheetContainerColor = if (isFluid) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         dragHandle = { BottomSheetDefaults.DragHandle() },
-        shape = if (isFluidTheme()) ContinuousRoundedRectangle(topStart = 28.dp, topEnd = 28.dp) else BottomSheetDefaults.ExpandedShape,
-        containerColor = MaterialTheme.colorScheme.surfaceContainer
+        shape = sheetShape,
+        containerColor = sheetContainerColor,
+        modifier = if (isFluid) Modifier.fillMaxHeight().clip(sheetShape).fluidGlass(shape = sheetShape, intensity = GlassIntensity.Prominent) else Modifier
     ) {
         Column(modifier = Modifier.fillMaxHeight()) {
 
@@ -193,9 +201,10 @@ fun CommentSheet(
                                     if (nextToken != null) {
                                         item(key = "pagination_loader") {
                                             LaunchedEffect(nextToken) {
-                                                YouTube.commentContinuation(nextToken!!).onSuccess { (newComments, token) ->
+                                                val token = nextToken ?: return@LaunchedEffect
+                                                YouTube.commentContinuation(token).onSuccess { (newComments, next) ->
                                                     comments = comments + newComments
-                                                    nextToken = token
+                                                    nextToken = next
                                                 }
                                             }
                                             Box(
@@ -416,13 +425,14 @@ fun CommentDetailPane(
 
                     LaunchedEffect(repliesNextToken) {
                         if (isLoadingReplies) return@LaunchedEffect
+                        val token = repliesNextToken ?: return@LaunchedEffect
 
                         kotlinx.coroutines.delay(500L)
 
                         isLoadingReplies = true
-                        YouTube.commentReplies(repliesNextToken!!).onSuccess { (newReplies, token) ->
+                        YouTube.commentReplies(token).onSuccess { (newReplies, next) ->
                             replies = (replies + newReplies).distinctBy { it.commentId ?: it.hashCode() }
-                            repliesNextToken = token
+                            repliesNextToken = next
                             isLoadingReplies = false
                         }.onFailure {
                             isLoadingReplies = false

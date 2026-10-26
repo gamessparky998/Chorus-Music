@@ -75,12 +75,15 @@ fun FluidTheme(
         LocalFluidTypography provides typography,
         LocalFluidTextStyle provides typography.body,
         LocalFluidContentColor provides colors.label,
+        LocalFluidTint provides colors.accent,
     ) {
-        MaterialTheme(
-            colorScheme = materialScheme,
-            typography = materialTypography,
-        ) {
-            content()
+        ProvideHigTheme(colors = colors, typography = typography) {
+            MaterialTheme(
+                colorScheme = materialScheme,
+                typography = materialTypography,
+            ) {
+                content()
+            }
         }
     }
 }

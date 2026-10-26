@@ -41,23 +41,36 @@ import pushkar.chorus.music.ui.fluid.foundation.GlassIntensity
 import pushkar.chorus.music.ui.fluid.foundation.fluidGlass
 import pushkar.chorus.music.ui.theme.isFluidTheme
 
+import pushkar.chorus.music.ui.component.backdrop.Backdrop
+import pushkar.chorus.music.ui.fluid.component.FluidCenteredPopup
+import pushkar.chorus.music.ui.fluid.foundation.LocalAppBackdrop
+import androidx.compose.runtime.CompositionLocalProvider
+
 val LocalMenuState = compositionLocalOf { MenuState() }
 
 @Stable
 class MenuState(
     isVisible: Boolean = false,
     content: @Composable ColumnScope.() -> Unit = {},
+    backdrop: Backdrop? = null,
 ) {
     var isVisible by mutableStateOf(isVisible)
     var content by mutableStateOf(content)
+    var backdrop by mutableStateOf(backdrop)
 
     fun show(content: @Composable ColumnScope.() -> Unit) {
-        isVisible = true
+        show(null, content)
+    }
+
+    fun show(backdrop: Backdrop? = null, content: @Composable ColumnScope.() -> Unit) {
+        this.backdrop = backdrop
         this.content = content
+        this.isVisible = true
     }
 
     fun dismiss() {
         isVisible = false
+        backdrop = null
     }
 }
 
@@ -124,19 +137,28 @@ fun BottomSheetMenu(
     val focusManager = LocalFocusManager.current
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
     val isFluid = isFluidTheme()
-    val isDark = androidx.compose.foundation.isSystemInDarkTheme()
 
-    val sheetShape = if (isFluid) {
-        ContinuousRoundedRectangle(topStart = 32.dp, topEnd = 32.dp)
-    } else {
-        BottomSheetDefaults.ExpandedShape
+    if (isFluid) {
+        val targetBackdrop = state.backdrop ?: LocalAppBackdrop.current
+        CompositionLocalProvider(LocalAppBackdrop provides targetBackdrop) {
+            FluidCenteredPopup(
+                isVisible = state.isVisible,
+                onDismissRequest = {
+                    focusManager.clearFocus()
+                    state.dismiss()
+                },
+                modifier = modifier,
+                maxHeightRatio = 0.85f,
+                maxWidth = 420.dp
+            ) {
+                state.content(this)
+            }
+        }
+        return
     }
 
-    val sheetColor = if (isFluid && background == BottomSheetDefaults.ContainerColor) {
-        if (isDark) Color(0xF01C1C1E) else Color(0xF2FFFFFF)
-    } else {
-        background
-    }
+    val sheetShape = BottomSheetDefaults.ExpandedShape
+    val sheetColor = background
 
     AnimatedBottomSheet(
         isVisible = state.isVisible,
@@ -149,24 +171,18 @@ fun BottomSheetMenu(
         containerColor = sheetColor,
         contentColor = MaterialTheme.colorScheme.onSurface,
         dragHandle = {
-            val handleColor = if (isFluid) {
-                if (isDark) Color.White.copy(alpha = 0.25f) else Color.Black.copy(alpha = 0.2f)
-            } else {
-                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
-            }
+            val handleColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
             Box(
                 modifier = Modifier
-                    .padding(vertical = if (isFluid) 10.dp else 12.dp)
-                    .size(width = if (isFluid) 36.dp else 40.dp, height = if (isFluid) 5.dp else 4.dp)
-                    .clip(if (isFluid) ContinuousRoundedRectangle(2.5.dp) else RoundedCornerShape(2.dp))
+                    .padding(vertical = 12.dp)
+                    .size(width = 40.dp, height = 4.dp)
+                    .clip(RoundedCornerShape(2.dp))
                     .background(handleColor)
             )
         },
         modifier = modifier
             .fillMaxHeight()
-            .let { mod ->
-                if (isFluid) mod.clip(sheetShape).fluidGlass(intensity = GlassIntensity.Standard) else mod
-            }
+            .clip(sheetShape)
     ) {
         Column(
             modifier = Modifier

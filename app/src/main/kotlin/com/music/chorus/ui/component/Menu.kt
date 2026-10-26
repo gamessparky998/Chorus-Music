@@ -1,6 +1,8 @@
 package pushkar.chorus.music.ui.component
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -38,75 +40,94 @@ fun Material3MenuGroup(
     val isFluid = isFluidTheme()
     val isDark = androidx.compose.foundation.isSystemInDarkTheme()
 
+    if (isFluid) {
+        val groupShape = ContinuousRoundedRectangle(18.dp)
+        androidx.compose.foundation.layout.Box(
+            modifier = modifier
+                .fillMaxWidth()
+                .clip(groupShape)
+                .background(
+                    if (isDark) Color.White.copy(alpha = 0.05f) else Color.Black.copy(alpha = 0.035f),
+                    shape = groupShape
+                )
+                .border(
+                    width = 0.5.dp,
+                    color = if (isDark) Color.White.copy(alpha = 0.08f) else Color.Black.copy(alpha = 0.06f),
+                    shape = groupShape
+                )
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                items.forEachIndexed { index, item ->
+                    val interactionSource = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+                    androidx.compose.foundation.layout.Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .let { mod ->
+                                if (item.onClick != null) {
+                                    mod.clickable(
+                                        interactionSource = interactionSource,
+                                        indication = BounceIndication,
+                                        onClick = item.onClick
+                                    )
+                                } else mod
+                            }
+                    ) {
+                        if (item.customComposable != null) {
+                            item.customComposable.invoke()
+                        } else {
+                            Material3MenuItemRow(item = item, isFluid = true)
+                        }
+                    }
+
+                    if (index < items.size - 1) {
+                        androidx.compose.material3.HorizontalDivider(
+                            color = (if (isDark) Color.White else Color.Black).copy(alpha = 0.07f),
+                            thickness = 0.5.dp,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                    }
+                }
+            }
+        }
+        return
+    }
+
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(if (isFluid) 6.dp else 4.dp)
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         items.forEachIndexed { index, item ->
             val shape = when {
-                items.size == 1 -> if (isFluid) ContinuousRoundedRectangle(20.dp) else RoundedCornerShape(24.dp)
-                index == 0 -> if (isFluid) {
-                    ContinuousRoundedRectangle(topStart = 20.dp, topEnd = 20.dp, bottomStart = 6.dp, bottomEnd = 6.dp)
-                } else {
-                    RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp, bottomStart = 6.dp, bottomEnd = 6.dp)
-                }
-                index == items.size - 1 -> if (isFluid) {
-                    ContinuousRoundedRectangle(topStart = 6.dp, topEnd = 6.dp, bottomStart = 20.dp, bottomEnd = 20.dp)
-                } else {
-                    RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp, bottomStart = 24.dp, bottomEnd = 24.dp)
-                }
-                else -> if (isFluid) ContinuousRoundedRectangle(6.dp) else RoundedCornerShape(6.dp)
+                items.size == 1 -> RoundedCornerShape(24.dp)
+                index == 0 -> RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp, bottomStart = 6.dp, bottomEnd = 6.dp)
+                index == items.size - 1 -> RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp, bottomStart = 24.dp, bottomEnd = 24.dp)
+                else -> RoundedCornerShape(6.dp)
             }
 
-            val content = @Composable {
-                if (item.customComposable != null) {
-                    item.customComposable.invoke()
-                } else {
-                    Material3MenuItemRow(item = item, isFluid = isFluid)
-                }
-            }
-
-            val defaultCardColors = if (isFluid) {
-                CardDefaults.cardColors(
-                    containerColor = if (isDark) Color(0xCC2C2C2E) else Color(0xCCF2F2F7)
-                )
-            } else {
-                CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
-            }
-
-            val interactionSource = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+            val defaultCardColors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            )
 
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .animateContentSize()
                     .let { mod ->
-                        if (isFluid) {
-                            mod.clip(shape).fluidGlass(intensity = GlassIntensity.Subtle)
-                        } else {
-                            mod
-                        }
-                    }
-                    .let { mod ->
                         if (item.onClick != null) {
-                            if (isFluid) {
-                                mod.clickable(
-                                    interactionSource = interactionSource,
-                                    indication = BounceIndication,
-                                    onClick = item.onClick
-                                )
-                            } else {
-                                mod.clickable(onClick = item.onClick)
-                            }
+                            mod.clickable(onClick = item.onClick)
                         } else mod
                     },
                 shape = shape,
                 colors = item.cardColors ?: defaultCardColors,
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
-                content()
+                if (item.customComposable != null) {
+                    item.customComposable.invoke()
+                } else {
+                    Material3MenuItemRow(item = item, isFluid = false)
+                }
             }
         }
     }

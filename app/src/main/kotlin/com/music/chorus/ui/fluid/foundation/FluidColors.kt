@@ -46,7 +46,7 @@ data class FluidColors(
     val systemGray6: Color,
 )
 
-val DefaultFluidAccent = Color(0xFFFA2D48)
+val DefaultFluidAccent = Color(0xFF0A84FF)
 
 fun lightFluidColors(accent: Color = DefaultFluidAccent): FluidColors = FluidColors(
     isDark = false,

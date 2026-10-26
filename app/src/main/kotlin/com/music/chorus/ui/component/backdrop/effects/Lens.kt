@@ -3,6 +3,7 @@ package pushkar.chorus.music.ui.component.backdrop.effects
 import androidx.annotation.FloatRange
 import androidx.compose.foundation.shape.AbsoluteRoundedCornerShape
 import androidx.compose.foundation.shape.CornerBasedShape
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.util.fastCoerceAtLeast
 import androidx.compose.ui.util.fastCoerceAtMost
@@ -23,47 +24,45 @@ fun BackdropEffectScope.lens(
 ) {
     if (!isRuntimeShaderSupported()) return
     if (refractionHeight <= 0f || refractionAmount <= 0f) return
+    if (size == androidx.compose.ui.geometry.Size.Unspecified || size.width <= 0f || size.height <= 0f || size.width.isNaN() || size.height.isNaN()) return
 
     if (padding > 0f) {
         padding = (padding - refractionHeight).fastCoerceAtLeast(0f)
     }
 
-    val cornerRadii = cornerRadii
-    val effect =
-        if (cornerRadii != null) {
-            val dispersion = chromaticAberrationAmount.coerceIn(0f, 1f)
-            val shader =
-                if (dispersion <= 0f) {
-                    obtainRuntimeShader(
-                        "Refraction",
-                        RoundedRectRefractionShaderString
-                    )
-                } else {
-                    obtainRuntimeShader(
-                        "RefractionWithDispersion",
-                        RoundedRectRefractionWithDispersionShaderString
-                    )
-                }
-            shader.apply {
-                val w = size.width
-                val h = size.height
-                setFloatUniform("halfSize", w * 0.5f, h * 0.5f)
-                setFloatUniform("minHalf", minOf(w, h) * 0.5f)
-                setFloatUniform("offset", -padding, -padding)
-                setFloatUniform("cornerRadii", cornerRadii)
-                setFloatUniform("refractionHeight", refractionHeight)
-                setFloatUniform("refractionAmount", -refractionAmount)
-                setFloatUniform("depthEffect", if (depthEffect) 1f else 0f)
-                setIntUniform("circleMapMode", if (fastCircleMap) 1 else 0)
-                if (dispersion > 0f) {
-                    setFloatUniform("chromaticAberration", dispersion)
-                }
+    val cornerRadii = cornerRadii ?: return
+    val dispersion = chromaticAberrationAmount.coerceIn(0f, 1f)
+    try {
+        val shader =
+            if (dispersion <= 0f) {
+                obtainRuntimeShader(
+                    "Refraction",
+                    RoundedRectRefractionShaderString
+                )
+            } else {
+                obtainRuntimeShader(
+                    "RefractionWithDispersion",
+                    RoundedRectRefractionWithDispersionShaderString
+                )
             }
-            RuntimeShaderEffect(shader, "content")
-        } else {
-            throwUnsupportedSDFException()
+        shader.apply {
+            val w = size.width
+            val h = size.height
+            setFloatUniform("halfSize", w * 0.5f, h * 0.5f)
+            setFloatUniform("minHalf", minOf(w, h) * 0.5f)
+            setFloatUniform("offset", -padding, -padding)
+            setFloatUniform("cornerRadii", cornerRadii)
+            setFloatUniform("refractionHeight", refractionHeight)
+            setFloatUniform("refractionAmount", -refractionAmount)
+            setFloatUniform("depthEffect", if (depthEffect) 1f else 0f)
+            setIntUniform("circleMapMode", if (fastCircleMap) 1 else 0)
+            if (dispersion > 0f) {
+                setFloatUniform("chromaticAberration", dispersion)
+            }
         }
-    effect(effect)
+        val effect = RuntimeShaderEffect(shader, "content")
+        effect(effect)
+    } catch (_: Throwable) {}
 }
 
 private val BackdropEffectScope.cornerRadii: FloatArray?
@@ -107,11 +106,7 @@ private val BackdropEffectScope.cornerRadii: FloatArray?
             )
         }
 
+        RectangleShape -> floatArrayOf(0f, 0f, 0f, 0f)
         else -> null
     }
 
-private fun throwUnsupportedSDFException(): Nothing {
-    throw UnsupportedOperationException(
-        "Only RoundedRectangularShape or CornerBasedShape is supported in lens effects."
-    )
-}

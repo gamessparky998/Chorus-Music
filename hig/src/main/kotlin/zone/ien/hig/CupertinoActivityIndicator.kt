@@ -49,7 +49,10 @@ fun CupertinoActivityIndicator(
     minAlpha: Float = CupertinoActivityIndicatorDefaults.MinAlpha,
 ) {
     require(innerRadius in 0f..1f) {
-        "innerRaius should be from 0 to 1"
+        "innerRadius should be from 0 to 1"
+    }
+    require(count > 0) {
+        "count must be > 0"
     }
     val animatedPathCount = (count / 2).coerceIn(1, count)
 

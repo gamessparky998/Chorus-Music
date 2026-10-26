@@ -58,11 +58,12 @@ fun BottomSheet(
     collapsedContent: @Composable BoxScope.() -> Unit,
     isExpandable: Boolean = true,
     overlayContent: (@Composable BoxScope.() -> Unit)? = null,
+    enableMorph: Boolean = false,
     content: @Composable BoxScope.() -> Unit,
 ) {
     val density = LocalDensity.current
     val isFluid = isFluidTheme()
-    val morphEnabled = isFluid && PlayerMorph.enabled
+    val morphEnabled = isFluid && enableMorph && PlayerMorph.enabled
     if (morphEnabled) {
         InstallPlayerMorphLayers()
     }
@@ -161,15 +162,15 @@ fun BottomSheet(
             )
         }
 
-        if (!state.isExpanded && (onDismiss == null || !state.isDismissed)) {
+        if (!state.isExpanded && state.progress < 1f && (onDismiss == null || !state.isDismissed)) {
             Box(
                 modifier =
                     Modifier
                         .graphicsLayer {
-                            alpha = if (morphEnabled && PlayerMorph.active) {
-                                1f
+                            alpha = if (state.progress >= 1f) {
+                                0f
                             } else {
-                                1f - (state.progress * 4).coerceAtMost(1f)
+                                (1f - (state.progress * 4)).coerceIn(0f, 1f)
                             }
                         }.clickable(
                             interactionSource = remember { MutableInteractionSource() },

@@ -33,17 +33,17 @@ object LyricsProviderRegistry {
         providers.filter { it in providerNames }.joinToString(",")
 
     fun getDefaultProviderOrder(): List<String> = listOf(
+        "LrcLib",
+        "Kugou",
+        "Musixmatch",
+        "YouLyPlus",
+        "YouTubeSubtitle",
         "LrcRed",
         "BiniLyrics",
-        "YouLyPlus",
         "Paxsenix",
         "Unison",
         "BetterLyrics",
         "SimpMusic",
-        "Musixmatch",
-        "LrcLib",
-        "Kugou",
-        "YouTubeSubtitle",
         "YouTubeMusic",
         "Megalobiz",
         "Genius",

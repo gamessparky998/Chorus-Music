@@ -2,6 +2,10 @@
 
 package pushkar.chorus.music.ui.screens.library
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +29,7 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.ButtonGroupDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -33,7 +38,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.ToggleButton
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.ui.text.font.FontWeight
+import pushkar.chorus.music.ui.component.TopBarBackButton
+import pushkar.chorus.music.ui.component.TopBarIconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -125,7 +133,7 @@ fun FollowedArtistsScreen(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        TopAppBar(
+        CenterAlignedTopAppBar(
             title = {
                 if (isSearching) {
                     TextField(
@@ -155,44 +163,43 @@ fun FollowedArtistsScreen(
                         focusRequester.requestFocus()
                     }
                 } else {
-                    Text("Followed Artists")
+                    Text("Followed Artists", fontWeight = FontWeight.Bold)
                 }
             },
             navigationIcon = {
-                IconButton(onClick = {
-                    if (isSearching) {
-                        isSearching = false
-                        searchQuery = ""
-                        focusManager.clearFocus()
-                    } else {
-                        navController.navigateUp()
-                    }
-                }) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                        contentDescription = "Back"
-                    )
-                }
+                TopBarBackButton(
+                    onClick = {
+                        if (isSearching) {
+                            isSearching = false
+                            searchQuery = ""
+                            focusManager.clearFocus()
+                        } else {
+                            navController.navigateUp()
+                        }
+                    },
+                )
             },
             actions = {
                 if (isSearching) {
                     if (searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { searchQuery = "" }) {
-                            Icon(
-                                imageVector = Icons.Rounded.Close,
-                                contentDescription = "Clear"
-                            )
-                        }
-                    }
-                } else {
-                    IconButton(onClick = { isSearching = true }) {
-                        Icon(
-                            imageVector = Icons.Rounded.Search,
-                            contentDescription = "Search"
+                        TopBarIconButton(
+                            onClick = { searchQuery = "" },
+                            imageVector = Icons.Rounded.Close,
+                            contentDescription = "Clear",
                         )
                     }
+                } else {
+                    TopBarIconButton(
+                        onClick = { isSearching = true },
+                        imageVector = Icons.Rounded.Search,
+                        contentDescription = "Search",
+                    )
                 }
-            }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = Color.Transparent,
+                scrolledContainerColor = Color.Transparent,
+            ),
         )
 
         val headerContent = @Composable {

@@ -74,8 +74,7 @@ fun ArtistHero(
     headerOffset: Int = 0,
     modifier: Modifier = Modifier
 ) {
-    val (themeMode) = rememberPreference(AppThemeModeKey, AppThemeMode.MaterialUI.name)
-    val isFluid = themeMode == AppThemeMode.FluidUI.name
+    val isFluid = isFluidTheme()
 
     val configuration = androidx.compose.ui.platform.LocalConfiguration.current
     val isTablet = configuration.screenWidthDp > 600
@@ -117,6 +116,21 @@ fun ArtistHero(
                     alignment = Alignment.Center
                 )
             }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(160.dp)
+                    .align(Alignment.TopCenter)
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                MaterialTheme.colorScheme.background,
+                                Color.Transparent
+                            )
+                        )
+                    )
+            )
 
             Box(
                 modifier = Modifier

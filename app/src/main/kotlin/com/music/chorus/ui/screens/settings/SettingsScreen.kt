@@ -7,6 +7,8 @@ import android.os.Build
 import android.provider.Settings
 import android.widget.Toast
 import android.net.Uri
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -17,6 +19,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.fluid.foundation.FluidTheme
+import pushkar.chorus.music.ui.fluid.foundation.GlassIntensity
+import pushkar.chorus.music.ui.fluid.foundation.fluidGlass
 import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -36,6 +41,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asComposeRenderEffect
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.remember
 
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
@@ -44,6 +56,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.navigation.NavController
 import pushkar.chorus.music.BuildConfig
@@ -80,32 +93,33 @@ highlightKey: String? = null) {
     val aboutText = stringResource(R.string.about)
 
     val scrollState = rememberScrollState()
-    Column(
-        Modifier
-            .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal))
-            .verticalScroll(scrollState)
-            .padding(horizontal = 16.dp)
+    val isFluid = isFluidTheme()
+    val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+
+    Box(
+        modifier = Modifier.fillMaxSize()
     ) {
-        Spacer(
-            Modifier.windowInsetsPadding(
-                LocalPlayerAwareWindowInsets.current.only(
-                    WindowInsetsSides.Top
+        Column(
+            Modifier
+                .fillMaxSize()
+                .windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal))
+                .verticalScroll(scrollState)
+                .padding(horizontal = 16.dp)
+        ) {
+            Spacer(
+                Modifier.windowInsetsPadding(
+                    LocalPlayerAwareWindowInsets.current.only(
+                        WindowInsetsSides.Top
+                    )
                 )
             )
-        )
-        Text(
-            text = stringResource(R.string.settings),
-            style = MaterialTheme.typography.displaySmall.copy(
-                fontWeight = FontWeight.SemiBold
-            ),
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.padding(start = 8.dp, top = 24.dp, bottom = 16.dp)
-        )
+            Spacer(Modifier.height(8.dp))
 
+        val searchBarShape = if (isFluid) ContinuousRoundedRectangle(24.dp) else RoundedCornerShape(24.dp)
         Surface(
-            shape = if (isFluidTheme()) ContinuousRoundedRectangle(24.dp) else RoundedCornerShape(24.dp),
-            color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f),
-            border = androidx.compose.foundation.BorderStroke(
+            shape = searchBarShape,
+            color = if (isFluid) Color.Transparent else MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f),
+            border = if (isFluid) null else androidx.compose.foundation.BorderStroke(
                 width = 1.dp,
                 color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
             ),
@@ -113,6 +127,20 @@ highlightKey: String? = null) {
                 .fillMaxWidth()
                 .padding(start = 8.dp, end = 8.dp, bottom = 16.dp)
                 .height(52.dp)
+                .let { mod ->
+                    if (isFluid) {
+                        mod
+                            .clip(searchBarShape)
+                            .fluidGlass(
+                                shape = searchBarShape,
+                                intensity = GlassIntensity.Standard,
+                                surfaceColor = if (isDark) Color(0x33202024) else Color(0x40FFFFFF),
+                                surfaceAlpha = if (isDark) 0.22f else 0.12f
+                            )
+                    } else {
+                        mod
+                    }
+                }
         ) {
             Row(
                 modifier = Modifier
@@ -361,29 +389,33 @@ highlightKey: String? = null) {
         )
     }
 
-    TopAppBar(
-        title = {
-            androidx.compose.animation.AnimatedVisibility(
-                visible = scrollState.value > 100,
-                enter = androidx.compose.animation.fadeIn(),
-                exit = androidx.compose.animation.fadeOut()
-            ) {
+        CenterAlignedTopAppBar(
+            title = {
                 Text(
                     text = stringResource(R.string.settings),
-                    style = MaterialTheme.typography.titleLarge
+                    style = if (isFluid) {
+                        FluidTheme.typography.title1.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 24.sp
+                        )
+                    } else {
+                        MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 22.sp
+                        )
+                    }
                 )
-            }
-        },
-        navigationIcon = {
-            IconButton(
-                onClick = navController::navigateUp,
-                onLongClick = navController::backToMain
-            ) {
-                Icon(
-                    painterResource(R.drawable.arrow_back),
-                    contentDescription = null
-                )
-            }
-        }
-    )
+            },
+            navigationIcon = {
+                pushkar.chorus.music.ui.component.TopBarBackButton(navController)
+            },
+            actions = {},
+            scrollBehavior = scrollBehavior,
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = Color.Transparent,
+                scrolledContainerColor = Color.Transparent,
+            ),
+            modifier = Modifier
+        )
+    }
 }

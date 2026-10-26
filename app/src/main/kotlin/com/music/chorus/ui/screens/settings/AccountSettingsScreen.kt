@@ -81,20 +81,21 @@ fun AccountSettingsScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.account)) },
-                navigationIcon = {
-                    IconButton(
-                        onClick = navController::navigateUp,
-                        onLongClick = navController::backToMain
-                    ) {
-                        Icon(
-                            painterResource(R.drawable.arrow_back),
-                            contentDescription = null
-                        )
-                    }
+            androidx.compose.material3.CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(R.string.account),
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                    )
                 },
-                scrollBehavior = scrollBehavior
+                navigationIcon = {
+                    pushkar.chorus.music.ui.component.TopBarBackButton(navController)
+                },
+                actions = {},
+                colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
+                    containerColor = androidx.compose.ui.graphics.Color.Transparent,
+                    scrolledContainerColor = androidx.compose.ui.graphics.Color.Transparent,
+                )
             )
         }
     ) { padding ->

@@ -113,6 +113,8 @@ import pushkar.chorus.music.playback.queues.LocalAlbumRadio
 import pushkar.chorus.music.ui.component.AlbumGradient
 import pushkar.chorus.music.ui.component.ExpandableText
 import pushkar.chorus.music.ui.component.IconButton
+import pushkar.chorus.music.ui.component.TopBarBackButton
+import pushkar.chorus.music.ui.component.TopBarIconButton
 import pushkar.chorus.music.ui.component.LinkSegment
 import pushkar.chorus.music.ui.component.LocalMenuState
 import pushkar.chorus.music.ui.component.NavigationTitle
@@ -298,6 +300,21 @@ fun AlbumScreen(
                                     modifier = Modifier.fillMaxSize()
                                 )
                             }
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(160.dp)
+                                    .align(Alignment.TopCenter)
+                                    .background(
+                                        brush = Brush.verticalGradient(
+                                            colors = listOf(
+                                                MaterialTheme.colorScheme.background,
+                                                Color.Transparent
+                                            )
+                                        )
+                                    )
+                            )
 
                             Box(
                                 modifier = Modifier
@@ -858,32 +875,14 @@ fun AlbumScreen(
         },
         navigationIcon = {
             if (inSelectMode) {
-                IconButton(onClick = onExitSelectionMode) {
+                TopBarIconButton(onClick = onExitSelectionMode) {
                     Icon(
                         painter = painterResource(R.drawable.close),
                         contentDescription = null,
                     )
                 }
             } else {
-                IconButton(
-                    onClick = { navController.navigateUp() },
-                    onLongClick = { navController.backToMain() },
-                    colors = IconButtonDefaults.outlinedIconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f)
-                    ),
-                    modifier = Modifier.border(
-                        border = BorderStroke(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
-                        ),
-                        shape = CircleShape
-                    )
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.arrow_back_ios),
-                        contentDescription = null
-                    )
-                }
+                TopBarBackButton(navController = navController)
             }
         },
         actions = {
@@ -899,7 +898,7 @@ fun AlbumScreen(
                         }
                     }
                 )
-                IconButton(
+                TopBarIconButton(
                     enabled = selection.isNotEmpty(),
                     onClick = {
                         menuState.show {
@@ -924,7 +923,7 @@ fun AlbumScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        IconButton(
+                        TopBarIconButton(
                             onClick = {
                                 val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
                                     type = "text/plain"
@@ -939,18 +938,7 @@ fun AlbumScreen(
                                         null
                                     )
                                 )
-                            },
-                            colors = IconButtonDefaults.outlinedIconButtonColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f)
-                            ),
-                            modifier = Modifier
-                                .border(
-                                    border = BorderStroke(
-                                        width = 1.dp,
-                                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
-                                    ),
-                                    shape = CircleShape
-                                )
+                            }
                         ) {
                             Icon(
                                 painter = painterResource(R.drawable.ios_share),
@@ -959,7 +947,7 @@ fun AlbumScreen(
                             )
                         }
 
-                        IconButton(
+                        TopBarIconButton(
                             onClick = {
                                 menuState.show {
                                     AlbumMenu(
@@ -971,18 +959,7 @@ fun AlbumScreen(
                                         onDismiss = menuState::dismiss,
                                     )
                                 }
-                            },
-                            colors = IconButtonDefaults.outlinedIconButtonColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f)
-                            ),
-                            modifier = Modifier
-                                .border(
-                                    border = BorderStroke(
-                                        width = 1.dp,
-                                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
-                                    ),
-                                    shape = CircleShape
-                                )
+                            }
                         ) {
                             Icon(
                                 painter = painterResource(R.drawable.more_vert),

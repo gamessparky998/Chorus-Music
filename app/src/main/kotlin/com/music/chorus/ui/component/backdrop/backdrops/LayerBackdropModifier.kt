@@ -62,8 +62,15 @@ private class LayerBackdropNode(
     override fun ContentDrawScope.draw() {
         backdrop.staticRegions.clear()
 
-        recordLayer(this@LayerBackdropNode, backdrop.graphicsLayer) { backdrop.onDraw(this@draw) }
-        drawLayer(backdrop.graphicsLayer)
+        backdrop.isRecording = true
+        try {
+            recordLayer(this@LayerBackdropNode, backdrop.graphicsLayer) { backdrop.onDraw(this@draw) }
+        } finally {
+            backdrop.isRecording = false
+        }
+        try {
+            drawLayer(backdrop.graphicsLayer)
+        } catch (_: Throwable) {}
         backdrop.contentRecorded()
     }
 

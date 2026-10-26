@@ -1208,18 +1208,20 @@ highlightKey: String? = null) {
         Spacer(Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Bottom)))
     }
 
-    TopAppBar(
-        title = { Text(stringResource(R.string.content)) },
+    androidx.compose.material3.CenterAlignedTopAppBar(
+        title = {
+            Text(
+                text = stringResource(R.string.content),
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+            )
+        },
         navigationIcon = {
-            IconButton(
-                onClick = navController::navigateUp,
-                onLongClick = navController::backToMain,
-            ) {
-                Icon(
-                    painterResource(R.drawable.arrow_back),
-                    contentDescription = null,
-                )
-            }
-        }
+            pushkar.chorus.music.ui.component.TopBarBackButton(navController)
+        },
+        actions = {},
+        colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
+            containerColor = androidx.compose.ui.graphics.Color.Transparent,
+            scrolledContainerColor = androidx.compose.ui.graphics.Color.Transparent,
+        )
     )
 }

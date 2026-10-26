@@ -30,64 +30,58 @@ fun AppNavHost(
         navController = navController,
         startDestination = startDestination,
         enterTransition = {
-            val currentRouteIndex = navigationItems.indexOfFirst {
-                it.route == targetState.destination.route
-            }
-            val previousRouteIndex = navigationItems.indexOfFirst {
-                it.route == initialState.destination.route
-            }
+            val targetRouteIndex = navigationItems.indexOfFirst { it.route == targetState.destination.route }
+            val initialRouteIndex = navigationItems.indexOfFirst { it.route == initialState.destination.route }
 
-            val transitionSpec = tween<Float>(240, easing = androidx.compose.animation.core.FastOutSlowInEasing)
-            val slideSpec = tween<androidx.compose.ui.unit.IntOffset>(240, easing = androidx.compose.animation.core.FastOutSlowInEasing)
-            if (currentRouteIndex == -1 || currentRouteIndex > previousRouteIndex)
-                slideInHorizontally(animationSpec = slideSpec) { it / 8 } + fadeIn(animationSpec = transitionSpec)
-            else
-                slideInHorizontally(animationSpec = slideSpec) { -it / 8 } + fadeIn(animationSpec = transitionSpec)
+            if (targetRouteIndex != -1 && initialRouteIndex != -1) {
+                fadeIn(animationSpec = tween(180, easing = androidx.compose.animation.core.LinearOutSlowInEasing))
+            } else {
+                val transitionSpec = tween<Float>(240, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+                val slideSpec = tween<androidx.compose.ui.unit.IntOffset>(240, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+                if (targetRouteIndex == -1 || targetRouteIndex > initialRouteIndex)
+                    slideInHorizontally(animationSpec = slideSpec) { it / 6 } + fadeIn(animationSpec = transitionSpec)
+                else
+                    slideInHorizontally(animationSpec = slideSpec) { -it / 6 } + fadeIn(animationSpec = transitionSpec)
+            }
         },
         exitTransition = {
-            val currentRouteIndex = navigationItems.indexOfFirst {
-                it.route == initialState.destination.route
-            }
-            val targetRouteIndex = navigationItems.indexOfFirst {
-                it.route == targetState.destination.route
-            }
+            val targetRouteIndex = navigationItems.indexOfFirst { it.route == targetState.destination.route }
+            val initialRouteIndex = navigationItems.indexOfFirst { it.route == initialState.destination.route }
 
-            val transitionSpec = tween<Float>(240, easing = androidx.compose.animation.core.FastOutSlowInEasing)
-            val slideSpec = tween<androidx.compose.ui.unit.IntOffset>(240, easing = androidx.compose.animation.core.FastOutSlowInEasing)
-            if (targetRouteIndex == -1 || targetRouteIndex > currentRouteIndex)
-                slideOutHorizontally(animationSpec = slideSpec) { -it / 8 } + fadeOut(animationSpec = transitionSpec)
-            else
-                slideOutHorizontally(animationSpec = slideSpec) { it / 8 } + fadeOut(animationSpec = transitionSpec)
+            if (targetRouteIndex != -1 && initialRouteIndex != -1) {
+                fadeOut(animationSpec = tween(140, easing = androidx.compose.animation.core.FastOutLinearInEasing))
+            } else {
+                val transitionSpec = tween<Float>(240, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+                val slideSpec = tween<androidx.compose.ui.unit.IntOffset>(240, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+                if (targetRouteIndex == -1 || targetRouteIndex > initialRouteIndex)
+                    slideOutHorizontally(animationSpec = slideSpec) { -it / 6 } + fadeOut(animationSpec = transitionSpec)
+                else
+                    slideOutHorizontally(animationSpec = slideSpec) { it / 6 } + fadeOut(animationSpec = transitionSpec)
+            }
         },
         popEnterTransition = {
-            val currentRouteIndex = navigationItems.indexOfFirst {
-                it.route == targetState.destination.route
-            }
-            val previousRouteIndex = navigationItems.indexOfFirst {
-                it.route == initialState.destination.route
-            }
+            val targetRouteIndex = navigationItems.indexOfFirst { it.route == targetState.destination.route }
+            val initialRouteIndex = navigationItems.indexOfFirst { it.route == initialState.destination.route }
 
-            val transitionSpec = tween<Float>(240, easing = androidx.compose.animation.core.FastOutSlowInEasing)
-            val slideSpec = tween<androidx.compose.ui.unit.IntOffset>(240, easing = androidx.compose.animation.core.FastOutSlowInEasing)
-            if (previousRouteIndex != -1 && previousRouteIndex < currentRouteIndex)
-                slideInHorizontally(animationSpec = slideSpec) { it / 8 } + fadeIn(animationSpec = transitionSpec)
-            else
-                slideInHorizontally(animationSpec = slideSpec) { -it / 8 } + fadeIn(animationSpec = transitionSpec)
+            if (targetRouteIndex != -1 && initialRouteIndex != -1) {
+                fadeIn(animationSpec = tween(180, easing = androidx.compose.animation.core.LinearOutSlowInEasing))
+            } else {
+                val transitionSpec = tween<Float>(240, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+                val slideSpec = tween<androidx.compose.ui.unit.IntOffset>(240, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+                slideInHorizontally(animationSpec = slideSpec) { -it / 6 } + fadeIn(animationSpec = transitionSpec)
+            }
         },
         popExitTransition = {
-            val currentRouteIndex = navigationItems.indexOfFirst {
-                it.route == initialState.destination.route
-            }
-            val targetRouteIndex = navigationItems.indexOfFirst {
-                it.route == targetState.destination.route
-            }
+            val targetRouteIndex = navigationItems.indexOfFirst { it.route == targetState.destination.route }
+            val initialRouteIndex = navigationItems.indexOfFirst { it.route == initialState.destination.route }
 
-            val transitionSpec = tween<Float>(240, easing = androidx.compose.animation.core.FastOutSlowInEasing)
-            val slideSpec = tween<androidx.compose.ui.unit.IntOffset>(240, easing = androidx.compose.animation.core.FastOutSlowInEasing)
-            if (currentRouteIndex != -1 && currentRouteIndex < targetRouteIndex)
-                slideOutHorizontally(animationSpec = slideSpec) { -it / 8 } + fadeOut(animationSpec = transitionSpec)
-            else
-                slideOutHorizontally(animationSpec = slideSpec) { it / 8 } + fadeOut(animationSpec = transitionSpec)
+            if (targetRouteIndex != -1 && initialRouteIndex != -1) {
+                fadeOut(animationSpec = tween(140, easing = androidx.compose.animation.core.FastOutLinearInEasing))
+            } else {
+                val transitionSpec = tween<Float>(240, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+                val slideSpec = tween<androidx.compose.ui.unit.IntOffset>(240, easing = androidx.compose.animation.core.FastOutSlowInEasing)
+                slideOutHorizontally(animationSpec = slideSpec) { it / 6 } + fadeOut(animationSpec = transitionSpec)
+            }
         },
         modifier = modifier,
     ) {

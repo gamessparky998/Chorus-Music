@@ -71,6 +71,7 @@ private class BounceIndicationNode(
 
     private fun animatePressed(pressed: Boolean) {
         animationJob?.cancel()
+        if (!isAttached) return
         animationJob = coroutineScope.launch {
             scaleAnimation.animateTo(
                 targetValue = if (pressed) BouncePressedScale else 1f,

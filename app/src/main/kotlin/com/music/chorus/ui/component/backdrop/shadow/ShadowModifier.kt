@@ -77,7 +77,10 @@ internal class ShadowNode(
     private var recordedOutline: Outline? = null
 
     override fun ContentDrawScope.draw() {
-        val shadow = shadow() ?: return drawContent()
+        val shadow = shadow()
+        if (shadow == null || size.width <= 0f || size.height <= 0f) {
+            return drawContent()
+        }
 
         val shadowLayer = shadowLayer
         if (shadowLayer != null) {
@@ -89,35 +92,38 @@ internal class ShadowNode(
             val offsetX = shadow.offset.x.toPx()
             val offsetY = shadow.offset.y.toPx()
             val shadowSize = IntSize(
-                ceil(size.width + radius * 4f + offsetX).toInt(),
-                ceil(size.height + radius * 4f + offsetY).toInt()
+                (ceil(size.width + radius * 4f + offsetX).toInt()).coerceAtLeast(1),
+                (ceil(size.height + radius * 4f + offsetY).toInt()).coerceAtLeast(1)
             )
-            val outline = shapeProvider.shape.createOutline(size, layoutDirection, density)
 
-            shadowLayer.alpha = shadow.alpha
-            shadowLayer.blendMode = shadow.blendMode
-            if (shadow != recordedShadow || shadowSize != recordedSize || outline != recordedOutline) {
-                configurePaint(shadow)
-                shadowLayer.record(shadowSize) {
-                    translate(radius * 2f + offsetX, radius * 2f + offsetY) {
-                        val canvas = drawContext.canvas
+            try {
+                val outline = shapeProvider.shape.createOutline(size, layoutDirection, density)
 
-                        canvas.save()
-                        canvas.translate(-offsetX, -offsetY)
-                        canvas.clipOutlineOut(outline)
-                        canvas.translate(offsetX, offsetY)
-                        canvas.drawOutline(outline, paint)
-                        canvas.restore()
+                shadowLayer.alpha = shadow.alpha
+                shadowLayer.blendMode = shadow.blendMode
+                if (shadow != recordedShadow || shadowSize != recordedSize || outline != recordedOutline) {
+                    configurePaint(shadow)
+                    shadowLayer.record(shadowSize) {
+                        translate(radius * 2f + offsetX, radius * 2f + offsetY) {
+                            val canvas = drawContext.canvas
+
+                            canvas.save()
+                            canvas.translate(-offsetX, -offsetY)
+                            canvas.clipOutlineOut(outline)
+                            canvas.translate(offsetX, offsetY)
+                            canvas.drawOutline(outline, paint)
+                            canvas.restore()
+                        }
                     }
+                    recordedShadow = shadow
+                    recordedSize = shadowSize
+                    recordedOutline = outline
                 }
-                recordedShadow = shadow
-                recordedSize = shadowSize
-                recordedOutline = outline
-            }
 
-            translate(-radius * 2f, -radius * 2f) {
-                drawLayer(shadowLayer)
-            }
+                translate(-radius * 2f, -radius * 2f) {
+                    drawLayer(shadowLayer)
+                }
+            } catch (_: Throwable) {}
         }
 
         drawContent()

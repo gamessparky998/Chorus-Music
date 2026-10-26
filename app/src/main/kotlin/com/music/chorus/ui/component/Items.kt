@@ -41,6 +41,9 @@ import androidx.compose.foundation.border
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.fluid.foundation.GlassIntensity
+import pushkar.chorus.music.ui.fluid.foundation.fluidGlass
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -149,25 +152,36 @@ inline fun ListItem(
 ) {
     val isFluid = pushkar.chorus.music.ui.theme.isFluidTheme()
     val isDark = androidx.compose.foundation.isSystemInDarkTheme()
-    val effectiveColor = if (isFluid && color == MaterialTheme.colorScheme.surfaceContainer) {
-        if (isDark) Color(0x991C1C1E) else Color(0xB3FFFFFF)
-    } else {
-        color
-    }
+    val itemShape = if (isFluid && shape is RoundedCornerShape) {
+        ContinuousRoundedRectangle(shape.topStart)
+    } else shape
+    val isHighlighted = isActive || (isSelected == true && drawHighlight)
+
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
-            .padding(vertical = if (isFluid) 1.dp else 2.dp)
+            .padding(vertical = if (isFluid) 0.5.dp else 2.dp)
             .padding(horizontal = horizontalPadding)
-            .clip(shape)
-            .background(
-                color = when {
-                    isActive -> if (isFluid) pushkar.chorus.music.ui.fluid.foundation.FluidTheme.tint.copy(alpha = 0.2f) else MaterialTheme.colorScheme.secondaryContainer
-                    isSelected == true && drawHighlight -> if (isFluid) pushkar.chorus.music.ui.fluid.foundation.FluidTheme.tint.copy(alpha = 0.3f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
-                    else -> effectiveColor
+            .let { mod ->
+                if (isFluid) {
+                    mod.clip(itemShape).fluidGlass(
+                        shape = itemShape,
+                        intensity = if (isHighlighted) GlassIntensity.Prominent else GlassIntensity.Standard,
+                        surfaceColor = if (isHighlighted) pushkar.chorus.music.ui.fluid.foundation.FluidTheme.tint else Color.Unspecified,
+                        surfaceAlpha = if (isHighlighted) (if (isDark) 0.28f else 0.18f) else (if (isDark) 0.16f else 0.08f),
+                        applyEdgeEffects = itemShape != RectangleShape
+                    )
+                } else {
+                    mod.clip(itemShape).background(
+                        color = when {
+                            isActive -> MaterialTheme.colorScheme.secondaryContainer
+                            isSelected == true && drawHighlight -> MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
+                            else -> color
+                        }
+                    )
                 }
-            )
+            }
             .then(modifier)
             .height(if (isFluid) 58.dp else ListItemHeight)
     ) {

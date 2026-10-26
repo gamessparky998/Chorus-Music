@@ -558,66 +558,74 @@ private fun TopAppBarLayout(
         },
         modifier = modifier,
     ) { measurables, constraints ->
+        val zeroConstraints = constraints.copy(minWidth = 0, minHeight = 0)
         val navigationIconPlaceable = measurables
-            .first { it.layoutId == "navigationIcon" }
-            .measure(constraints.copy(minWidth = 0))
+            .firstOrNull { it.layoutId == "navigationIcon" }
+            ?.measure(zeroConstraints)
         val actionIconsPlaceable = measurables
-            .first { it.layoutId == "actionIcons" }
-            .measure(constraints.copy(minWidth = 0))
+            .firstOrNull { it.layoutId == "actionIcons" }
+            ?.measure(zeroConstraints)
+
+        val navIconWidth = navigationIconPlaceable?.width ?: 0
+        val navIconHeight = navigationIconPlaceable?.height ?: 0
+        val actionIconsWidth = actionIconsPlaceable?.width ?: 0
+        val actionIconsHeight = actionIconsPlaceable?.height ?: 0
 
         val maxTitleWidth =
             if (constraints.maxWidth == Constraints.Infinity) {
                 constraints.maxWidth
             } else {
-                 val actionReservedWidth = actionIconsPlaceable.width + TopAppBarHorizontalPadding.roundToPx() * 2
-                (constraints.maxWidth - navigationIconPlaceable.width - actionReservedWidth)
+                 val actionReservedWidth = actionIconsWidth + TopAppBarHorizontalPadding.roundToPx() * 2
+                (constraints.maxWidth - navIconWidth - actionReservedWidth)
                     .coerceAtLeast(0)
             }
 
         val layoutHeight = heightPx.roundToInt()
 
         val titlePlaceable = measurables
-            .first { it.layoutId == "title" }
-            .measure(constraints.copy(minWidth = 0, maxWidth = maxTitleWidth))
+            .firstOrNull { it.layoutId == "title" }
+            ?.measure(constraints.copy(minWidth = 0, maxWidth = maxTitleWidth))
 
+        val titleWidth = titlePlaceable?.width ?: 0
+        val titleHeight = titlePlaceable?.height ?: 0
         val titleBaseline =
-            if (titlePlaceable[LastBaseline] != AlignmentLine.Unspecified) {
+            if (titlePlaceable != null && titlePlaceable[LastBaseline] != AlignmentLine.Unspecified) {
                 titlePlaceable[LastBaseline]
             } else {
                 0
             }
 
         layout(constraints.maxWidth, layoutHeight) {
-            navigationIconPlaceable.placeRelative(
+            navigationIconPlaceable?.placeRelative(
                 x = 0,
-                y = (layoutHeight - navigationIconPlaceable.height) / 2,
+                y = (layoutHeight - navIconHeight) / 2,
             )
             val safeMargin = 4.dp.roundToPx()
-            titlePlaceable.placeRelative(
+            titlePlaceable?.placeRelative(
                 x =
                     when (titleHorizontalArrangement) {
-                        Arrangement.Center -> if (constraints.maxWidth / 2 - (TopAppBarHorizontalPadding.roundToPx() + actionIconsPlaceable.width + safeMargin) >= titlePlaceable.width / 2) {
-                            (constraints.maxWidth - titlePlaceable.width) / 2
+                        Arrangement.Center -> if (constraints.maxWidth / 2 - (TopAppBarHorizontalPadding.roundToPx() + actionIconsWidth + safeMargin) >= titleWidth / 2) {
+                            (constraints.maxWidth - titleWidth) / 2
                         } else {
-                            constraints.maxWidth - (TopAppBarHorizontalPadding.roundToPx() + actionIconsPlaceable.width + safeMargin) - titlePlaceable.width
+                            constraints.maxWidth - (TopAppBarHorizontalPadding.roundToPx() + actionIconsWidth + safeMargin) - titleWidth
                         }
                         Arrangement.End ->
-                            constraints.maxWidth - titlePlaceable.width - actionIconsPlaceable.width
+                            constraints.maxWidth - titleWidth - actionIconsWidth
 
-                        else -> max(TopAppBarTitleInset.roundToPx(), navigationIconPlaceable.width)
+                        else -> max(TopAppBarTitleInset.roundToPx(), navIconWidth)
                     },
                 y =
                     when (titleVerticalArrangement) {
-                        Arrangement.Center -> (layoutHeight - titlePlaceable.height) / 2
+                        Arrangement.Center -> (layoutHeight - titleHeight) / 2
 
                         Arrangement.Bottom ->
                             if (titleBottomPadding == 0) {
-                                layoutHeight - titlePlaceable.height
+                                layoutHeight - titleHeight
                             } else {
-                                layoutHeight - titlePlaceable.height -
+                                layoutHeight - titleHeight -
                                     max(
                                         0,
-                                        titleBottomPadding - titlePlaceable.height + titleBaseline,
+                                        titleBottomPadding - titleHeight + titleBaseline,
                                     )
                             }
 
@@ -625,9 +633,9 @@ private fun TopAppBarLayout(
                     },
             )
 
-            actionIconsPlaceable.placeRelative(
-                x = constraints.maxWidth - actionIconsPlaceable.width,
-                y = (layoutHeight - actionIconsPlaceable.height) / 2,
+            actionIconsPlaceable?.placeRelative(
+                x = constraints.maxWidth - actionIconsWidth,
+                y = (layoutHeight - actionIconsHeight) / 2,
             )
         }
     }

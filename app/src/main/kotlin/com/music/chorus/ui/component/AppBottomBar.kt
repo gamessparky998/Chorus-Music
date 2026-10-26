@@ -2,7 +2,10 @@
 
 package pushkar.chorus.music.ui.component
 
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,8 +18,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.zIndex
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
@@ -31,6 +36,7 @@ import pushkar.chorus.music.constants.FloatingToolbarHorizontalPadding
 import pushkar.chorus.music.constants.NavigationBarAnimationSpec
 import pushkar.chorus.music.constants.NavigationBarHeight
 import pushkar.chorus.music.ui.screens.Screens
+import pushkar.chorus.music.ui.theme.isFluidTheme
 import pushkar.chorus.music.ui.utils.resetHeightOffset
 
 @Composable
@@ -48,9 +54,11 @@ fun AppBottomBar(
     bottomInsetDp: Dp,
     topAppBarScrollBehavior: TopAppBarScrollBehavior,
     onShuffleClick: (() -> Unit)?,
+    isNavBarHidden: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     val coroutineScope = rememberCoroutineScope()
+    val isFluid = isFluidTheme()
     val baseBg = if (pureBlack) Color.Black else MaterialTheme.colorScheme.surfaceContainer
 
     val navigationBarHeight by animateDpAsState(
@@ -59,53 +67,65 @@ fun AppBottomBar(
         label = "navBarHeight",
     )
 
-    val onNavItemClick: (Screens, Boolean) -> Unit = remember(navController, coroutineScope, topAppBarScrollBehavior, playerBottomSheetState) {
-        { screen: Screens, isSelected: Boolean ->
-            if (playerBottomSheetState.isExpanded) {
-                playerBottomSheetState.collapseSoft()
-            }
+    val scrollHideOffset = 0f
 
-            if (isSelected) {
-                navController.currentBackStackEntry?.savedStateHandle?.set("scrollToTop", true)
-                coroutineScope.launch {
-                    topAppBarScrollBehavior.state.resetHeightOffset()
+    val onNavItemClick: (Screens, Boolean) -> Unit =
+        remember(navController, coroutineScope, topAppBarScrollBehavior, playerBottomSheetState) {
+            { screen: Screens, isSelected: Boolean ->
+                if (playerBottomSheetState.isExpanded) {
+                    playerBottomSheetState.collapseSoft()
                 }
-            } else {
-                navController.navigate(screen.route) {
-                    popUpTo(navController.graph.startDestinationId) {
-                        saveState = true
+
+                if (isSelected) {
+                    navController.currentBackStackEntry?.savedStateHandle?.set("scrollToTop", true)
+                    coroutineScope.launch {
+                        topAppBarScrollBehavior.state.resetHeightOffset()
                     }
-                    launchSingleTop = true
-                    restoreState = true
+                } else {
+                    navController.navigate(screen.route) {
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 }
             }
         }
-    }
 
-    if (!showRail && currentRoute != "update" && currentRoute != "ambient_mode" && currentRoute != "uptime" && currentRoute?.startsWith("settings") != true) {
+    if (!showRail && currentRoute != "update" && currentRoute != "ambient_mode" && currentRoute != "uptime" && currentRoute?.startsWith(
+            "settings"
+        ) != true
+    ) {
         Box(modifier = modifier) {
-            BottomSheetPlayer(
-                state = playerBottomSheetState,
-                navController = navController,
-                pureBlack = pureBlack
-            )
-
-            val navSlideDistance = bottomInset + FloatingToolbarBottomPadding + NavigationBarHeight
-
-            val navOffsetY = if (navigationBarHeight == 0.dp) {
-                navSlideDistance
-            } else {
-                val slideOffset = navSlideDistance * playerBottomSheetState.progress.coerceIn(0f, 1f)
-                val hideOffset = navSlideDistance * (1 - navigationBarHeight.coerceAtMost(NavigationBarHeight) / NavigationBarHeight)
-                slideOffset + hideOffset
+            Box(modifier = Modifier.zIndex(2f)) {
+                BottomSheetPlayer(
+                    state = playerBottomSheetState,
+                    navController = navController,
+                    pureBlack = pureBlack
+                )
             }
 
-            if (!isOffline) {
+            val navSlideDistance = bottomInset + FloatingToolbarBottomPadding + NavigationBarHeight + 48.dp
+            val hideFraction = if (NavigationBarHeight > 0.dp) {
+                (1f - (navigationBarHeight.coerceAtMost(NavigationBarHeight) / NavigationBarHeight)).coerceIn(0f, 1f)
+            } else 1f
+
+            val slideOffset = navSlideDistance * playerBottomSheetState.progress.coerceIn(0f, 1f)
+            val hideOffset = navSlideDistance * hideFraction
+            val navOffsetY = slideOffset + hideOffset
+
+            if (!isOffline && playerBottomSheetState.progress < 1f && (shouldShowNavigationBar || navigationBarHeight > 0.dp)) {
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
-                        .height(navSlideDistance)
-                        .offset(y = navOffsetY),
+                        .height(bottomInset + FloatingToolbarBottomPadding + NavigationBarHeight)
+                        .offset(y = navOffsetY)
+                        .graphicsLayer {
+                            val playerAlpha = (1f - playerBottomSheetState.progress * 3f).coerceIn(0f, 1f)
+                            val navAlpha = (1f - hideFraction).coerceIn(0f, 1f)
+                            alpha = playerAlpha * navAlpha
+                        },
                 ) {
                     FloatingNavigationToolbar(
                         items = navigationItems,
@@ -133,29 +153,32 @@ fun AppBottomBar(
                     .height(bottomInsetDp)
                     .graphicsLayer {
                         val progress = playerBottomSheetState.progress
-                        alpha = if (progress > 0f || (useNewMiniPlayerDesign && !shouldShowNavigationBar)) 0f else 1f
+                        alpha = if (progress > 0f || !shouldShowNavigationBar || isFluid) 0f else 1f
                     }
-                    .background(baseBg)
+                    .background(if (isFluid) Color.Transparent else baseBg)
             )
         }
     } else {
-        if (currentRoute != "update" && currentRoute != "ambient_mode" && currentRoute != "uptime" && currentRoute?.startsWith("settings") != true) {
-            BottomSheetPlayer(
-                state = playerBottomSheetState,
-                navController = navController,
-                pureBlack = pureBlack
-            )
-        }
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(bottomInsetDp)
-                .graphicsLayer {
-                    val progress = playerBottomSheetState.progress
-                    alpha = if (progress > 0f || (useNewMiniPlayerDesign && !shouldShowNavigationBar)) 0f else 1f
-                }
-                .background(baseBg)
+    if (currentRoute != "update" && currentRoute != "ambient_mode" && currentRoute != "uptime" && currentRoute?.startsWith(
+            "settings"
+        ) != true
+    ) {
+        BottomSheetPlayer(
+            state = playerBottomSheetState,
+            navController = navController,
+            pureBlack = pureBlack
         )
     }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(bottomInsetDp)
+            .graphicsLayer {
+                val progress = playerBottomSheetState.progress
+                alpha = if (progress > 0f || !shouldShowNavigationBar) 0f else 1f
+            }
+            .background(baseBg)
+    )
+}
 }

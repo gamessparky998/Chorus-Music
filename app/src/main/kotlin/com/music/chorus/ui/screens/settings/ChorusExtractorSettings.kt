@@ -21,14 +21,17 @@ import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.ui.graphics.Color
+import pushkar.chorus.music.ui.component.TopBarBackButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -301,20 +304,22 @@ fun ChorusExtractorSettings(
         Spacer(modifier = Modifier.height(36.dp))
     }
 
-    TopAppBar(
-        title = { Text(stringResource(R.string.youtube_decryption_settings)) },
-        navigationIcon = {
-            IconButton(
-                onClick = navController::navigateUp,
-                onLongClick = navController::backToMain
-            ) {
-                Icon(
-                    painterResource(R.drawable.arrow_back),
-                    contentDescription = null
-                )
-            }
+    CenterAlignedTopAppBar(
+        title = {
+            Text(
+                text = stringResource(R.string.youtube_decryption_settings),
+                fontWeight = FontWeight.Bold,
+            )
         },
-        scrollBehavior = scrollBehavior
+        navigationIcon = {
+            TopBarBackButton(navController = navController)
+        },
+        colors =
+            TopAppBarDefaults.topAppBarColors(
+                containerColor = Color.Transparent,
+                scrolledContainerColor = Color.Transparent,
+            ),
+        scrollBehavior = scrollBehavior,
     )
 }
 

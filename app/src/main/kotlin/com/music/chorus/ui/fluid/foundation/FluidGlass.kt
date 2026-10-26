@@ -230,7 +230,7 @@ fun GlassEffectConfig.resolvedTextColor(
     )
 }
 
-val LocalAppBackdrop = staticCompositionLocalOf<Backdrop> { error("No AppBackdrop provided") }
+val LocalAppBackdrop = staticCompositionLocalOf<Backdrop?> { null }
 
 @Stable
 class PooledGlass(
@@ -255,12 +255,24 @@ fun Modifier.outerDarkRim(
     angle: Float = 45f,
     insideOnly: Boolean = false,
 ): Modifier = drawWithCache {
+    if (size.width <= 0f || size.height <= 0f) {
+        return@drawWithCache onDrawWithContent { drawContent() }
+    }
     val inset = if (insideOnly) width.toPx() / 4f else 0f
-    val outline = shape.createOutline(
-        androidx.compose.ui.geometry.Size(size.width - inset * 2f, size.height - inset * 2f),
-        layoutDirection,
-        this,
-    )
+    val targetWidth = (size.width - inset * 2f).coerceAtLeast(0f)
+    val targetHeight = (size.height - inset * 2f).coerceAtLeast(0f)
+    if (targetWidth <= 0f || targetHeight <= 0f) {
+        return@drawWithCache onDrawWithContent { drawContent() }
+    }
+    val outline = try {
+        shape.createOutline(
+            androidx.compose.ui.geometry.Size(targetWidth, targetHeight),
+            layoutDirection,
+            this,
+        )
+    } catch (_: Throwable) {
+        return@drawWithCache onDrawWithContent { drawContent() }
+    }
     val stroke = Stroke(width = if (insideOnly) width.toPx() / 2f else width.toPx())
     val center = Offset(size.width / 2f, size.height / 2f)
     fun flankBrush(axisDeg: Float): Brush {
@@ -288,9 +300,125 @@ fun Modifier.outerDarkRim(
 }
 
 @Composable
+fun Modifier.standaloneGlassPlate(
+    shape: Shape,
+    isDark: Boolean,
+    intensity: GlassIntensity,
+    tintColor: Color = Color.Unspecified,
+    tintAlpha: Float = Float.NaN,
+    rimTintColor: Color = Color.Unspecified,
+    applyEdgeEffects: Boolean = true,
+): Modifier = this
+    .clip(shape)
+    .drawWithCache {
+        val outline = try {
+            shape.createOutline(size, layoutDirection, this)
+        } catch (_: Throwable) {
+            null
+        }
+
+        val alphaFactor = when (intensity) {
+            GlassIntensity.Subtle -> 0.35f
+            GlassIntensity.Standard -> 0.50f
+            GlassIntensity.Prominent -> 0.65f
+        }
+
+        val effectiveTint = when {
+            tintColor.isSpecified && !tintColor.isHueless() -> tintColor
+            rimTintColor.isSpecified && !rimTintColor.isHueless() -> rimTintColor
+            else -> Color.Unspecified
+        }
+
+        val glassBaseBrush = if (isDark) {
+            val baseTop = if (effectiveTint.isSpecified) lerp(Color(0xFF444454), effectiveTint, 0.22f) else Color(0xFF383844)
+            val baseMid = if (effectiveTint.isSpecified) lerp(Color(0xFF2E2E3A), effectiveTint, 0.16f) else Color(0xFF282832)
+            val baseBottom = if (effectiveTint.isSpecified) lerp(Color(0xFF20202A), effectiveTint, 0.12f) else Color(0xFF1C1C24)
+
+            Brush.linearGradient(
+                0.0f to baseTop.copy(alpha = 0.38f * alphaFactor),
+                0.45f to baseMid.copy(alpha = 0.48f * alphaFactor),
+                1.0f to baseBottom.copy(alpha = 0.58f * alphaFactor),
+                start = Offset.Zero,
+                end = Offset(size.width, size.height),
+            )
+        } else {
+            val baseTop = if (effectiveTint.isSpecified) lerp(Color(0xFFFFFFFF), effectiveTint, 0.12f) else Color(0xFFFFFFFF)
+            val baseMid = if (effectiveTint.isSpecified) lerp(Color(0xFFF6F6FC), effectiveTint, 0.16f) else Color(0xFFF7F7FA)
+            val baseBottom = if (effectiveTint.isSpecified) lerp(Color(0xFFEBEBF5), effectiveTint, 0.18f) else Color(0xFFEBEBF2)
+
+            Brush.linearGradient(
+                0.0f to baseTop.copy(alpha = 0.55f * alphaFactor),
+                0.5f to baseMid.copy(alpha = 0.45f * alphaFactor),
+                1.0f to baseBottom.copy(alpha = 0.35f * alphaFactor),
+                start = Offset.Zero,
+                end = Offset(size.width, size.height),
+            )
+        }
+
+        val tintBrush = if (effectiveTint.isSpecified) {
+            val resolvedAlpha = if (!tintAlpha.isNaN()) tintAlpha else (if (isDark) 0.18f else 0.12f)
+            Brush.linearGradient(
+                0.0f to effectiveTint.copy(alpha = (resolvedAlpha * 1.15f).coerceIn(0f, 1f)),
+                0.5f to effectiveTint.copy(alpha = (resolvedAlpha * 0.75f).coerceIn(0f, 1f)),
+                1.0f to effectiveTint.copy(alpha = (resolvedAlpha * 0.35f).coerceIn(0f, 1f)),
+                start = Offset.Zero,
+                end = Offset(size.width, size.height),
+            )
+        } else null
+
+        val sheenBrush = if (applyEdgeEffects) {
+            Brush.linearGradient(
+                0.0f to Color.White.copy(alpha = if (isDark) 0.35f else 0.50f),
+                0.18f to Color.White.copy(alpha = if (isDark) 0.12f else 0.22f),
+                0.45f to Color.White.copy(alpha = 0f),
+                start = Offset.Zero,
+                end = Offset(size.width * 0.45f, size.height * 0.65f),
+            )
+        } else null
+
+        val strokeWidth = 1.2.dp.toPx()
+        val outlineStroke = Stroke(width = strokeWidth)
+        val rimBrush = if (applyEdgeEffects) {
+            val topColor = if (effectiveTint.isSpecified) {
+                lerp(Color.White, effectiveTint, 0.25f).copy(alpha = if (isDark) 0.45f else 0.62f)
+            } else {
+                Color.White.copy(alpha = if (isDark) 0.42f else 0.60f)
+            }
+            val midColor = Color.White.copy(alpha = if (isDark) 0.20f else 0.30f)
+            val bottomColor = if (isDark) Color.White.copy(alpha = 0.08f) else Color.Black.copy(alpha = 0.10f)
+
+            Brush.linearGradient(
+                0.0f to topColor,
+                0.35f to midColor,
+                1.0f to bottomColor,
+                start = Offset.Zero,
+                end = Offset(size.width, size.height),
+            )
+        } else null
+
+        onDrawWithContent {
+            if (outline != null) {
+                drawOutline(outline, glassBaseBrush)
+                if (tintBrush != null) drawOutline(outline, tintBrush)
+                if (sheenBrush != null) drawOutline(outline, sheenBrush)
+            } else {
+                drawRect(glassBaseBrush)
+                if (tintBrush != null) drawRect(tintBrush)
+                if (sheenBrush != null) drawRect(sheenBrush)
+            }
+
+            drawContent()
+
+            if (rimBrush != null && outline != null) {
+                drawOutline(outline, rimBrush, style = outlineStroke)
+            }
+        }
+    }
+
+@Composable
 fun Modifier.fluidGlass(
     config: GlassEffectConfig = LocalGlassEffectConfig.current,
-    shape: CornerBasedShape = RoundedCornerShape(0.dp),
+    shape: Shape = RoundedCornerShape(0.dp),
     applyEdgeEffects: Boolean = true,
     intensity: GlassIntensity = GlassIntensity.Standard,
     blurRadiusDp: Float = if (intensity != GlassIntensity.Standard) intensity.blurRadius else config.blurRadius,
@@ -299,31 +427,42 @@ fun Modifier.fluidGlass(
     frozen: () -> Boolean = LocalAppBackdropFrozen.current,
     loopBucket: (() -> Int)? = LocalBackdropLoopBucket.current,
     rimTintColor: Color = Color.Unspecified,
+    surfaceColor: Color = Color.Unspecified,
+    surfaceAlpha: Float = Float.NaN,
     outerShadow: Boolean = true,
 ): Modifier {
-    if (!isGlassAllowed()) {
-        val dark = glassUsesDarkAppearance()
-        val base = GlassTintTokens.glassBaseColor(dark)
-        val tint = config.surfaceTintColor.takeIf { it.isSpecified }
-        return this.clip(shape)
-            .background(base.copy(alpha = 0.85f))
-            .then(
-                if (tint != null) Modifier.background(
-                    tint.copy(
-                        alpha = config.surfaceOpacity.coerceIn(
-                            0f,
-                            1f
-                        )
-                    )
-                ) else Modifier
-            )
-    }
     val pool = LocalPooledGlass.current
     val usePool = pool != null &&
             blurRadiusDp == pool.blurRadiusDp &&
             config.vibrancy == pool.vibrancy &&
             !config.chromaticAberration
     val backdrop = if (usePool) pool.backdrop else LocalAppBackdrop.current
+
+    val isDark = glassUsesDarkAppearance()
+    val explicitColor = surfaceColor.takeIf { it.isSpecified }
+    val explicitAlpha = if (!surfaceAlpha.isNaN()) surfaceAlpha else (if (isDark) 0.22f else 0.14f)
+
+    if (!isGlassAllowed() || backdrop == null) {
+        val ambientColor = LocalAmbientBackgroundColor.current.value
+        val resolvedTint = when {
+            explicitColor != null -> explicitColor
+            config.surfaceTintColor.isSpecified -> config.surfaceTintColor
+            rimTintColor.isSpecified -> rimTintColor
+            ambientColor.isSpecified && !ambientColor.isHueless() -> ambientColor
+            else -> Color.Unspecified
+        }
+        val resolvedAlpha = if (explicitColor != null) explicitAlpha else config.surfaceOpacity.coerceIn(0f, 1f)
+
+        return this.standaloneGlassPlate(
+            shape = shape,
+            isDark = isDark,
+            intensity = intensity,
+            tintColor = resolvedTint,
+            tintAlpha = resolvedAlpha,
+            rimTintColor = rimTintColor,
+            applyEdgeEffects = applyEdgeEffects,
+        )
+    }
     val density = LocalDensity.current
     val resolutionScale = if (usePool) 1f else backdropScale.coerceIn(0.05f, 1f)
     val blurPx = with(density) { blurRadiusDp.dp.toPx() } * resolutionScale
@@ -331,9 +470,8 @@ fun Modifier.fluidGlass(
     val lensHeightPx = with(density) { (config.lensHeight * LENS_MAX_DP).dp.toPx() } * resolutionScale
     val lensAmountPx = with(density) { (config.lensAmount * LENS_MAX_DP).dp.toPx() } * resolutionScale
     val ambientColor = LocalAmbientBackgroundColor.current.value
-    val isDark = glassUsesDarkAppearance()
     val baseSurfaceColor = GlassTintTokens.glassBaseColor(isDark)
-    val baseSurfaceOpacity = if (config.surfaceTintColor.isSpecified) 0f else if (isDark) {
+    val baseSurfaceOpacity = if (explicitColor != null || config.surfaceTintColor.isSpecified) 0f else if (isDark) {
         GlassTintTokens.BaseSurfaceOpacityDark
     } else {
         GlassTintTokens.BaseSurfaceOpacityLight
@@ -341,11 +479,13 @@ fun Modifier.fluidGlass(
 
     val isHeroContext = ambientColor.isSpecified && !ambientColor.isHueless()
     val tintColor = when {
+        explicitColor != null -> explicitColor
         config.surfaceTintColor.isSpecified -> config.surfaceTintColor
         isHeroContext -> ambientColor
         else -> GlassTintTokens.neutralTintColor(isDark)
     }
     val tintOpacity = when {
+        explicitColor != null -> explicitAlpha
         config.surfaceTintColor.isSpecified -> config.surfaceOpacity.coerceIn(0f, 1f)
         isHeroContext -> GlassTintTokens.heroTintOpacity(isDark)
         else -> 1f
@@ -358,10 +498,15 @@ fun Modifier.fluidGlass(
     val animTintColor = animateColorAsState(tintColor.copy(alpha = effectiveTintAlpha), glassFade, label = "glassTint")
 
     if (shouldUseTranslucentGlassFallback(config.style, isRenderEffectSupported())) {
-        return this
-            .clip(shape)
-            .background(baseSurfaceColor.copy(alpha = baseSurfaceOpacity))
-            .background(tintColor.copy(alpha = effectiveTintAlpha))
+        return this.standaloneGlassPlate(
+            shape = shape,
+            isDark = isDark,
+            intensity = intensity,
+            tintColor = tintColor,
+            tintAlpha = effectiveTintAlpha,
+            rimTintColor = rimTintColor,
+            applyEdgeEffects = applyEdgeEffects,
+        )
     }
 
     val animatedHighlightAngle = HighlightAngleFrozen
@@ -411,6 +556,7 @@ fun Modifier.fluidGlass(
     val rimColor = when {
         config.highlightColor.isSpecified -> config.highlightColor
         rimTintColor.isSpecified -> rimTintColor
+        explicitColor != null -> explicitColor
         else -> GlassTintTokens.pluckColor(isDark, ambientColor)
     }
     val baseHighlightAlpha = when {
@@ -445,14 +591,18 @@ fun Modifier.fluidGlass(
 
     val surfaceBlock: DrawScope.() -> Unit = remember(usePool, shape) {
         {
-            val outline = if (usePool) shape.createOutline(size, layoutDirection, this) else null
-            val base = animBaseColor.value
-            if (base.alpha > 0f) {
-                if (outline != null) drawOutline(outline, base) else drawRect(color = base, size = size)
-            }
-            val tint = animTintColor.value
-            if (tint.alpha > 0f) {
-                if (outline != null) drawOutline(outline, tint) else drawRect(color = tint, size = size)
+            if (size.width > 0f && size.height > 0f) {
+                try {
+                    val outline = shape.createOutline(size, layoutDirection, this)
+                    val base = animBaseColor.value
+                    if (base.alpha > 0f) {
+                        drawOutline(outline, base)
+                    }
+                    val tint = animTintColor.value
+                    if (tint.alpha > 0f) {
+                        drawOutline(outline, tint)
+                    }
+                } catch (_: Throwable) {}
             }
         }
     }
@@ -468,7 +618,7 @@ fun Modifier.fluidGlass(
         frozen = frozen,
         loopBucket = loopBucket,
     ).then(
-        if (applyEdgeEffects && !plainBlur && darkRimAlpha > 0f) {
+        if (applyEdgeEffects && !plainBlur && darkRimAlpha > 0f && !isDark) {
             Modifier.outerDarkRim(
                 shape = shape,
                 width = 1.6.dp,
@@ -485,7 +635,7 @@ fun Modifier.fluidGlass(
 @Composable
 fun Modifier.liquidGlass(
     config: GlassEffectConfig = LocalGlassEffectConfig.current,
-    shape: CornerBasedShape = RoundedCornerShape(0.dp),
+    shape: Shape = RoundedCornerShape(0.dp),
     applyEdgeEffects: Boolean = true,
     blurRadiusDp: Float = config.blurRadius,
     highlightAlpha: Float = EdgeHighlightAlpha,
@@ -506,3 +656,9 @@ fun Modifier.liquidGlass(
     rimTintColor = rimTintColor,
     outerShadow = outerShadow,
 )
+
+@Composable
+fun Modifier.fluidGlassSurface(
+    shape: Shape,
+    tint: Color = Color.Unspecified,
+): Modifier = fluidGlass(shape = shape, rimTintColor = tint)

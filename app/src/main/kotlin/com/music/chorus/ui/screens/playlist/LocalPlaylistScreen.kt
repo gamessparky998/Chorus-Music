@@ -10,6 +10,9 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -57,6 +60,8 @@ import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
+import pushkar.chorus.music.ui.component.TopBarBackButton
+import pushkar.chorus.music.ui.component.TopBarIconButton
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
@@ -488,11 +493,14 @@ fun LocalPlaylistScreen(
                         val successorSetVideoId = playlistSongMap.getOrNull(successorIndex)?.setVideoId
 
                         playlistSongMap.getOrNull(from)?.setVideoId?.let { setVideoId ->
-                            YouTube.moveSongPlaylist(
-                                viewModel.playlist.value?.playlist?.browseId!!,
-                                setVideoId,
-                                successorSetVideoId
-                            )
+                            val browseId = viewModel.playlist.value?.playlist?.browseId
+                            if (browseId != null) {
+                                YouTube.moveSongPlaylist(
+                                    browseId,
+                                    setVideoId,
+                                    successorSetVideoId
+                                )
+                            }
                         }
                     }
                 }
@@ -727,7 +735,7 @@ fun LocalPlaylistScreen(
                                         } else {
                                             playerConnection.playQueue(
                                                 ListQueue(
-                                                    title = playlist!!.playlist.name,
+                                                    title = playlist?.playlist?.name.orEmpty(),
                                                     items = songs.map { it.song.toMediaItem() },
                                                     startIndex = songs.indexOfFirst { it.map.id == song.map.id },
                                                 ),
@@ -809,26 +817,13 @@ fun LocalPlaylistScreen(
             },
             navigationIcon = {
                 if (inSelectMode) {
-                    IconButton(
+                    TopBarIconButton(
                         onClick = onExitSelectionMode,
-                        colors = IconButtonDefaults.outlinedIconButtonColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f)
-                        ),
-                        modifier = Modifier.border(
-                            border = BorderStroke(
-                                width = 1.dp,
-                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
-                            ),
-                            shape = CircleShape
-                        )
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.close),
-                            contentDescription = null,
-                        )
-                    }
+                        painter = painterResource(R.drawable.close),
+                        contentDescription = stringResource(R.string.close),
+                    )
                 } else {
-                    IconButton(
+                    TopBarBackButton(
                         onClick = {
                             if (isSearching) {
                                 isSearching = false
@@ -842,22 +837,7 @@ fun LocalPlaylistScreen(
                                 navController.backToMain()
                             }
                         },
-                        colors = IconButtonDefaults.outlinedIconButtonColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f)
-                        ),
-                        modifier = Modifier.border(
-                            border = BorderStroke(
-                                width = 1.dp,
-                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
-                            ),
-                            shape = CircleShape
-                        )
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.arrow_back),
-                            contentDescription = null
-                        )
-                    }
+                    )
                 }
             },
             actions = {
@@ -873,7 +853,7 @@ fun LocalPlaylistScreen(
                             }
                         }
                     )
-                    IconButton(
+                    TopBarIconButton(
                         enabled = selection.isNotEmpty(),
                         onClick = {
                             menuState.show {
@@ -889,52 +869,21 @@ fun LocalPlaylistScreen(
                                 )
                             }
                         },
-                        colors = IconButtonDefaults.outlinedIconButtonColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f)
-                        ),
-                        modifier = Modifier.border(
-                            border = BorderStroke(
-                                width = 1.dp,
-                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
-                            ),
-                            shape = CircleShape
-                        )
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.more_vert),
-                            contentDescription = null
-                        )
-                    }
+                        painter = painterResource(R.drawable.more_vert),
+                        contentDescription = stringResource(R.string.more_options),
+                    )
                 } else if (!isSearching) {
-
-                    IconButton(
+                    TopBarIconButton(
                         onClick = { isSearching = true },
-                        colors = IconButtonDefaults.outlinedIconButtonColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f)
-                        ),
-                        modifier = Modifier.border(
-                            border = BorderStroke(
-                                width = 1.dp,
-                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
-                            ),
-                            shape = CircleShape
-                        )
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.search),
-                            contentDescription = null
-                        )
-                    }
+                        painter = painterResource(R.drawable.search),
+                        contentDescription = stringResource(R.string.search),
+                    )
                 }
             },
-            colors = if (!isSearching && !inSelectMode) {
-                androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
-                    scrolledContainerColor = Color.Transparent
-                )
-            } else {
-                androidx.compose.material3.TopAppBarDefaults.topAppBarColors()
-            }
+            colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
+                containerColor = Color.Transparent,
+                scrolledContainerColor = Color.Transparent
+            )
         )
 
         SnackbarHost(

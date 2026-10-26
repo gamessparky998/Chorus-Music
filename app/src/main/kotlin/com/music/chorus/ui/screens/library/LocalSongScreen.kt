@@ -20,6 +20,9 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.FlowRow
@@ -49,11 +52,15 @@ import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.MaterialTheme
+import pushkar.chorus.music.ui.component.TopBarBackButton
+import pushkar.chorus.music.ui.component.TopBarIconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
@@ -86,6 +93,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -312,76 +320,41 @@ fun LocalSongScreen(
                         windowInsets = if (isEmbedded) WindowInsets(0.dp) else SearchBarDefaults.windowInsets,
                     ) {}
                 } else {
-                    TopAppBar(
+                    CenterAlignedTopAppBar(
                         title = {
                             Text(
                                 text = stringResource(R.string.local_history),
-                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.titleLarge.copy(
+                                    fontSize = 23.sp,
+                                    fontWeight = FontWeight.Bold,
+                                ),
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                             )
                         },
                         navigationIcon = {
-                            IconButton(
+                            TopBarBackButton(
                                 onClick = onBack,
-                                colors = IconButtonDefaults.outlinedIconButtonColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f)
-                                ),
-                                modifier = Modifier.border(
-                                    border = BorderStroke(
-                                        width = 1.dp,
-                                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
-                                    ),
-                                    shape = CircleShape
-                                )
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.drawable.arrow_back),
-                                    contentDescription = null,
-                                )
-                            }
+                                modifier = Modifier.padding(start = 8.dp),
+                            )
                         },
                         actions = {
-                            IconButton(
+                            TopBarIconButton(
                                 onClick = { isSearchActive = true },
-                                colors = IconButtonDefaults.outlinedIconButtonColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f)
-                                ),
-                                modifier = Modifier.border(
-                                    border = BorderStroke(
-                                        width = 1.dp,
-                                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
-                                    ),
-                                    shape = CircleShape
-                                )
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.drawable.search),
-                                    contentDescription = stringResource(R.string.search),
-                                )
-                            }
-                            IconButton(
+                                painter = painterResource(R.drawable.search),
+                                contentDescription = stringResource(R.string.search),
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            TopBarIconButton(
                                 onClick = { showScanSheet = true },
-                                colors = IconButtonDefaults.outlinedIconButtonColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f)
-                                ),
-                                modifier = Modifier.border(
-                                    border = BorderStroke(
-                                        width = 1.dp,
-                                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
-                                    ),
-                                    shape = CircleShape
-                                )
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.drawable.settings),
-                                    contentDescription = stringResource(R.string.settings),
-                                )
-                            }
+                                painter = painterResource(R.drawable.settings),
+                                contentDescription = stringResource(R.string.settings),
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
                         },
                         colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
-                            scrolledContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
+                            containerColor = androidx.compose.ui.graphics.Color.Transparent,
+                            scrolledContainerColor = androidx.compose.ui.graphics.Color.Transparent,
                         ),
                         scrollBehavior = scrollBehavior,
                         windowInsets = if (isEmbedded) WindowInsets(0.dp) else TopAppBarDefaults.windowInsets,
@@ -395,9 +368,9 @@ fun LocalSongScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
             contentPadding = PaddingValues(
-                top = 12.dp,
+                top = 0.dp,
                 bottom = bottomContentPadding,
             ),
         ) {
@@ -541,7 +514,7 @@ private fun LocalSongControlsCard(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 28.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 2.dp),
     ) {
         SortHeader(
             sortType = sortType,

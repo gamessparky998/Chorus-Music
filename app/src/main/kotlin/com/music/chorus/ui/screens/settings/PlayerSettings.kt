@@ -14,6 +14,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -966,6 +967,7 @@ highlightKey: String? = null) {
     isHighlighted = (highlightKey == stringResource(R.string.stop_music_on_task_clear)),
                     icon = painterResource(R.drawable.clear_all),
                     title = { Text(stringResource(R.string.stop_music_on_task_clear)) },
+                    description = { Text(stringResource(R.string.stop_music_on_task_clear_desc)) },
                     trailingContent = {
                         Switch(
                             checked = stopMusicOnTaskClear,
@@ -1082,18 +1084,20 @@ highlightKey: String? = null) {
         Spacer(Modifier.windowInsetsPadding(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Bottom)))
     }
 
-    TopAppBar(
-        title = { Text(stringResource(R.string.player_and_audio)) },
+    androidx.compose.material3.CenterAlignedTopAppBar(
+        title = {
+            Text(
+                text = stringResource(R.string.player_and_audio),
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+            )
+        },
         navigationIcon = {
-            IconButton(
-                onClick = navController::navigateUp,
-                onLongClick = navController::backToMain
-            ) {
-                Icon(
-                    painterResource(R.drawable.arrow_back),
-                    contentDescription = null
-                )
-            }
-        }
+            pushkar.chorus.music.ui.component.TopBarBackButton(navController)
+        },
+        actions = {},
+        colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
+            containerColor = androidx.compose.ui.graphics.Color.Transparent,
+            scrolledContainerColor = androidx.compose.ui.graphics.Color.Transparent,
+        )
     )
 }

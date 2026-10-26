@@ -12,16 +12,16 @@ import pushkar.chorus.music.utils.NetworkConnectivityObserver
 import pushkar.chorus.music.utils.dataStore
 import pushkar.chorus.music.utils.reportException
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.async
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.cancelChildren
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
 
 class LyricsHelper
@@ -50,11 +50,24 @@ constructor(
     private val cache = LruCache<String, List<LyricsResult>>(MAX_CACHE_SIZE)
     private var currentLyricsJob: Job? = null
 
-    suspend fun getLyrics(mediaMetadata: MediaMetadata): LyricsWithProvider {
+    suspend fun getLyrics(
+        mediaMetadata: MediaMetadata,
+        initialLyrics: LyricsWithProvider? = null,
+        onUpgrade: suspend (LyricsWithProvider) -> Unit = {},
+    ): LyricsWithProvider {
         currentLyricsJob?.cancel()
 
-        val cached = cache.get(mediaMetadata.id)?.firstOrNull()
-        if (cached != null) {
+        val isLocal = mediaMetadata.id.startsWith("content://")
+        val cacheKey = listOf(
+            mediaMetadata.id,
+            mediaMetadata.artists.joinToString { it.name },
+            mediaMetadata.title,
+            mediaMetadata.duration.toString(),
+            mediaMetadata.album?.title.orEmpty()
+        ).joinToString("|")
+
+        val cached = cache.get(cacheKey)?.firstOrNull()
+        if (cached != null && cached.lyrics != LYRICS_NOT_FOUND) {
             return LyricsWithProvider(cached.lyrics, cached.providerName)
         }
 
@@ -68,56 +81,92 @@ constructor(
             return LyricsWithProvider(LYRICS_NOT_FOUND, "Unknown")
         }
 
-        val providers = resolveLyricsProviders().filter { it.isEnabled(context) }
+        val providers = resolveLyricsProviders()
+            .let { if (isLocal) it.filterNot { p -> p.name == "YouTube Music" || p.name == "YouTube Subtitle" } else it }
+            .filter { it.isEnabled(context) }
         if (providers.isEmpty()) return LyricsWithProvider(LYRICS_NOT_FOUND, "Unknown")
 
         return coroutineScope {
-            val channel = Channel<LyricsWithProvider?>(providers.size)
+            val policy = LyricsUpgradePolicy()
+            initialLyrics?.takeIf { initial -> providers.any { it.name == initial.provider } }?.let {
+                policy.consider(it.provider, providers.indexOfFirst { p -> p.name == it.provider }, it.lyrics)
+            }
+            val remaining = providers.indices.toMutableList()
+            val fallback = providers.indexOfFirst { it.name == "LrcLib" }
+            if (fallback > 2) {
+                remaining.remove(fallback)
+                remaining.add(2, fallback)
+            }
+
+            val answers = Channel<Pair<Int, Result<String>>>(Channel.UNLIMITED)
+            val jobs = mutableListOf<Job>()
+            val completed = hashSetOf<Int>()
+            var inFlight = 0
+
             val cleanTitle = pushkar.chorus.music.lyrics.LyricsUtils.cleanSongTitleForLyrics(mediaMetadata.title)
-            providers.forEach { provider ->
-                launch {
-                    try {
-                        val result = provider.getLyrics(
-                            mediaMetadata.id,
-                            cleanTitle,
-                            mediaMetadata.artists.joinToString { it.name },
-                            mediaMetadata.duration,
-                            mediaMetadata.album?.title,
-                        )
-                        result.onSuccess { lyrics ->
-                            if (lyrics != LYRICS_NOT_FOUND && lyrics.isNotBlank() && pushkar.chorus.music.lyrics.LyricsUtils.isValidLyrics(lyrics, cleanTitle)) {
-                                channel.send(LyricsWithProvider(lyrics, provider.name))
-                            } else {
-                                channel.send(null)
-                            }
-                        }.onFailure {
-                            reportException(it)
-                            channel.send(null)
+            val artistName = mediaMetadata.artists.joinToString { it.name }
+
+            fun fillWindow() {
+                while (inFlight < 3 && remaining.isNotEmpty()) {
+                    val bestWord = policy.best?.takeIf { it.sync == LyricsSyncLevel.WORD }
+                    val next = if (bestWord == null) 0 else remaining.indexOfFirst { it < bestWord.priority }
+                    if (next < 0) break
+                    val index = remaining.removeAt(next)
+                    inFlight++
+                    jobs += launch(Dispatchers.IO) {
+                        try {
+                            val result = providers[index].getLyrics(
+                                mediaMetadata.id,
+                                cleanTitle,
+                                artistName,
+                                mediaMetadata.duration,
+                                mediaMetadata.album?.title,
+                            )
+                            answers.send(index to result)
+                        } catch (e: Exception) {
+                            answers.send(index to Result.failure(e))
                         }
-                    } catch (e: Exception) {
-                        reportException(e)
-                        channel.send(null)
                     }
                 }
             }
 
-            var responses = 0
-            val receivedUnsynced = mutableListOf<LyricsWithProvider>()
-
-            while (responses < providers.size) {
-                val result = channel.receive()
-                responses++
-                if (result != null) {
-                    val isSynced = result.lyrics.trimStart().startsWith("[")
-                    if (isSynced) {
-                        coroutineContext.cancelChildren()
-                        return@coroutineScope result
-                    } else {
-                        receivedUnsynced.add(result)
+            val deadline = System.nanoTime() / 1_000_000 + 20_000L
+            try {
+                fillWindow()
+                while (inFlight > 0) {
+                    val timeout = deadline - System.nanoTime() / 1_000_000
+                    if (timeout <= 0) break
+                    val answer = withTimeoutOrNull(timeout) { answers.receive() } ?: break
+                    val (index, result) = answer
+                    inFlight--
+                    completed += index
+                    val provider = providers[index]
+                    result.getOrNull()?.takeIf {
+                        it.isNotBlank() && it != LYRICS_NOT_FOUND &&
+                                provider.isEnabled(context) &&
+                                pushkar.chorus.music.lyrics.LyricsUtils.isValidLyrics(it, cleanTitle)
+                    }?.let { validLyrics ->
+                        policy.consider(provider.name, index, validLyrics)
+                    }?.let { upgraded ->
+                        val upgradedResult = LyricsWithProvider(upgraded.lyrics, upgraded.provider)
+                        cache.put(cacheKey, listOf(LyricsResult(upgraded.provider, upgraded.lyrics)))
+                        onUpgrade(upgradedResult)
                     }
+                    val best = policy.best
+                    if (best?.sync == LyricsSyncLevel.WORD && (0 until best.priority).all { it in completed }) break
+                    fillWindow()
                 }
+
+                val finalResult = policy.best?.let {
+                    val res = LyricsWithProvider(it.lyrics, it.provider)
+                    cache.put(cacheKey, listOf(LyricsResult(it.provider, it.lyrics)))
+                    res
+                } ?: LyricsWithProvider(LYRICS_NOT_FOUND, "Unknown")
+                finalResult
+            } finally {
+                jobs.forEach { it.cancel() }
+                answers.cancel()
             }
-            return@coroutineScope receivedUnsynced.firstOrNull() ?: LyricsWithProvider(LYRICS_NOT_FOUND, "Unknown")
         }
     }
 
@@ -131,7 +180,20 @@ constructor(
     ) {
         currentLyricsJob?.cancel()
 
-        val cacheKey = "$songArtists-$songTitle".replace(" ", "")
+        val isLocal = mediaId.startsWith("content://")
+        val providers = resolveLyricsProviders()
+            .let { if (isLocal) it.filterNot { p -> p.name == "YouTube Music" || p.name == "YouTube Subtitle" } else it }
+            .filter { it.isEnabled(context) }
+
+        val cacheKey = listOf(
+            mediaId,
+            songArtists,
+            songTitle,
+            duration.toString(),
+            album.orEmpty(),
+            providers.joinToString(",") { it.name }
+        ).joinToString("|")
+
         cache.get(cacheKey)?.let { results ->
             results.forEach {
                 callback(it)
@@ -151,24 +213,29 @@ constructor(
         }
 
         val allResult = java.util.concurrent.CopyOnWriteArrayList<LyricsResult>()
-        val providers = resolveLyricsProviders()
         currentLyricsJob = CoroutineScope(SupervisorJob()).launch {
-            val jobs = providers.mapNotNull { provider ->
-                if (provider.isEnabled(context)) {
-                    launch {
-                        try {
-                            provider.getAllLyrics(mediaId, songTitle, songArtists, duration, album) { lyrics ->
-                                if (lyrics != LYRICS_NOT_FOUND && lyrics.isNotBlank() && pushkar.chorus.music.lyrics.LyricsUtils.isValidLyrics(lyrics, cleanTitle)) {
+            val jobs = providers.map { provider ->
+                launch(Dispatchers.IO) {
+                    try {
+                        withTimeoutOrNull(10_000) {
+                            provider.getAllLyrics(mediaId, cleanTitle, songArtists, duration, album) { lyrics ->
+                                if (lyrics != LYRICS_NOT_FOUND && lyrics.isNotBlank() && pushkar.chorus.music.lyrics.LyricsUtils.isValidLyrics(
+                                        lyrics,
+                                        cleanTitle
+                                    )
+                                ) {
                                     val result = LyricsResult(provider.name, lyrics)
                                     allResult += result
                                     callback(result)
                                 }
                             }
-                        } catch (e: Exception) {
-                            reportException(e)
                         }
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        reportException(e)
                     }
-                } else null
+                }
             }
             jobs.forEach { it.join() }
             cache.put(cacheKey, allResult.toList())
@@ -183,7 +250,7 @@ constructor(
     }
 
     companion object {
-        private const val MAX_CACHE_SIZE = 3
+        private const val MAX_CACHE_SIZE = 50
     }
 }
 

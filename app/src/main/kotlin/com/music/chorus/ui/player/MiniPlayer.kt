@@ -48,6 +48,8 @@ import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
 import pushkar.chorus.music.ui.fluid.foundation.FluidTheme
 import pushkar.chorus.music.ui.fluid.foundation.GlassIntensity
 import pushkar.chorus.music.ui.fluid.foundation.fluidGlass
+import pushkar.chorus.music.ui.component.GlassCircleButton
+import pushkar.chorus.music.ui.component.GlassCircleShape
 import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -282,7 +284,7 @@ private fun NewMiniPlayer(
 
     val isDynamicBackground = miniPlayerBackground != PlayerBackgroundStyle.DEFAULT
 
-    val backgroundColor = if (pureBlack && useDarkTheme) {
+    val backgroundColor = if (useDarkTheme) {
         Color.Black
     } else {
         MaterialTheme.colorScheme.surfaceContainer
@@ -381,10 +383,10 @@ private fun NewMiniPlayer(
                 .clip(effectiveMiniPlayerShape)
                 .then(
                     if (isFluid) {
-                        Modifier
-                            .fluidGlass(intensity = GlassIntensity.Standard)
-                            .background(if (isDark) Color(0xCC1C1C1E) else Color(0xCCF2F2F7))
-                            .border(1.dp, Color.White.copy(alpha = if (isDark) 0.12f else 0.25f), effectiveMiniPlayerShape)
+                        Modifier.fluidGlass(
+                            shape = effectiveMiniPlayerShape,
+                            intensity = GlassIntensity.Prominent
+                        )
                     } else {
                         Modifier
                             .background(color = backgroundColor)
@@ -393,11 +395,13 @@ private fun NewMiniPlayer(
                 )
         ) {
 
-            MiniPlayerBackgroundLayer(
-                style = miniPlayerBackground,
-                mediaMetadata = mediaMetadata,
-                gradientColors = gradientColors
-            )
+            if (!isFluid) {
+                MiniPlayerBackgroundLayer(
+                    style = miniPlayerBackground,
+                    mediaMetadata = mediaMetadata,
+                    gradientColors = gradientColors
+                )
+            }
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -838,6 +842,8 @@ private fun MiniPlayerControls(
     val isMuted by playerConnection.isMuted.collectAsState()
 
     Row(verticalAlignment = Alignment.CenterVertically) {
+        val isFluid = isFluidTheme()
+
         IconButton(
             enabled = canSkipPrevious && !isListenTogetherGuest,
             onClick = if (isListenTogetherGuest) ({}) else ({ playerConnection.player.seekToPreviousMediaItem() }),
@@ -846,7 +852,7 @@ private fun MiniPlayerControls(
             Icon(
                 painter = painterResource(R.drawable.skip_previous),
                 contentDescription = null,
-                tint = onSurfaceColor,
+                tint = if (isFluid) Color.White.copy(alpha = 0.9f) else onSurfaceColor,
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -876,58 +882,92 @@ private fun MiniPlayerControls(
             label = "rotation"
         )
 
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .size(48.dp)
-                .then(if (isFluidTheme()) Modifier.registerMiniControlsPlayRect() else Modifier)
-                .clip(CircleShape)
-                .clickable {
-                    if (isListenTogetherGuest) {
-                        playerConnection.toggleMute()
-                        return@clickable
-                    }
-                    if (isCasting) {
-                        if (castIsPlaying) castHandler?.pause() else castHandler?.play()
-                    } else if (playbackState == Player.STATE_ENDED) {
-                        playerConnection.player.seekTo(0, 0)
-                        playerConnection.player.playWhenReady = true
-                    } else {
-                        playerConnection.togglePlayPause()
-                    }
-                }
-        ) {
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .graphicsLayer {
-                        rotationZ = rotation
-                        clip = true
-                        shape = PolygonCookieShape(sides = 9, indent = cookieIndent)
-                    }
-                    .background(primaryColor)
-            )
-
-            if (playbackState == Player.STATE_BUFFERING && effectiveIsPlaying) {
-                androidx.compose.material3.CircularProgressIndicator(
-                    color = onPrimaryColor,
-                    modifier = Modifier.size(24.dp),
-                    strokeWidth = 2.dp
-                )
+        val playPauseAction: () -> Unit = {
+            if (isListenTogetherGuest) {
+                playerConnection.toggleMute()
+            } else if (isCasting) {
+                if (castIsPlaying) castHandler?.pause() else castHandler?.play()
+            } else if (playbackState == Player.STATE_ENDED) {
+                playerConnection.player.seekTo(0, 0)
+                playerConnection.player.playWhenReady = true
             } else {
-                Icon(
-                    painter = painterResource(
-                        when {
-                            isListenTogetherGuest -> if (isMuted) R.drawable.volume_off else R.drawable.volume_up
-                            playbackState == Player.STATE_ENDED -> R.drawable.replay
-                            effectiveIsPlaying -> R.drawable.pause
-                            else -> R.drawable.play
+                playerConnection.togglePlayPause()
+            }
+        }
+
+        val miniCookieShape = remember(cookieIndent, rotation) {
+            if (cookieIndent > 0f) WavyShape(9, cookieIndent, rotation) else null
+        }
+
+        if (isFluid) {
+            GlassCircleButton(
+                onClick = playPauseAction,
+                shape = miniCookieShape ?: GlassCircleShape,
+                size = 48.dp,
+                modifier = Modifier.registerMiniControlsPlayRect()
+            ) {
+                if (playbackState == Player.STATE_BUFFERING && effectiveIsPlaying) {
+                    androidx.compose.material3.CircularProgressIndicator(
+                        color = androidx.compose.material3.LocalContentColor.current,
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Icon(
+                        painter = painterResource(
+                            when {
+                                isListenTogetherGuest -> if (isMuted) R.drawable.volume_off else R.drawable.volume_up
+                                playbackState == Player.STATE_ENDED -> R.drawable.replay
+                                effectiveIsPlaying -> R.drawable.pause
+                                else -> R.drawable.play
+                            }
+                        ),
+                        contentDescription = null,
+                        tint = androidx.compose.material3.LocalContentColor.current,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+        } else {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .clickable(onClick = playPauseAction)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .graphicsLayer {
+                            rotationZ = rotation
+                            clip = true
+                            shape = PolygonCookieShape(sides = 9, indent = cookieIndent)
                         }
-                    ),
-                    contentDescription = null,
-                    tint = onPrimaryColor,
-                    modifier = Modifier.size(24.dp)
+                        .background(primaryColor)
                 )
+
+                if (playbackState == Player.STATE_BUFFERING && effectiveIsPlaying) {
+                    androidx.compose.material3.CircularProgressIndicator(
+                        color = onPrimaryColor,
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Icon(
+                        painter = painterResource(
+                            when {
+                                isListenTogetherGuest -> if (isMuted) R.drawable.volume_off else R.drawable.volume_up
+                                playbackState == Player.STATE_ENDED -> R.drawable.replay
+                                effectiveIsPlaying -> R.drawable.pause
+                                else -> R.drawable.play
+                            }
+                        ),
+                        contentDescription = null,
+                        tint = onPrimaryColor,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
             }
         }
 
@@ -938,12 +978,12 @@ private fun MiniPlayerControls(
             onClick = if (isListenTogetherGuest) ({}) else ({ playerConnection.player.seekToNext() }),
             modifier = Modifier
                 .size(32.dp)
-                .then(if (isFluidTheme()) Modifier.registerMiniControlsNextRect() else Modifier)
+                .then(if (isFluid) Modifier.registerMiniControlsNextRect() else Modifier)
         ) {
             Icon(
                 painter = painterResource(R.drawable.skip_next),
                 contentDescription = null,
-                tint = onSurfaceColor,
+                tint = if (isFluid) Color.White.copy(alpha = 0.9f) else onSurfaceColor,
                 modifier = Modifier.size(20.dp)
             )
         }

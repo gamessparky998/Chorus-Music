@@ -116,6 +116,7 @@ import pushkar.chorus.music.constants.ScrobbleMinSongDurationKey
 import pushkar.chorus.music.constants.ShowLyricsKey
 import pushkar.chorus.music.constants.ShuffleModeKey
 import pushkar.chorus.music.constants.ShufflePlaylistFirstKey
+import pushkar.chorus.music.constants.StopMusicOnTaskClearKey
 import pushkar.chorus.music.constants.PreloadLyricsEnabledKey
 import pushkar.chorus.music.constants.PreloadNextSongEnabledKey
 import pushkar.chorus.music.constants.PreloadNextSongLimitKey
@@ -777,29 +778,47 @@ class MusicService :
             updateWidgetUI(player.isPlaying)
         }
 
+        var previousPolicy: String? = null
         combine(
             currentMediaMetadata.distinctUntilChangedBy { it?.id },
-            dataStore.data.map {
-                val showLyrics = it[ShowLyricsKey] ?: false
-                val dataSaver = it[pushkar.chorus.music.constants.DataSaverEnabledKey] ?: false
-                if (dataSaver) false else showLyrics
+            dataStore.data.map { prefs ->
+                val policy = prefs[pushkar.chorus.music.constants.LyricsProviderOrderKey].orEmpty() + "|" +
+                    pushkar.chorus.music.lyrics.LyricsProviderRegistry.providerNames.joinToString(",") { name ->
+                        "$name:${pushkar.chorus.music.lyrics.LyricsProviderRegistry.getProviderByName(name)?.isEnabled(this@MusicService) ?: true}"
+                    }
+                val dataSaver = prefs[pushkar.chorus.music.constants.DataSaverEnabledKey] ?: false
+                (!dataSaver) to policy
             }.distinctUntilChanged(),
-        ) { mediaMetadata, showLyrics ->
-            mediaMetadata to showLyrics
-        }.collectLatest(scope) { (mediaMetadata, showLyrics) ->
-            if (showLyrics && mediaMetadata != null && database.lyrics(mediaMetadata.id)
-                    .first() == null
-            ) {
-                val lyricsWithProvider = lyricsHelper.getLyrics(mediaMetadata)
-                database.query {
-                    upsert(
-                        LyricsEntity(
-                            id = mediaMetadata.id,
-                            lyrics = lyricsWithProvider.lyrics,
-                            provider = lyricsWithProvider.provider,
-                        ),
-                    )
+        ) { metadata, policy -> metadata to policy }.collectLatest(scope) { (metadata, settings) ->
+            val (canFetch, policy) = settings
+            val changed = previousPolicy != null && previousPolicy != policy
+            previousPolicy = policy
+            if (!canFetch || metadata == null) return@collectLatest
+            val existing = database.lyrics(metadata.id).first()
+            if (existing != null) {
+                val provider = pushkar.chorus.music.lyrics.LyricsProviderRegistry.getProviderByName(existing.provider)
+                if (provider == null && existing.provider != "Unknown") return@collectLatest
+                if (!changed && provider != null && provider.isEnabled(this@MusicService) &&
+                    pushkar.chorus.music.lyrics.LyricsSyncLevel.detect(existing.lyrics) == pushkar.chorus.music.lyrics.LyricsSyncLevel.WORD) return@collectLatest
+            }
+            var lastWritten = existing
+            var manuallyChanged = false
+            suspend fun persistUpgrade(found: pushkar.chorus.music.lyrics.LyricsWithProvider) {
+                if (manuallyChanged) return
+                database.withTransaction {
+                    if (lyrics(metadata.id).first() != lastWritten) {
+                        manuallyChanged = true
+                    } else {
+                        val next = LyricsEntity(metadata.id, found.lyrics, found.provider)
+                        if (lastWritten != next) upsert(next)
+                        lastWritten = next
+                    }
                 }
+            }
+            val initial = existing?.let { pushkar.chorus.music.lyrics.LyricsWithProvider(it.lyrics, it.provider) }
+            val found = lyricsHelper.getLyrics(metadata, initial, ::persistUpgrade)
+            if (found.lyrics != LyricsEntity.LYRICS_NOT_FOUND || lastWritten == null || changed) {
+                persistUpgrade(found)
             }
         }
 
@@ -3203,9 +3222,11 @@ class MusicService :
 
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
-        if (::player.isInitialized && !player.isPlaying) {
-            Timber.tag(TAG).d("App task removed while playback is inactive; stopping service")
+        val stopOnTaskClear = dataStore.get(StopMusicOnTaskClearKey, true)
+        if (::player.isInitialized && (!player.isPlaying || stopOnTaskClear)) {
+            Timber.tag(TAG).d("App task removed; stopping service (stopOnTaskClear=$stopOnTaskClear, isPlaying=${player.isPlaying})")
             player.stop()
+            player.clearMediaItems()
             stopForeground(STOP_FOREGROUND_REMOVE)
             getSystemService(NotificationManager::class.java)?.cancel(NOTIFICATION_ID)
             stopSelf()

@@ -11,6 +11,7 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
@@ -71,6 +72,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.fluid.foundation.GlassIntensity
+import pushkar.chorus.music.ui.fluid.foundation.fluidGlass
 import pushkar.chorus.music.ui.screens.Screens
 import pushkar.chorus.music.ui.theme.isFluidTheme
 
@@ -92,11 +95,23 @@ fun FloatingNavigationToolbar(
     isSelected: (Screens) -> Boolean,
     onItemClick: (Screens, Boolean) -> Unit,
 ) {
-    val toolbarContainerColor = floatingToolbarContainerColor(pureBlack = pureBlack)
+    val isFluid = isFluidTheme()
+    val toolbarContainerColor = if (isFluid) Color.Transparent else floatingToolbarContainerColor(pureBlack = pureBlack)
     val toolbarColors = FloatingToolbarDefaults.standardFloatingToolbarColors(
         toolbarContainerColor = toolbarContainerColor,
     )
     val hasFabAction = onFabClick != null && fabIconRes != null
+    val toolbarShape = if (isFluid) ContinuousRoundedRectangle(32.dp) else RoundedCornerShape(32.dp)
+    val toolbarModifier = if (isFluid) {
+        Modifier
+            .widthIn(max = 480.dp)
+            .fluidGlass(
+                shape = toolbarShape,
+                intensity = GlassIntensity.Prominent,
+            )
+    } else {
+        Modifier.widthIn(max = 480.dp)
+    }
 
     BoxWithConstraints(
         modifier = modifier.fillMaxWidth(),
@@ -115,7 +130,7 @@ fun FloatingNavigationToolbar(
                         contentDescription = fabContentDescription,
                     )
                 },
-                modifier = Modifier.widthIn(max = 480.dp),
+                modifier = toolbarModifier,
                 colors = toolbarColors,
                 scrollBehavior = scrollBehavior,
                 animationSpec = FloatingToolbarDefaults.animationSpec(),
@@ -131,7 +146,7 @@ fun FloatingNavigationToolbar(
         } else {
             HorizontalFloatingToolbar(
                 expanded = true,
-                modifier = Modifier.widthIn(max = 480.dp),
+                modifier = toolbarModifier,
                 colors = toolbarColors,
                 scrollBehavior = scrollBehavior,
             ) {
@@ -255,7 +270,7 @@ private fun FloatingNavigationToolbarItem(
     val transition = updateTransition(targetState = selected, label = "navItem_${screen.route}")
 
     val contentColor by transition.animateColor(
-        transitionSpec = { spring(stiffness = Spring.StiffnessMedium) },
+        transitionSpec = { tween(180) },
         label = "contentColor",
     ) { isSelected ->
         if (isSelected) floatingToolbarSelectedItemContentColor(pureBlack)
@@ -265,19 +280,16 @@ private fun FloatingNavigationToolbarItem(
     val iconScale by transition.animateFloat(
         transitionSpec = {
             spring(
-                dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness = Spring.StiffnessMediumLow,
+                dampingRatio = Spring.DampingRatioNoBouncy,
+                stiffness = Spring.StiffnessMedium,
             )
         },
         label = "iconScale",
-    ) { isSelected -> if (isSelected) 1.12f else 1.0f }
+    ) { isSelected -> if (isSelected) 1.08f else 1.0f }
 
     val horizontalPadding by transition.animateDp(
         transitionSpec = {
-            spring(
-                dampingRatio = Spring.DampingRatioNoBouncy,
-                stiffness = Spring.StiffnessMediumLow,
-            )
+            tween(180)
         },
         label = "horizontalPadding",
     ) { isSelected ->
@@ -388,17 +400,33 @@ private fun floatingToolbarFabContentColor(pureBlack: Boolean): Color {
 
 @Composable
 private fun floatingToolbarSelectedItemContainerColor(pureBlack: Boolean): Color {
-    return MaterialTheme.colorScheme.secondaryContainer
+    val isFluid = isFluidTheme()
+    return when {
+        isFluid && pureBlack -> Color.White.copy(alpha = 0.22f)
+        isFluid -> Color.White.copy(alpha = 0.40f)
+        pureBlack -> MaterialTheme.colorScheme.secondaryContainer
+        else -> MaterialTheme.colorScheme.secondaryContainer
+    }
 }
 
 @Composable
 private fun floatingToolbarSelectedItemContentColor(pureBlack: Boolean): Color {
-    return MaterialTheme.colorScheme.onSecondaryContainer
+    val isFluid = isFluidTheme()
+    return when {
+        isFluid && pureBlack -> Color.White
+        isFluid -> MaterialTheme.colorScheme.onSurface
+        else -> MaterialTheme.colorScheme.onSecondaryContainer
+    }
 }
 
 @Composable
 private fun floatingToolbarItemContentColor(pureBlack: Boolean): Color {
-    return MaterialTheme.colorScheme.onSurfaceVariant
+    val isFluid = isFluidTheme()
+    return when {
+        isFluid && pureBlack -> Color.White.copy(alpha = 0.75f)
+        isFluid -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.70f)
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
 }
 
 @Composable

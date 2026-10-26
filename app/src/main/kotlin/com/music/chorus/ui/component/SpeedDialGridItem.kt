@@ -28,6 +28,10 @@ import com.music.innertube.models.SongItem
 import com.music.innertube.models.YTItem
 import pushkar.chorus.music.R
 import pushkar.chorus.music.constants.ThumbnailCornerRadius
+import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.fluid.foundation.GlassIntensity
+import pushkar.chorus.music.ui.fluid.foundation.fluidGlass
+import pushkar.chorus.music.ui.theme.isFluidTheme
 
 @Composable
 fun SpeedDialGridItem(
@@ -41,7 +45,7 @@ fun SpeedDialGridItem(
         modifier = modifier
             .fillMaxWidth()
             .aspectRatio(1f)
-            .clip(RoundedCornerShape(ThumbnailCornerRadius))
+            .clip(if (isFluidTheme()) ContinuousRoundedRectangle(ThumbnailCornerRadius) else RoundedCornerShape(ThumbnailCornerRadius))
     ) {
 
         ItemThumbnail(
@@ -95,15 +99,23 @@ fun SpeedDialGridItem(
     }
 
         if (isPinned) {
-            Icon(
-                painter = painterResource(R.drawable.ic_push_pin),
-                contentDescription = null,
-                tint = Color.White,
+            val isFluid = isFluidTheme()
+            Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(8.dp)
-                    .size(16.dp)
-            )
+                    .let {
+                        if (isFluid) it.clip(CircleShape).fluidGlass(shape = CircleShape, intensity = GlassIntensity.Subtle).padding(4.dp)
+                        else it
+                    }
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_push_pin),
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
         }
 
     }

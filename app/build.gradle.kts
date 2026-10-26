@@ -128,7 +128,10 @@ android {
         jvmToolchain(21)
         compilerOptions {
             freeCompilerArgs.add("-Xannotation-default-target=param-property")
-            freeCompilerArgs.add("-Xmetadata-version=2.3.0")
+            freeCompilerArgs.add("-Xmetadata-version=2.0.0")
+            freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
+            freeCompilerArgs.add("-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi")
+            freeCompilerArgs.add("-opt-in=kotlinx.coroutines.FlowPreview")
             jvmTarget.set(JvmTarget.JVM_21)
         }
     }
@@ -217,7 +220,9 @@ ksp {
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
     compilerOptions {
         freeCompilerArgs.addAll(
-            "-opt-in=kotlin.RequiresOptIn"
+            "-opt-in=kotlin.RequiresOptIn",
+            "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+            "-opt-in=kotlinx.coroutines.FlowPreview"
         )
         suppressWarnings.set(false)
     }
@@ -340,3 +345,4 @@ configurations.all {
         }
     }
 }
+

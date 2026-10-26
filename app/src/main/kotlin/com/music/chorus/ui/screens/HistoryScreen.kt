@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -415,7 +416,7 @@ fun HistoryScreen(
         )
     }
 
-    TopAppBar(
+    androidx.compose.material3.CenterAlignedTopAppBar(
         title = {
             if (inSelectMode) {
                 Text(pluralStringResource(R.plurals.n_selected, selection.size, selection.size))
@@ -444,19 +445,23 @@ fun HistoryScreen(
                         .focusRequester(focusRequester)
                 )
             } else {
-                Text(stringResource(R.string.history))
+                Text(
+                    text = stringResource(R.string.history),
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold),
+                )
             }
         },
         navigationIcon = {
             if (inSelectMode) {
-                IconButton(onClick = onExitSelectionMode) {
+                pushkar.chorus.music.ui.component.TopBarIconButton(onClick = onExitSelectionMode) {
                     Icon(
                         painter = painterResource(R.drawable.close),
                         contentDescription = null,
+                        modifier = Modifier.size(20.dp),
                     )
                 }
             } else {
-                IconButton(
+                pushkar.chorus.music.ui.component.TopBarIconButton(
                     onClick = {
                         if (isSearching) {
                             isSearching = false
@@ -473,7 +478,8 @@ fun HistoryScreen(
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.arrow_back),
-                        contentDescription = null
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
                     )
                 }
             }
@@ -491,7 +497,7 @@ fun HistoryScreen(
                         }
                     }
                 )
-                IconButton(
+                pushkar.chorus.music.ui.component.TopBarIconButton(
                     enabled = selection.isNotEmpty(),
                     onClick = {
                         menuState.show {
@@ -508,19 +514,25 @@ fun HistoryScreen(
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.more_vert),
-                        contentDescription = null
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
                     )
                 }
             } else if (!isSearching) {
-                IconButton(
+                pushkar.chorus.music.ui.component.TopBarIconButton(
                     onClick = { isSearching = true }
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.search),
-                        contentDescription = null
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
                     )
                 }
             }
-        }
+        },
+        colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
+            containerColor = Color.Transparent,
+            scrolledContainerColor = Color.Transparent,
+        )
     )
 }

@@ -37,7 +37,7 @@ val DefaultThemeColor = Color.Black
 fun chorusmusicTheme(
     themeMode: AppThemeMode = AppThemeMode.MaterialUI,
     darkTheme: Boolean = isSystemInDarkTheme(),
-    pureBlack: Boolean = false,
+    pureBlack: Boolean = true,
     themeColor: Color = DefaultThemeColor,
     content: @Composable () -> Unit,
 ) {
@@ -45,7 +45,11 @@ fun chorusmusicTheme(
         LocalAppThemeMode provides themeMode
     ) {
         if (themeMode == AppThemeMode.FluidUI) {
-            val fluidAccent = if (themeColor != DefaultThemeColor) themeColor else DefaultFluidAccent
+            val fluidAccent = if (themeColor != DefaultThemeColor) {
+                themeColor
+            } else {
+                if (darkTheme) Color(0xFFF2F2F7) else Color(0xFF1C1C1E)
+            }
             FluidTheme(
                 darkTheme = darkTheme,
                 accent = fluidAccent,
@@ -68,7 +72,7 @@ fun chorusmusicTheme(
         }
 
         val colorScheme = remember(baseColorScheme, pureBlack, darkTheme) {
-            if (darkTheme && pureBlack) {
+            if (darkTheme) {
                 baseColorScheme.pureBlack(true)
             } else {
                 baseColorScheme

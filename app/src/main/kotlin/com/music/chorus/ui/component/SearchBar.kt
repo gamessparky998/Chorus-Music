@@ -73,9 +73,9 @@ fun TopSearch(
     placeholder: @Composable (() -> Unit)? = null,
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
-    shape: Shape? = null,
     colors: TopAppBarColors = TopAppBarDefaults.topAppBarColors(
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        scrolledContainerColor = Color.Transparent,
     ),
     scrollBehavior: TopAppBarScrollBehavior? = null,
     windowInsets: WindowInsets = WindowInsets.systemBars,
@@ -86,10 +86,9 @@ fun TopSearch(
     val isFluid = isFluidTheme()
     val isDark = isSystemInDarkTheme()
     val effectiveColors = if (isFluid) {
-        val glassBg = if (isDark) Color(0xCC1C1C1E) else Color(0xCCF2F2F7)
         TopAppBarDefaults.topAppBarColors(
-            containerColor = glassBg,
-            scrolledContainerColor = glassBg
+            containerColor = Color.Transparent,
+            scrolledContainerColor = Color.Transparent,
         )
     } else colors
 

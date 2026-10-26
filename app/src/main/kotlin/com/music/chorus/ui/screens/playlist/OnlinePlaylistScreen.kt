@@ -3,6 +3,10 @@
 package pushkar.chorus.music.ui.screens.playlist
 
 import android.content.Intent
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.Icon
@@ -16,6 +20,8 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
+import pushkar.chorus.music.ui.component.TopBarBackButton
+import pushkar.chorus.music.ui.component.TopBarIconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -467,38 +473,27 @@ fun OnlinePlaylistScreen(
                 }
             },
             navigationIcon = {
-                IconButton(
-                    onClick = {
-                        if (isSearching) {
-                            isSearching = false
-                            query = TextFieldValue()
-                        } else if (inSelectMode) {
-                            onExitSelectionMode()
-                        } else {
-                            navController.navigateUp()
-                        }
-                    },
-                    onLongClick = {
-                        if (!isSearching && !inSelectMode) {
-                            navController.backToMain()
-                        }
-                    },
-                    colors = IconButtonDefaults.outlinedIconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f)
-                    ),
-                    modifier = Modifier.border(
-                        border = BorderStroke(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
-                        ),
-                        shape = CircleShape
+                if (inSelectMode) {
+                    TopBarIconButton(
+                        onClick = onExitSelectionMode,
+                        painter = painterResource(R.drawable.close),
+                        contentDescription = stringResource(R.string.close),
                     )
-                ) {
-                    Icon(
-                        painter = painterResource(
-                            if (inSelectMode) R.drawable.close else R.drawable.arrow_back
-                        ),
-                        contentDescription = null
+                } else {
+                    TopBarBackButton(
+                        onClick = {
+                            if (isSearching) {
+                                isSearching = false
+                                query = TextFieldValue()
+                            } else {
+                                navController.navigateUp()
+                            }
+                        },
+                        onLongClick = {
+                            if (!isSearching) {
+                                navController.backToMain()
+                            }
+                        },
                     )
                 }
             },
@@ -515,7 +510,7 @@ fun OnlinePlaylistScreen(
                             }
                         }
                     )
-                    IconButton(
+                    TopBarIconButton(
                         enabled = selection.isNotEmpty(),
                         onClick = {
                             menuState.show {
@@ -527,51 +522,21 @@ fun OnlinePlaylistScreen(
                                 )
                             }
                         },
-                        colors = IconButtonDefaults.outlinedIconButtonColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f)
-                        ),
-                        modifier = Modifier.border(
-                            border = BorderStroke(
-                                width = 1.dp,
-                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
-                            ),
-                            shape = CircleShape
-                        )
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.more_vert),
-                            contentDescription = null
-                        )
-                    }
+                        painter = painterResource(R.drawable.more_vert),
+                        contentDescription = stringResource(R.string.more_options),
+                    )
                 } else if (!isSearching) {
-                    IconButton(
+                    TopBarIconButton(
                         onClick = { isSearching = true },
-                        colors = IconButtonDefaults.outlinedIconButtonColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f)
-                        ),
-                        modifier = Modifier.border(
-                            border = BorderStroke(
-                                width = 1.dp,
-                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
-                            ),
-                            shape = CircleShape
-                        )
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.search),
-                            contentDescription = null
-                        )
-                    }
+                        painter = painterResource(R.drawable.search),
+                        contentDescription = stringResource(R.string.search),
+                    )
                 }
             },
-            colors = if (!isSearching && !inSelectMode) {
-                androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
-                    scrolledContainerColor = Color.Transparent
-                )
-            } else {
-                androidx.compose.material3.TopAppBarDefaults.topAppBarColors()
-            }
+            colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
+                containerColor = Color.Transparent,
+                scrolledContainerColor = Color.Transparent
+            )
         )
 
         SnackbarHost(

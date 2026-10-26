@@ -21,6 +21,9 @@ import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import pushkar.chorus.music.ui.fluid.foundation.GlassIntensity
+import pushkar.chorus.music.ui.fluid.foundation.fluidGlass
 import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
 import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.foundation.text.KeyboardActions
@@ -141,20 +144,26 @@ fun OnlineSearchResult(
 
     val onSearch: (String) -> Unit = remember {
         { searchQuery ->
-            if (searchQuery.isNotEmpty()) {
+            val trimmed = searchQuery.trim()
+            if (trimmed.isNotEmpty()) {
                 isSearchFocused = false
                 focusManager.clearFocus()
 
-                navController.navigate("search/${URLEncoder.encode(searchQuery, "UTF-8")}") {
-                    popUpTo("search/${URLEncoder.encode(decodedQuery, "UTF-8")}") {
+                navController.navigate("search/${URLEncoder.encode(trimmed, "UTF-8")}") {
+                    popUpTo("search/{query}") {
                         inclusive = true
                     }
+                    launchSingleTop = true
+                }
 
-                    if (!pauseSearchHistory) {
-                        coroutineScope.launch(Dispatchers.IO) {
+                if (!pauseSearchHistory) {
+                    coroutineScope.launch(Dispatchers.IO) {
+                        try {
                             database.query {
-                                insert(SearchHistory(query = searchQuery))
+                                insert(SearchHistory(query = trimmed))
                             }
+                        } catch (e: Exception) {
+                            pushkar.chorus.music.utils.reportException(e)
                         }
                     }
                 }
@@ -275,7 +284,11 @@ fun OnlineSearchResult(
             .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top))
     ) {
 
-        OutlinedTextField(
+        val isFluid = isFluidTheme()
+        val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+        val searchShape = if (isFluid) ContinuousRoundedRectangle(24.dp) else RoundedCornerShape(24.dp)
+
+        androidx.compose.material3.TextField(
             value = query,
             onValueChange = { newQuery ->
                 query = newQuery
@@ -284,7 +297,7 @@ fun OnlineSearchResult(
                 Text(
                     text = stringResource(R.string.search_yt_music),
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = if (isFluid && !isDark) Color(0xFF666666) else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             },
             leadingIcon = {
@@ -294,7 +307,7 @@ fun OnlineSearchResult(
                     Icon(
                         painter = painterResource(R.drawable.arrow_back),
                         contentDescription = stringResource(R.string.dismiss),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = if (isFluid && !isDark) Color(0xFF141416) else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             },
@@ -308,7 +321,7 @@ fun OnlineSearchResult(
                         Icon(
                             painter = painterResource(R.drawable.close),
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            tint = if (isFluid && !isDark) Color(0xFF141416) else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -322,22 +335,39 @@ fun OnlineSearchResult(
                 }
             ),
             singleLine = true,
-            shape = if (isFluidTheme()) ContinuousRoundedRectangle(28.dp) else RoundedCornerShape(28.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = if (pureBlack)
+            shape = searchShape,
+            colors = androidx.compose.material3.TextFieldDefaults.colors(
+                focusedContainerColor = if (isFluid) {
+                    if (isDark) Color(0x332C2C2E) else Color(0x66FFFFFF)
+                } else if (pureBlack) {
                     MaterialTheme.colorScheme.surface
-                else
-                    MaterialTheme.colorScheme.surfaceContainerHigh,
-                unfocusedContainerColor = if (pureBlack)
+                } else {
+                    MaterialTheme.colorScheme.surfaceContainerHigh
+                },
+                unfocusedContainerColor = if (isFluid) {
+                    if (isDark) Color(0x262C2C2E) else Color(0x4DFFFFFF)
+                } else if (pureBlack) {
                     MaterialTheme.colorScheme.surface
-                else
-                    MaterialTheme.colorScheme.surfaceContainerHigh,
-                focusedBorderColor = Color.Transparent,
-                unfocusedBorderColor = Color.Transparent
+                } else {
+                    MaterialTheme.colorScheme.surfaceContainerHigh
+                },
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent,
+                focusedTextColor = if (isFluid && !isDark) Color(0xFF141416) else MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = if (isFluid && !isDark) Color(0xFF141416) else MaterialTheme.colorScheme.onSurface,
             ),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp)
+                .let { mod ->
+                    if (isFluid) {
+                        mod.clip(searchShape).fluidGlass(
+                            shape = searchShape,
+                            intensity = GlassIntensity.Standard,
+                        )
+                    } else mod
+                }
                 .focusRequester(focusRequester)
                 .onFocusChanged { focusState ->
                     if (focusState.isFocused) {

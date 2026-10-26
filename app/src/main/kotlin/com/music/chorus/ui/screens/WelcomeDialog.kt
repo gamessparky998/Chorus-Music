@@ -13,6 +13,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
+import pushkar.chorus.music.ui.fluid.foundation.GlassIntensity
+import pushkar.chorus.music.ui.fluid.foundation.fluidGlass
 import pushkar.chorus.music.ui.theme.isFluidTheme
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
@@ -48,15 +50,28 @@ fun WelcomeDialog(
         onDismissRequest = onDismissRequest,
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
+        val isFluid = isFluidTheme()
+        val dialogShape = if (isFluid) ContinuousRoundedRectangle(28.dp) else androidx.compose.foundation.shape.RoundedCornerShape(28.dp)
+
         Card(
             modifier = Modifier
                 .padding(24.dp)
-                .fillMaxWidth(),
-            shape = if (isFluidTheme()) ContinuousRoundedRectangle(28.dp) else RoundedCornerShape(28.dp),
+                .fillMaxWidth()
+                .then(
+                    if (isFluid) {
+                        Modifier
+                            .clip(dialogShape)
+                            .fluidGlass(
+                                shape = dialogShape,
+                                intensity = GlassIntensity.Prominent,
+                            )
+                    } else Modifier
+                ),
+            shape = dialogShape,
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
+                containerColor = if (isFluid) Color.Transparent else MaterialTheme.colorScheme.surface
             ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = if (isFluid) 0.dp else 8.dp)
         ) {
             Column(
                 modifier = Modifier
@@ -73,7 +88,7 @@ fun WelcomeDialog(
                 Button(
                     onClick = onDismissRequest,
                     modifier = Modifier.fillMaxWidth().height(50.dp),
-                    shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else RoundedCornerShape(16.dp),
+                    shape = if (isFluid) ContinuousRoundedRectangle(16.dp) else androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary,
                         contentColor = MaterialTheme.colorScheme.onPrimary
@@ -88,11 +103,25 @@ fun WelcomeDialog(
 
 @Composable
 private fun WelcomeAppCard() {
+    val isFluid = isFluidTheme()
+    val cardShape = if (isFluid) ContinuousRoundedRectangle(20.dp) else androidx.compose.foundation.shape.RoundedCornerShape(20.dp)
+
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = if (isFluidTheme()) ContinuousRoundedRectangle(28.dp) else RoundedCornerShape(28.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(
+                if (isFluid) {
+                    Modifier
+                        .clip(cardShape)
+                        .fluidGlass(
+                            shape = cardShape,
+                            intensity = GlassIntensity.Standard,
+                        )
+                } else Modifier
+            ),
+        shape = cardShape,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            containerColor = if (isFluid) Color.Transparent else MaterialTheme.colorScheme.surfaceContainerLow,
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {

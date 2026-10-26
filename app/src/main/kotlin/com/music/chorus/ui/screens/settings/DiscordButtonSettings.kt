@@ -6,17 +6,21 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import pushkar.chorus.music.ui.component.TopBarBackButton
 import androidx.navigation.NavController
 import pushkar.chorus.music.R
 import pushkar.chorus.music.constants.DiscordActivityButton1CustomUrlKey
@@ -83,13 +87,21 @@ fun DiscordButtonSettings(navController: NavController) {
 
     Scaffold { inner ->
         Column(Modifier.fillMaxSize()) {
-            TopAppBar(
-                title = { Text(stringResource(R.string.discord_button_settings)) },
-                navigationIcon = {
-                    IconButton(onClick = navController::navigateUp) {
-                        Icon(painterResource(R.drawable.arrow_back), contentDescription = null)
-                    }
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(R.string.discord_button_settings),
+                        fontWeight = FontWeight.Bold,
+                    )
                 },
+                navigationIcon = {
+                    TopBarBackButton(navController = navController)
+                },
+                colors =
+                    TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent,
+                        scrolledContainerColor = Color.Transparent,
+                    ),
             )
 
             LazyColumn(

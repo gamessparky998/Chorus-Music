@@ -4,8 +4,11 @@ package pushkar.chorus.music.ui.component
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -93,10 +96,28 @@ fun NewActionButton(
     val shape = if (isFluid) ContinuousRoundedRectangle(16.dp) else RoundedCornerShape(16.dp)
     val interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
 
+    val resolvedContentColor = if (isFluid && !isDark && contentColor == MaterialTheme.colorScheme.onSurfaceVariant) {
+        Color(0xFF141416)
+    } else {
+        animatedContent
+    }
+
     Card(
         modifier = modifier
             .let { mod ->
-                if (isFluid) mod.clip(shape).fluidGlass(intensity = GlassIntensity.Subtle) else mod
+                if (isFluid) {
+                    val tint = if (backgroundColor != MaterialTheme.colorScheme.surfaceVariant && backgroundColor != Color.Unspecified) backgroundColor else Color.Unspecified
+                    mod
+                        .clip(shape)
+                        .fluidGlass(
+                            shape = shape,
+                            intensity = GlassIntensity.Standard,
+                            surfaceColor = tint,
+                            surfaceAlpha = if (tint != Color.Unspecified) (if (isDark) 0.35f else 0.20f) else (if (isDark) 0.22f else 0.12f)
+                        )
+                } else {
+                    mod
+                }
             }
             .let { mod ->
                 if (isFluid) {
@@ -110,7 +131,7 @@ fun NewActionButton(
                 }
             },
         colors = CardDefaults.cardColors(
-            containerColor = animatedBackground
+            containerColor = if (isFluid) Color.Transparent else animatedBackground
         ),
         shape = shape,
         elevation = CardDefaults.cardElevation()
@@ -204,6 +225,9 @@ fun NewActionGrid(
     modifier: Modifier = Modifier,
     columns: Int = 3
 ) {
+    val isFluid = isFluidTheme()
+    val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -213,7 +237,7 @@ fun NewActionGrid(
         chunks.forEach { rowIndexedActions ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)
+                horizontalArrangement = Arrangement.spacedBy(if (isFluid) 8.dp else ButtonGroupDefaults.ConnectedSpaceBetween)
             ) {
                 rowIndexedActions.forEach { (index, action) ->
                     var performAction by remember { mutableStateOf(false) }
@@ -228,7 +252,20 @@ fun NewActionGrid(
                     val bgColor =
                         if (action.backgroundColor != Color.Unspecified) action.backgroundColor else MaterialTheme.colorScheme.surfaceVariant
                     val contentCol =
-                        if (action.contentColor != Color.Unspecified) action.contentColor else MaterialTheme.colorScheme.onSurfaceVariant
+                        if (action.contentColor != Color.Unspecified) {
+                            action.contentColor
+                        } else if (isFluid && !isDark) {
+                            Color(0xFF141416)
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        }
+
+                    val fluidBtnShape = when {
+                        rowIndexedActions.size == 1 -> ContinuousRoundedRectangle(16.dp)
+                        index == 0 -> ContinuousRoundedRectangle(topStart = 16.dp, bottomStart = 16.dp, topEnd = 6.dp, bottomEnd = 6.dp)
+                        index == rowIndexedActions.lastIndex -> ContinuousRoundedRectangle(topStart = 6.dp, bottomStart = 6.dp, topEnd = 16.dp, bottomEnd = 16.dp)
+                        else -> ContinuousRoundedRectangle(6.dp)
+                    }
 
                     ToggleButton(
                         checked = false,
@@ -241,13 +278,32 @@ fun NewActionGrid(
                             else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
                         },
                         colors = ToggleButtonDefaults.toggleButtonColors(
-                            containerColor = bgColor,
+                            containerColor = if (isFluid) Color.Transparent else bgColor,
                             contentColor = contentCol,
-                            disabledContainerColor = bgColor.copy(alpha = 0.5f),
+                            disabledContainerColor = (if (isFluid) Color.Transparent else bgColor).copy(alpha = 0.5f),
                             disabledContentColor = contentCol.copy(alpha = 0.5f)
                         ),
                         modifier = Modifier
                             .weight(1f)
+                            .let { mod ->
+                                if (isFluid) {
+                                    val tint = if (action.backgroundColor.isSpecified && action.backgroundColor != Color.Unspecified) {
+                                        action.backgroundColor.copy(alpha = if (isDark) 0.16f else 0.12f)
+                                    } else {
+                                        if (isDark) Color.White.copy(alpha = 0.08f) else Color.Black.copy(alpha = 0.05f)
+                                    }
+                                    mod
+                                        .clip(fluidBtnShape)
+                                        .background(tint, fluidBtnShape)
+                                        .border(
+                                            width = 0.5.dp,
+                                            color = if (isDark) Color.White.copy(alpha = 0.10f) else Color.Black.copy(alpha = 0.08f),
+                                            shape = fluidBtnShape
+                                        )
+                                } else {
+                                    mod
+                                }
+                            }
                             .semantics { role = Role.Button }
                     ) {
                         action.icon()
@@ -255,6 +311,7 @@ fun NewActionGrid(
                         Text(
                             text = action.text,
                             style = MaterialTheme.typography.labelMedium,
+                            fontWeight = if (isFluid) FontWeight.SemiBold else FontWeight.Normal,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )

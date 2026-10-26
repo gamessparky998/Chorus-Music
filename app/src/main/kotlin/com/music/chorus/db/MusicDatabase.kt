@@ -56,15 +56,25 @@ class MusicDatabase(
     fun query(block: MusicDatabase.() -> Unit) =
         with(delegate) {
             queryExecutor.execute {
-                block(this@MusicDatabase)
+                try {
+                    block(this@MusicDatabase)
+                } catch (e: Throwable) {
+                    Timber.e(e, "Error executing database query")
+                    pushkar.chorus.music.utils.reportException(e)
+                }
             }
         }
 
     fun transaction(block: MusicDatabase.() -> Unit) =
         with(delegate) {
             transactionExecutor.execute {
-                runInTransaction {
-                    block(this@MusicDatabase)
+                try {
+                    runInTransaction {
+                        block(this@MusicDatabase)
+                    }
+                } catch (e: Throwable) {
+                    Timber.e(e, "Error executing database transaction")
+                    pushkar.chorus.music.utils.reportException(e)
                 }
             }
         }

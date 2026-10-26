@@ -53,6 +53,8 @@ import pushkar.chorus.music.db.entities.Song
 import pushkar.chorus.music.ui.component.LocalBottomSheetPageState
 import pushkar.chorus.music.ui.component.shimmer.ShimmerHost
 import pushkar.chorus.music.ui.component.shimmer.TextPlaceholder
+import androidx.compose.ui.graphics.Color
+import pushkar.chorus.music.ui.theme.isFluidTheme
 
 @Composable
 fun ShowMediaInfo(videoId: String) {
@@ -78,13 +80,16 @@ fun ShowMediaInfo(videoId: String) {
         database.format(videoId).collect { currentFormat = it }
     }
 
+    val isFluid = isFluidTheme()
     val albumArtShape = RoundedCornerShape(24.dp)
 
     LazyColumn(
         state = rememberLazyListState(),
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .then(
+                if (isFluid) Modifier else Modifier.background(MaterialTheme.colorScheme.background)
+            )
             .padding(bottom = windowInsets.asPaddingValues().calculateBottomPadding())
             .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
@@ -114,7 +119,7 @@ fun ShowMediaInfo(videoId: String) {
                     .fillMaxWidth()
                     .height(200.dp)
                     .clip(albumArtShape)
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .background(if (isFluid) Color.White.copy(alpha = 0.08f) else MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 val imageUrl = song?.thumbnailUrl
                     ?: "https://i.ytimg.com/vi/$videoId/maxresdefault.jpg"

@@ -119,6 +119,8 @@ import pushkar.chorus.music.ui.component.shimmer.ButtonPlaceholder
 import pushkar.chorus.music.ui.component.shimmer.ListItemPlaceHolder
 import pushkar.chorus.music.ui.component.shimmer.ShimmerHost
 import pushkar.chorus.music.ui.component.shimmer.TextPlaceholder
+import pushkar.chorus.music.ui.component.TopBarBackButton
+import pushkar.chorus.music.ui.component.TopBarIconButton
 import pushkar.chorus.music.ui.menu.AlbumMenu
 import pushkar.chorus.music.ui.menu.SongMenu
 import pushkar.chorus.music.ui.menu.YouTubeAlbumMenu
@@ -794,32 +796,14 @@ fun ArtistScreen(
     TopAppBar(
         title = { },
         navigationIcon = {
-            pushkar.chorus.music.ui.component.IconButton(
-                onClick = { navController.navigateUp() },
-                onLongClick = { navController.backToMain() },
-                colors = IconButtonDefaults.outlinedIconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f)
-                ),
-                modifier = Modifier.border(
-                    border = BorderStroke(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
-                    ),
-                    shape = CircleShape
-                )
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.arrow_back_ios),
-                    contentDescription = null
-                )
-            }
+            TopBarBackButton(navController = navController)
         },
         actions = {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                IconButton(
+                TopBarIconButton(
                     onClick = {
                         val shareUrl = artistPage?.artist?.shareLink
                             ?: "https://music.youtube.com/channel/${viewModel.artistId}"
@@ -828,18 +812,7 @@ fun ArtistScreen(
                             putExtra(android.content.Intent.EXTRA_TEXT, shareUrl)
                         }
                         context.startActivity(android.content.Intent.createChooser(intent, null))
-                    },
-                    colors = IconButtonDefaults.outlinedIconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f)
-                    ),
-                    modifier = Modifier
-                        .border(
-                            border = BorderStroke(
-                                width = 1.dp,
-                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
-                            ),
-                            shape = CircleShape
-                        )
+                    }
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.ios_share),
@@ -848,7 +821,7 @@ fun ArtistScreen(
                     )
                 }
 
-                IconButton(
+                TopBarIconButton(
                     onClick = {
                         menuState.show {
                             if (showLocal) {
@@ -868,18 +841,7 @@ fun ArtistScreen(
                                 }
                             }
                         }
-                    },
-                    colors = IconButtonDefaults.outlinedIconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f)
-                    ),
-                    modifier = Modifier
-                        .border(
-                            border = BorderStroke(
-                                width = 1.dp,
-                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
-                            ),
-                            shape = CircleShape
-                        )
+                    }
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.more_vert),

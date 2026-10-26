@@ -1,6 +1,7 @@
 package pushkar.chorus.music.ui.component
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -22,6 +23,11 @@ import androidx.compose.ui.unit.dp
 import pushkar.chorus.music.ui.component.shapes.ContinuousRoundedRectangle
 import pushkar.chorus.music.ui.theme.isFluidTheme
 
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.ui.draw.clip
+import pushkar.chorus.music.ui.fluid.foundation.GlassIntensity
+import pushkar.chorus.music.ui.fluid.foundation.fluidGlass
+
 @Composable
 fun AutoPlaylistButton(
     title: String,
@@ -39,29 +45,68 @@ fun AutoPlaylistButton(
     val backgroundColor = androidx.compose.runtime.remember(icon) {
         colors[kotlin.math.abs(icon * 31) % colors.size]
     }
+    val isFluid = isFluidTheme()
+    val isDark = isSystemInDarkTheme()
+    val shape = if (isFluid) ContinuousRoundedRectangle(18.dp) else RoundedCornerShape(12.dp)
 
-    Surface(
-        shape = if (isFluidTheme()) ContinuousRoundedRectangle(16.dp) else RoundedCornerShape(12.dp),
-        color = backgroundColor,
-        modifier = modifier.clickable(onClick = onClick)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)
+    if (isFluid) {
+        val textColor = if (isDark) Color.White else Color(0xFF141416)
+        val effectiveIconTint = if (isDark) iconTint else (if (iconTint == Color.White) backgroundColor else iconTint)
+
+        Box(
+            modifier = modifier
+                .clip(shape)
+                .fluidGlass(
+                    shape = shape,
+                    surfaceColor = backgroundColor,
+                    surfaceAlpha = if (isDark) 0.35f else 0.22f,
+                    intensity = GlassIntensity.Standard
+                )
+                .clickable(onClick = onClick)
         ) {
-            Icon(
-                painter = painterResource(id = icon),
-                contentDescription = null,
-                tint = iconTint,
-                modifier = Modifier.size(24.dp)
-            )
-            Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = icon),
+                    contentDescription = null,
+                    tint = effectiveIconTint,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = textColor
+                )
+            }
+        }
+    } else {
+        Surface(
+            shape = shape,
+            color = backgroundColor,
+            modifier = modifier.clickable(onClick = onClick)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = icon),
+                    contentDescription = null,
+                    tint = iconTint,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
         }
     }
 }

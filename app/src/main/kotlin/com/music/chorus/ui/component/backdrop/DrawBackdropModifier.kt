@@ -349,9 +349,10 @@ private class DrawBackdropNode(
         val source = backdrop as? LayerBackdrop ?: return null
         val sourceCoordinates = source.layerCoordinates ?: return null
         val selfCoordinates = layoutCoordinates ?: return null
+        if (!sourceCoordinates.isAttached || !selfCoordinates.isAttached) return null
         return try {
             sourceCoordinates.localPositionOf(selfCoordinates)
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
             null
         }
     }
@@ -369,13 +370,15 @@ private class DrawBackdropNode(
             canvas.scale(scale, scale)
         }
         onDrawBackdrop {
-            with(backdrop) {
-                drawBackdrop(
-                    density = effectScope,
-                    coordinates = layoutCoordinates,
-                    layerBlock = layerBlock
-                )
-            }
+            try {
+                with(backdrop) {
+                    drawBackdrop(
+                        density = effectScope,
+                        coordinates = layoutCoordinates,
+                        layerBlock = layerBlock
+                    )
+                }
+            } catch (_: Throwable) {}
         }
         if (scale != 1f) {
             canvas.scale(1f / scale, 1f / scale)
@@ -412,8 +415,8 @@ private class DrawBackdropNode(
             newLayer.colorFilter = effectScope.compositeColorFilter
             newLayer
         }
-        if (pool.size > LoopPoolMaxSize) {
-            val staleKey = pool.keys.first { it != bucket }
+        while (pool.size > LoopPoolMaxSize) {
+            val staleKey = pool.keys.firstOrNull { it != bucket } ?: break
             pool.remove(staleKey)?.let { requireGraphicsContext().releaseGraphicsLayer(it) }
         }
 
@@ -477,13 +480,15 @@ private class DrawBackdropNode(
             layer.topLeft =
                 if (padding != 0f) IntOffset(-padding.toInt(), -padding.toInt())
                 else IntOffset.Zero
-            if (scale != 1f) {
-                scale(1f / scale, pivot = Offset.Zero) {
+            try {
+                if (scale != 1f) {
+                    scale(1f / scale, pivot = Offset.Zero) {
+                        drawLayer(layer)
+                    }
+                } else {
                     drawLayer(layer)
                 }
-            } else {
-                drawLayer(layer)
-            }
+            } catch (_: Throwable) {}
             needsRecord
         } else {
             false
@@ -501,6 +506,7 @@ private class DrawBackdropNode(
     }
 
     override fun ContentDrawScope.draw() {
+        if (!isAttached) return
         if (effectScope.update(this, backdropScale)) {
             updateEffects()
         }
@@ -515,7 +521,11 @@ private class DrawBackdropNode(
             if (surfaceDirty || contentRecorded) {
                 recordLayer(this@DrawBackdropNode, layer) {
                     onDrawBehind?.invoke(this)
-                    drawBackdropLayer()
+                    graphicsLayer?.let {
+                        try {
+                            drawLayer(it)
+                        } catch (_: Throwable) {}
+                    }
                     onDrawSurface?.invoke(this)
                     onDrawFront?.invoke(this)
                 }

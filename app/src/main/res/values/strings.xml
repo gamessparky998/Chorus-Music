@@ -146,6 +146,12 @@
     <string name="export_playlist_desc">Export playlist songs to a CSV file</string>
     <string name="export_successful">Playlist exported successfully</string>
     <string name="create_playlist">Create playlist</string>
+    <string name="new_playlist">New playlist</string>
+    <string name="choose_playlist_cover">Choose playlist cover</string>
+    <string name="playlist_title">Title</string>
+    <string name="playlist_creation_failed">Failed to create playlist</string>
+    <string name="playlist_created">Playlist created</string>
+    <string name="playlist_created_sync_failed">Playlist created locally, but failed to sync to YouTube</string>
     <string name="playlist_name">Playlist name</string>
     <string name="error_playlist_name_empty">Playlist name cannot be empty.</string>
     <string name="modify_with_ai">Modify with AI</string>
@@ -313,6 +319,7 @@
     <string name="auto_skip_next_on_error">Auto skip to next song when error occurs</string>
     <string name="auto_skip_next_on_error_desc">Ensure your continuous playback experience</string>
     <string name="stop_music_on_task_clear">Stop music on task clear</string>
+    <string name="stop_music_on_task_clear_desc">Stop playback and remove notification when the app is swiped away from recent apps</string>
     <string name="equalizer">Equalizer</string>
 
     <string name="storage">Storage</string>

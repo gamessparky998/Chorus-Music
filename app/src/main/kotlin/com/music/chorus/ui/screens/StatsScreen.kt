@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -14,8 +15,10 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -410,29 +413,31 @@ fun StatsScreen(
             )
         }
 
-        TopAppBar(
-            title = { Text(stringResource(R.string.stats)) },
+        androidx.compose.material3.CenterAlignedTopAppBar(
+            title = {
+                Text(
+                    text = stringResource(R.string.stats),
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold),
+                )
+            },
             navigationIcon = {
-                IconButton(
-                    onClick = navController::navigateUp,
-                    onLongClick = navController::backToMain,
-                ) {
-                    Icon(
-                        painterResource(R.drawable.arrow_back),
-                        contentDescription = null,
-                    )
-                }
+                pushkar.chorus.music.ui.component.TopBarBackButton(navController)
             },
             actions = {
-                IconButton(
+                pushkar.chorus.music.ui.component.TopBarIconButton(
                     onClick = { showHistorySheet = true }
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.history),
                         contentDescription = null,
+                        modifier = Modifier.size(20.dp),
                     )
                 }
-            }
+            },
+            colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
+                containerColor = androidx.compose.ui.graphics.Color.Transparent,
+                scrolledContainerColor = androidx.compose.ui.graphics.Color.Transparent,
+            )
         )
 
         if (showHistorySheet) {

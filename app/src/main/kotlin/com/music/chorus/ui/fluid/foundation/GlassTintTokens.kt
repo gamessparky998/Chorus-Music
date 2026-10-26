@@ -15,17 +15,20 @@ fun Color.isHueless(): Boolean {
 }
 
 object GlassTintTokens {
-    val SurfaceBaseDark = Color(0xFF171717)
-    val SurfaceBaseLight = Color(0xFFF5F5F7)
+    val SurfaceBaseDark = Color(0xFFFFFFFF)
+    val SurfaceBaseLight = Color(0xFFFFFFFF)
 
-    val TintNeutralDark = Color(0xFFEBEBF5).copy(alpha = 0f)
-    val TintNeutralLight = Color(0xFF3C3C43).copy(alpha = 0.05f)
+    val TintNeutralDark = Color(0xFFFFFFFF).copy(alpha = 0f)
+    val TintNeutralLight = Color(0xFFFFFFFF).copy(alpha = 0.12f)
 
     const val HeroTintOpacityDark = 0f
-    const val HeroTintOpacityLight = 0.25f
+    const val HeroTintOpacityLight = 0.20f
 
-    val AccentSelectedRedDark = Color(0xFFFF453A)
-    val AccentSelectedRedLight = Color(0xFFFF3B30)
+    val AccentSelectedBlueDark = Color(0xFF0A84FF)
+    val AccentSelectedBlueLight = Color(0xFF007AFF)
+
+    val DestructiveRedDark = Color(0xFFFF453A)
+    val DestructiveRedLight = Color(0xFFFF3B30)
 
     val IconOpaqueBlackishLight = Color(0xFF111111)
     val TitleOpaqueBlackishLight = Color(0xFF000000)
@@ -33,11 +36,11 @@ object GlassTintTokens {
     val PluckDefaultDark = Color(0xFFFFFFFF)
     val PluckDefaultLight = Color(0xFFFFFFFF)
     const val PluckAlphaNeutralDark = 0.30f
-    const val PluckAlphaNeutralLight = 0.40f
+    const val PluckAlphaNeutralLight = 0.45f
     const val PluckAlphaHeroDark = 0.48f
     const val PluckAlphaHeroLight = 0.55f
 
-    val BorderDark = Color(0xFFFFFFFF).copy(alpha = 0.12f)
+    val BorderDark = Color(0xFFFFFFFF).copy(alpha = 0.14f)
     val BorderLight = Color(0xFF000000).copy(alpha = 0.08f)
 
     const val IconDimOpacity = 0.85f
@@ -47,18 +50,18 @@ object GlassTintTokens {
     const val DragHandleOpacity = 0.30f
     const val SecondaryLabelAlpha = 0.60f
 
-    val DefaultSurfaceDark = Color(0xFF171717)
-    const val DefaultSurfaceOpacityDark = 0.50f
-    val DefaultPuckDark = Color(0xFF2E2E2E)
-    const val DefaultPuckOpacityDark = 0.80f
-    val DefaultHighlightDark = Color(0xFFE8E8E8)
-    const val DefaultHighlightOpacityDark = 0.33f
-    val DefaultSurfaceLight = Color(0xFFFBFBFB)
-    const val DefaultSurfaceOpacityLight = 0.40f
-    val DefaultPuckLight = Color(0xFFD1D1D1)
-    const val DefaultPuckOpacityLight = 0.67f
-    val DefaultHighlightLight = Color.White
-    const val DefaultHighlightOpacityLight = 0.60f
+    val DefaultSurfaceDark = Color(0xFFFFFFFF)
+    const val DefaultSurfaceOpacityDark = 0.12f
+    val DefaultPuckDark = Color(0xFFFFFFFF)
+    const val DefaultPuckOpacityDark = 0.20f
+    val DefaultHighlightDark = Color(0xFFFFFFFF)
+    const val DefaultHighlightOpacityDark = 0.35f
+    val DefaultSurfaceLight = Color(0xFFFFFFFF)
+    const val DefaultSurfaceOpacityLight = 0.35f
+    val DefaultPuckLight = Color(0xFFFFFFFF)
+    const val DefaultPuckOpacityLight = 0.45f
+    val DefaultHighlightLight = Color(0xFFFFFFFF)
+    const val DefaultHighlightOpacityLight = 0.55f
 
     const val NavVibrancy = 2.0f
     const val NavBlurDp = 3f
@@ -67,17 +70,17 @@ object GlassTintTokens {
     const val OtherLensHeight = 0.35f
     const val OtherLensAmount = 0.40f
 
-    const val BaseSurfaceOpacityDark = 0.15f
-    const val BaseSurfaceOpacityLight = 0.40f
+    const val BaseSurfaceOpacityDark = 0.12f
+    const val BaseSurfaceOpacityLight = 0.28f
 
-    const val NavPillFillOpacityDark = 0.55f
-    const val NavPillFillOpacityLight = 0.68f
+    const val NavPillFillOpacityDark = 0.15f
+    const val NavPillFillOpacityLight = 0.18f
 
-    const val SearchFieldFillOpacityDark = 0.60f
-    const val SearchFieldFillOpacityLight = 0.72f
+    const val SearchFieldFillOpacityDark = 0.14f
+    const val SearchFieldFillOpacityLight = 0.18f
 
-    const val PillSelectedFillOpacityDark = 0.70f
-    const val PillSelectedFillOpacityLight = 0.80f
+    const val PillSelectedFillOpacityDark = 0.22f
+    const val PillSelectedFillOpacityLight = 0.25f
 
     val NavBarBlurDark: Dp = 3.dp
     val NavBarBlurLight: Dp = 3.dp
@@ -92,7 +95,7 @@ object GlassTintTokens {
     val ShadowColorDark = Color(0x59000000)
     val ShadowColorLight = Color(0x1F000000)
 
-    fun glassBaseColor(isDark: Boolean): Color = if (isDark) Color.White else SurfaceBaseLight
+    fun glassBaseColor(isDark: Boolean): Color = if (isDark) SurfaceBaseDark else SurfaceBaseLight
 
     fun baseSurfaceColor(isDark: Boolean): Color =
         if (isDark) SurfaceBaseDark else SurfaceBaseLight
@@ -104,7 +107,11 @@ object GlassTintTokens {
         if (isDark) HeroTintOpacityDark else HeroTintOpacityLight
 
     fun selectedRedColor(isDark: Boolean): Color =
-        if (isDark) AccentSelectedRedDark else AccentSelectedRedLight
+        if (isDark) DestructiveRedDark else DestructiveRedLight
+
+    fun selectedColor(isDark: Boolean, activeTint: Color = Color.Unspecified): Color =
+        if (activeTint.isSpecified && !activeTint.isHueless()) activeTint
+        else if (isDark) AccentSelectedBlueDark else AccentSelectedBlueLight
 
     fun borderColor(isDark: Boolean): Color =
         if (isDark) BorderDark else BorderLight
@@ -162,13 +169,13 @@ object GlassTintTokens {
         overrideRedForSelection: Boolean = true,
     ): Color {
         if (isSelected && overrideRedForSelection) {
-            val red = selectedRedColor(isDark)
+            val tint = selectedColor(isDark, activeTint)
             val alpha = if (isDark) {
                 if (isTitle || isUnselectedTabLabel) SelectedTabLabelOpacity else IconDimOpacity
             } else {
                 1.0f
             }
-            return red.copy(alpha = alpha)
+            return tint.copy(alpha = alpha)
         }
 
         if (!isDark) {

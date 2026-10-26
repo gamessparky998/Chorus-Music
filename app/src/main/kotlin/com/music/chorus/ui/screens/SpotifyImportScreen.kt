@@ -57,26 +57,28 @@ fun SpotifyImportScreen(
     spotifyImportViewModel: SpotifyImportViewModel = hiltViewModel(),
 ) {
     val state by spotifyImportViewModel.uiState.collectAsStateWithLifecycle()
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-
     var showSpotifyLogin by remember { mutableStateOf(false) }
     var showSpotifySources by remember { mutableStateOf(false) }
     var showAddByLink by remember { mutableStateOf(false) }
 
     Scaffold(
-        modifier = Modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier = Modifier.fillMaxSize(),
         topBar = {
-            LargeTopAppBar(
-                title = { Text(stringResource(R.string.spotify_import_title)) },
-                navigationIcon = {
-                    IconButton(
-                        onClick = navController::navigateUp,
-                        onLongClick = navController::backToMain
-                    ) {
-                        Icon(painterResource(R.drawable.arrow_back), null)
-                    }
+            androidx.compose.material3.CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(R.string.spotify_import_title),
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                    )
                 },
-                scrollBehavior = scrollBehavior
+                navigationIcon = {
+                    pushkar.chorus.music.ui.component.TopBarBackButton(navController)
+                },
+                actions = {},
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent,
+                    scrolledContainerColor = Color.Transparent,
+                )
             )
         }
     ) { innerPadding ->

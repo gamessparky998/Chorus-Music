@@ -27,7 +27,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.ui.text.style.TextOverflow
+import pushkar.chorus.music.ui.component.TopBarBackButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -228,11 +231,9 @@ fun UpdateScreen(navController: NavHostController) {
         }
     }
 
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-
     Scaffold(
         topBar = {
-            LargeTopAppBar(
+            CenterAlignedTopAppBar(
                 title = {
                     val titleText = if (status is ChorusUpdateStatus.Available) {
                         buildAnnotatedString {
@@ -249,24 +250,19 @@ fun UpdateScreen(navController: NavHostController) {
                     } else {
                         AnnotatedString(stringResource(R.string.settings_check_updates_title))
                     }
-                    Text(text = titleText, maxLines = 1)
+                    Text(
+                        text = titleText,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 },
                 navigationIcon = {
-                    Box(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
-                        ExpressiveIconButton(
-                            onClick = { navController.navigateUp() },
-                            painter = painterResource(R.drawable.arrow_back),
-                            contentDescription = stringResource(R.string.cancel),
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                            contentColor = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
+                    TopBarBackButton(navController = navController)
                 },
-                scrollBehavior = scrollBehavior,
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    scrolledContainerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground
+                    containerColor = Color.Transparent,
+                    scrolledContainerColor = Color.Transparent
                 )
             )
         },
@@ -386,7 +382,6 @@ fun UpdateScreen(navController: NavHostController) {
         modifier = Modifier
             .widthIn(max = 700.dp)
             .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection)
     ) { padding ->
         Box(
             modifier = Modifier

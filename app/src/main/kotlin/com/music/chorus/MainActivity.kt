@@ -193,6 +193,7 @@ import pushkar.chorus.music.playback.queues.YouTubeQueue
 import pushkar.chorus.music.ui.component.*
 import pushkar.chorus.music.ui.component.backdrop.backdrops.rememberLayerBackdrop
 import pushkar.chorus.music.ui.component.backdrop.backdrops.layerBackdrop
+import pushkar.chorus.music.ui.fluid.foundation.LocalAppBackdrop
 import pushkar.chorus.music.ui.menu.YouTubeSongMenu
 import pushkar.chorus.music.ui.player.BottomSheetPlayer
 import pushkar.chorus.music.ui.screens.Screens
@@ -308,7 +309,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        if (dataStore.get(StopMusicOnTaskClearKey, false) &&
+        if (dataStore.get(StopMusicOnTaskClearKey, true) &&
             playerConnection?.isPlaying?.value == true &&
             isFinishing
         ) {
@@ -493,9 +494,9 @@ class MainActivity : ComponentActivity() {
             setSystemBarAppearance(useDarkTheme)
         }
 
-        val pureBlackEnabled by rememberPreference(PureBlackKey, defaultValue = false)
-        val pureBlack = remember(pureBlackEnabled, useDarkTheme) {
-            pureBlackEnabled && useDarkTheme
+        val pureBlackEnabled by rememberPreference(PureBlackKey, defaultValue = true)
+        val pureBlack = remember(useDarkTheme) {
+            useDarkTheme
         }
 
         val (selectedThemeColorInt) = rememberPreference(SelectedThemeColorKey, defaultValue = DefaultThemeColor.toArgb())
@@ -634,22 +635,16 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                val currentRoute by remember {
-                    derivedStateOf { navBackStackEntry?.destination?.route }
-                }
+                val currentRoute = navBackStackEntry?.destination?.route
 
-                val inSearchScreen by remember {
-                    derivedStateOf { currentRoute?.startsWith("search/") == true }
-                }
+                val inSearchScreen = currentRoute?.startsWith("search/") == true
                 val navigationItemRoutes = remember(navigationItems) {
                     navigationItems.map { it.route }.toSet()
                 }
 
-                val shouldShowNavigationBar = remember(currentRoute, navigationItemRoutes) {
-                    currentRoute == null ||
-                        navigationItemRoutes.contains(currentRoute) ||
-                        currentRoute!!.startsWith("search/")
-                }
+                val shouldShowNavigationBar = currentRoute != null && (
+                    navigationItemRoutes.contains(currentRoute) || inSearchScreen
+                )
 
                 val isLandscape = configuration.containerDpSize.width > configuration.containerDpSize.height
 
@@ -667,8 +662,9 @@ class MainActivity : ComponentActivity() {
                     label = "navBarHeight",
                 )
 
-                val floatingNavBarScrollConnection = remember {
-                    object : androidx.compose.ui.input.nestedscroll.NestedScrollConnection {}
+                val floatingNavBarScrollConnection = pushkar.chorus.music.ui.component.rememberFloatingNavBarScrollConnection()
+                LaunchedEffect(currentRoute) {
+                    floatingNavBarScrollConnection.expand()
                 }
                 val playerBottomSheetState = rememberBottomSheetState(
                     dismissedBound = 0.dp,
@@ -726,10 +722,10 @@ class MainActivity : ComponentActivity() {
                 LaunchedEffect(navBackStackEntry) {
                     if (inSearchScreen) {
                         val searchQuery = withContext(Dispatchers.IO) {
-                            val rawQuery = navBackStackEntry?.arguments?.getString("query")!!
+                            val rawQuery = navBackStackEntry?.arguments?.getString("query").orEmpty()
                             try {
-                                URLDecoder.decode(rawQuery, "UTF-8")
-                            } catch (e: IllegalArgumentException) {
+                                if (rawQuery.isNotEmpty()) URLDecoder.decode(rawQuery, "UTF-8") else ""
+                            } catch (e: Exception) {
                                 rawQuery
                             }
                         }
@@ -866,11 +862,21 @@ class MainActivity : ComponentActivity() {
                     !(pauseListenHistory && eventCount == 0)
                 }
                 val baseBg = if (pureBlack) Color.Black else MaterialTheme.colorScheme.surfaceContainer
+                val appBackdrop = rememberLayerBackdrop(
+                    onDraw = remember(baseBg) {
+                        val bg = baseBg
+                        {
+                            drawRect(bg)
+                            drawContent()
+                        }
+                    }
+                )
 
                 val ringtoneViewModel: RingtoneViewModel = viewModel()
                 val ringtoneUiState by ringtoneViewModel.uiState.collectAsState()
 
                 CompositionLocalProvider(
+                    LocalAppBackdrop provides appBackdrop,
                     LocalRingtoneViewModel provides ringtoneViewModel,
                     LocalDatabase provides database,
                     LocalContentColor provides if (pureBlack) Color.White else contentColorFor(MaterialTheme.colorScheme.surface),
@@ -921,6 +927,7 @@ class MainActivity : ComponentActivity() {
                                 bottomInsetDp = bottomInsetDp,
                                 topAppBarScrollBehavior = topAppBarScrollBehavior,
                                 onShuffleClick = onShuffleClick,
+                                isNavBarHidden = floatingNavBarScrollConnection.isNavBarHidden,
                             )
                         },
                         modifier = Modifier
@@ -928,51 +935,55 @@ class MainActivity : ComponentActivity() {
                             .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
                             .nestedScroll(floatingNavBarScrollConnection)
                     ) {
-                        Row(Modifier.fillMaxSize()) {
-                            val onRailItemClick: (Screens, Boolean) -> Unit = remember(navController, coroutineScope, topAppBarScrollBehavior, playerBottomSheetState) {
-                                { screen: Screens, isSelected: Boolean ->
-                                    if (playerBottomSheetState.isExpanded) {
-                                        playerBottomSheetState.collapseSoft()
-                                    }
-
-                                    if (isSelected) {
-                                        navController.currentBackStackEntry?.savedStateHandle?.set("scrollToTop", true)
-                                        coroutineScope.launch {
-                                            topAppBarScrollBehavior.state.resetHeightOffset()
+                        Row(Modifier.fillMaxSize().layerBackdrop(appBackdrop)) {
+                            CompositionLocalProvider(
+                                LocalAppBackdrop provides null
+                            ) {
+                                val onRailItemClick: (Screens, Boolean) -> Unit = remember(navController, coroutineScope, topAppBarScrollBehavior, playerBottomSheetState) {
+                                    { screen: Screens, isSelected: Boolean ->
+                                        if (playerBottomSheetState.isExpanded) {
+                                            playerBottomSheetState.collapseSoft()
                                         }
-                                    } else {
-                                        navController.navigate(screen.route) {
-                                            popUpTo(navController.graph.startDestinationId) {
-                                                saveState = true
+
+                                        if (isSelected) {
+                                            navController.currentBackStackEntry?.savedStateHandle?.set("scrollToTop", true)
+                                            coroutineScope.launch {
+                                                topAppBarScrollBehavior.state.resetHeightOffset()
                                             }
-                                            launchSingleTop = true
-                                            restoreState = true
+                                        } else {
+                                            navController.navigate(screen.route) {
+                                                popUpTo(navController.graph.startDestinationId) {
+                                                    saveState = true
+                                                }
+                                                launchSingleTop = true
+                                                restoreState = true
+                                            }
                                         }
                                     }
                                 }
-                            }
 
-                            if (showRail && currentRoute != "update") {
-                                AppNavigationRail(
-                                    navigationItems = navigationItems,
-                                    currentRoute = currentRoute,
-                                    onItemClick = onRailItemClick,
-                                    pureBlack = pureBlack
-                                )
-                            }
-                            Box(Modifier.weight(1f)) {
-                                AppNavHost(
-                                    navController = navController,
-                                    navigationItems = navigationItems,
-                                    startDestination = when (tabOpenedFromShortcut ?: defaultOpenTab) {
-                                        NavigationTab.HOME -> Screens.Home
-                                        NavigationTab.LIBRARY -> Screens.Library
-                                        else -> Screens.Home
-                                    }.route,
-                                    topAppBarScrollBehavior = topAppBarScrollBehavior,
-                                    activity = this@MainActivity,
-                                    snackbarHostState = snackbarHostState,
-                                )
+                                if (showRail && currentRoute != "update") {
+                                    AppNavigationRail(
+                                        navigationItems = navigationItems,
+                                        currentRoute = currentRoute,
+                                        onItemClick = onRailItemClick,
+                                        pureBlack = pureBlack
+                                    )
+                                }
+                                Box(Modifier.weight(1f)) {
+                                    AppNavHost(
+                                        navController = navController,
+                                        navigationItems = navigationItems,
+                                        startDestination = when (tabOpenedFromShortcut ?: defaultOpenTab) {
+                                            NavigationTab.HOME -> Screens.Home
+                                            NavigationTab.LIBRARY -> Screens.Library
+                                            else -> Screens.Home
+                                        }.route,
+                                        topAppBarScrollBehavior = topAppBarScrollBehavior,
+                                        activity = this@MainActivity,
+                                        snackbarHostState = snackbarHostState,
+                                    )
+                                }
                             }
                         }
                     }

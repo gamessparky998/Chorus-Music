@@ -25,9 +25,9 @@ tasks.register<Delete>("clean") {
 }
 
 subprojects {
-    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().configureEach {
         compilerOptions {
-            freeCompilerArgs.add("-Xmetadata-version=2.3.0")
+            freeCompilerArgs.add("-Xmetadata-version=2.0.0")
             if (project.findProperty("enableComposeCompilerReports") == "true") {
                 arrayOf("reports", "metrics").forEach {
                     freeCompilerArgs.add("-P")
@@ -37,8 +37,23 @@ subprojects {
         }
     }
     tasks.configureEach {
-        if (name.contains("AarMetadata")) {
+        if (name.startsWith("check") && name.endsWith("AarMetadata")) {
             enabled = false
+        }
+    }
+}
+
+gradle.taskGraph.whenReady {
+    allTasks.forEach { task ->
+        if (task.name.startsWith("check") && task.name.endsWith("AarMetadata")) {
+            task.outputs.files.files.forEach { file ->
+                if (file.extension.isNotEmpty()) {
+                    file.parentFile?.mkdirs()
+                    file.createNewFile()
+                } else {
+                    file.mkdirs()
+                }
+            }
         }
     }
 }
